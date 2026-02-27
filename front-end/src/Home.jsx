@@ -94,6 +94,90 @@ const Hero = () => {
     </section>
   );
 };
+import React from 'react';
+import { Search, MapPin, Tag, Bed, Wifi } from 'lucide-react';
+
+// Search Section
+const SearchSection = () => {
+  return (
+    <section className="relative -mt-16 z-10 mb-20">
+      <div className="max-w-5xl mx-auto px-8">
+        <div className="bg-white rounded-3xl shadow-2xl p-12 border border-gray-200">
+          <div className="text-center mb-10">
+            <h2 className="text-4xl font-bold text-gray-900 mb-3">Find Your Perfect Boarding</h2>
+            <p className="text-xl text-gray-600">Discover verified, safe, and affordable boarding options near campus</p>
+          </div>
+
+          <div className="space-y-6">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex-1 relative">
+                <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Enter university or location..."
+                  className="w-full pl-14 pr-6 py-4 border-2 border-gray-200 rounded-2xl focus:border-red-500 focus:outline-none focus:ring-4 focus:ring-red-500/20 transition-all"
+                />
+              </div>
+              <button className="px-10 py-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl font-semibold hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
+                <Search className="w-5 h-5" />
+                Search Boardings
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                  <Tag className="w-4 h-4" /> Price Range
+                </label>
+                <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-red-500 focus:outline-none">
+                  <option>Any Price</option>
+                  <option>$100 - $300/month</option>
+                  <option>$300 - $600/month</option>
+                  <option>$600+/month</option>
+                </select>
+              </div>
+              <div>
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                  <Bed className="w-4 h-4" /> Room Type
+                </label>
+                <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-red-500 focus:outline-none">
+                  <option>Any Type</option>
+                  <option>Single Room</option>
+                  <option>Shared Room</option>
+                  <option>Apartment</option>
+                </select>
+              </div>
+              <div>
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                  <Wifi className="w-4 h-4" /> Amenities
+                </label>
+                <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-red-500 focus:outline-none">
+                  <option>Any Amenities</option>
+                  <option>WiFi Included</option>
+                  <option>Laundry</option>
+                  <option>Kitchen Access</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="text-center pt-4">
+              <p className="text-gray-600 mb-3">Popular Searches:</p>
+              <div className="flex flex-wrap justify-center gap-3">
+                {['University of Colombo', 'Kandy', 'Galle', 'Near Campus', 'Girls Only'].map((tag) => (
+                  <span key={tag} className="px-5 py-2 bg-orange-50 text-gray-700 rounded-full text-sm hover:bg-red-500 hover:text-white cursor-pointer transition-all">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default SearchSection;
 
 
 const Features = () => {
