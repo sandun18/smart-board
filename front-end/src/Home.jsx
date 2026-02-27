@@ -96,8 +96,7 @@ const Hero = () => {
     </section>
   );
 };
-import React from 'react';
-import { Home, Building, Star, CheckCircle } from 'lucide-react';
+
 
 const StatsBar = () => {
   const stats = [
