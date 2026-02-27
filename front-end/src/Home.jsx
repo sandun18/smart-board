@@ -247,6 +247,104 @@ const Features = () => {
 };
 
 
+const Users = () => {
+  const users = [
+    {
+      icon: <User className="w-12 h-12" />,
+      title: "Students",
+      desc: "Search, compare, and book verified boardings. View payment history, submit maintenance requests, and connect directly with owners.",
+      features: [
+        "Smart Search & Filters",
+        "Secure Online Payments",
+        "Verified Reviews",
+      ],
+      link: "Student Login",
+    },
+    {
+      icon: <Home className="w-12 h-12" />,
+      title: "Boarding Owners",
+      desc: "List and manage boardings efficiently. Accept/reject bookings, manage tenants, receive secure payments, and track performance.",
+      features: [
+        "Property Management Dashboard",
+        "Automated Booking System",
+        "Financial Reports",
+      ],
+      link: "Owner Login",
+    },
+    {
+      icon: <UsersIcon className="w-12 h-12" />,
+      title: "Administrators",
+      desc: "Verify boarding owners and listings. Oversee platform activity, resolve disputes, and ensure compliance with university policies.",
+      features: [
+        "Verification Dashboard",
+        "Dispute Resolution Tools",
+        "Platform Analytics",
+      ],
+      link: "Admin Login",
+    },
+  ];
+
+  return (
+    <section id="users" className="py-24 bg-white">
+      <div className="max-w-7xl mx-auto px-8">
+        <div className="text-center mb-16">
+          <div className="inline-block bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-2 rounded-full text-sm font-semibold mb-4">
+            Who We Serve
+          </div>
+
+          <h2 className="text-5xl font-extrabold text-gray-900 mb-4">
+            Platform for Everyone
+          </h2>
+
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Tailored solutions for all stakeholders in university boarding ecosystem
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          {users.map((user, index) => (
+            <div
+              key={index}
+              className="bg-white p-8 rounded-3xl shadow-lg border border-gray-200 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col relative overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-orange-500"></div>
+
+              <div className="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center text-red-500 mx-auto mb-6 border-4 border-white shadow-lg">
+                {user.icon}
+              </div>
+
+              <h3 className="text-3xl font-bold text-gray-900 mb-4 text-center">
+                {user.title}
+              </h3>
+
+              <p className="text-gray-600 mb-6 text-center flex-grow">
+                {user.desc}
+              </p>
+
+              <ul className="space-y-3 mb-8">
+                {user.features.map((feature, i) => (
+                  <li key={i} className="flex items-center gap-3 text-gray-700">
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+
+              <button className="w-full px-6 py-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                <Lock className="w-5 h-5" />
+                {user.link}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+
+
+
 const Footer = () => {
   return (
     <footer id="contact" className="bg-gray-900 text-white py-16">
@@ -293,5 +391,6 @@ const Home = () => {
     </div>
   );
 };
+
 
 export default Home;
