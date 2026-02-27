@@ -3,7 +3,9 @@ import {
   Search, Shield, TrendingUp, Star, 
   MessageSquare, Headphones, Zap,
   Facebook, Twitter, Instagram, Linkedin, 
-  MapPin, Phone, Mail, Megaphone, Menu, X 
+  MapPin, Phone, Mail, Megaphone, Menu, X ,Tag,Bed,
+  Wifi 
+
 } from 'lucide-react';
 
 
