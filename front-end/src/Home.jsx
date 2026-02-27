@@ -94,10 +94,7 @@ const Hero = () => {
     </section>
   );
 };
-import React from 'react';
-import { Search, MapPin, Tag, Bed, Wifi } from 'lucide-react';
 
-// Search Section
 const SearchSection = () => {
   return (
     <section className="relative -mt-16 z-10 mb-20">
