@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
-import { 
-  Search, Shield, TrendingUp, Star, 
-  MessageSquare, Headphones, Zap,
-  Facebook, Twitter, Instagram, Linkedin, 
-  MapPin, Phone, Mail, Megaphone, Menu, X ,Tag,Bed,
-  Wifi 
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import logo from './assets/logo.png';
+import backgroundImage from './assets/s5.jpg';
+import BoardingCard from './components/student/search/BoardingCard';
 
-} from 'lucide-react';
+import StudentService from './api/student/StudentService';
+import AdminService from './api/admin/AdminService';
+import { sampleBoardings } from './data/student/searchBoardingsData';
 
 
 const Navbar = () => {
