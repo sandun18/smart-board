@@ -6,7 +6,7 @@ import backgroundImage from './assets/s5.jpg';
 import BoardingCard from './components/student/search/BoardingCard';
 
 import StudentService from './api/student/StudentService';
-import AdminService from './api/admin/AdminService';
+import AdminService from './api/owner/AdminService';
 import { sampleBoardings } from './data/student/searchBoardingsData';
 
 const Home = () => {
