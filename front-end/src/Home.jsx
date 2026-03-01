@@ -9,389 +9,342 @@ import StudentService from './api/student/StudentService';
 import AdminService from './api/admin/AdminService';
 import { sampleBoardings } from './data/student/searchBoardingsData';
 
-
-const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <nav className="fixed top-5 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-[1300px]">
-      <div className="bg-white/88 backdrop-blur-xl rounded-3xl shadow-lg border border-white/25 px-10 py-6">
-        <div className="flex justify-between items-center">
-          <a href="/" className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center text-white font-bold text-xl">
-              SB
-            </div>
-            <span className="text-2xl font-extrabold bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
-              SmartBoAD
-            </span>
-          </a>
-
-          <div className="hidden lg:flex items-center gap-10">
-            <a href="#" className="text-gray-800 hover:text-red-500 font-medium transition-colors">Home</a>
-            <a href="#features" className="text-gray-800 hover:text-red-500 font-medium transition-colors">Features</a>
-            <a href="#contact" className="text-gray-800 hover:text-red-500 font-medium transition-colors">Contact</a>
-          </div>
-
-          <div className="hidden lg:flex items-center gap-4">
-            <button className="px-6 py-3 border-2 border-red-500 text-red-500 rounded-2xl font-semibold hover:bg-red-500 hover:text-white transition-all">
-              Login
-            </button>
-            <button className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all">
-              Sign Up
-            </button>
-          </div>
-
-          <button onClick={() => setIsOpen(!isOpen)} className="lg:hidden">
-            {isOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
-        </div>
-
-        {isOpen && (
-          <div className="lg:hidden mt-6 pt-6 border-t border-gray-200 flex flex-col gap-4">
-            <a href="#" className="text-gray-800">Home</a>
-            <a href="#features" className="text-gray-800">Features</a>
-            <button className="w-full px-6 py-3 border-2 border-red-500 text-red-500 rounded-2xl">Login</button>
-          </div>
-        )}
-      </div>
-    </nav>
-  );
-};
-
-
-const Hero = () => {
-  return (
-    <section className="pt-56 pb-24 bg-gradient-to-br from-orange-50 to-orange-100 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-2/5 h-full bg-gradient-to-bl from-red-500/10 to-transparent"></div>
-      <div className="max-w-7xl mx-auto px-8">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          <div className="space-y-8">
-            <div className="inline-block bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-2 rounded-full text-sm font-semibold shadow-md">
-              <Star className="inline w-4 h-4 mr-2" /> #1 Boarding Platform
-            </div>
-            <h1 className="text-5xl lg:text-6xl font-extrabold leading-tight text-gray-900">
-              Find Your Perfect Boarding <br />
-              <span className="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">Near Your University</span>
-            </h1>
-            <p className="text-xl text-gray-600 max-w-lg">
-              Join thousands of students who found their ideal boarding through our verified platform.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <button className="px-8 py-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl font-semibold flex items-center gap-2">
-                <Search className="w-5 h-5" /> Find Boarding Now
-              </button>
-              <button className="px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl font-semibold flex items-center gap-2">
-                <Megaphone className="w-5 h-5" /> Advertise Here
-              </button>
-            </div>
-          </div>
-          <div className="relative">
-            <img 
-              src="https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1000&q=80"
-              alt="Student accommodation"
-              className="rounded-3xl shadow-2xl border-8 border-white"
-            />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-
-const StatsBar = () => {
-  const stats = [
-    { icon: <Home className="w-9 h-9" />, value: "2,500+", label: "Verified Properties" },
-    { icon: <Building className="w-9 h-9" />, value: "50+", label: "Partner Universities" },
-    { icon: <Star className="w-9 h-9" />, value: "4.8/5", label: "Average Rating" },
-    { icon: <CheckCircle className="w-9 h-9" />, value: "98%", label: "Verified Owners" },
-  ];
-
-  return (
-    <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white py-12 relative">
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-orange-500"></div>
-      
-      <div className="max-w-7xl mx-auto px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {stats.map((stat, index) => (
-            <div key={index} className="flex items-center gap-5 p-4 rounded-2xl bg-white/10 backdrop-blur-lg hover:bg-white/15 hover:-translate-y-1 transition-all">
-              <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-orange-500">
-                {stat.icon}
-              </div>
-              <div>
-                <h4 className="text-3xl font-bold">{stat.value}</h4>
-                <p className="text-white/90">{stat.label}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-
-
-const SearchSection = () => {
-  return (
-    <section className="relative -mt-16 z-10 mb-20">
-      <div className="max-w-5xl mx-auto px-8">
-        <div className="bg-white rounded-3xl shadow-2xl p-12 border border-gray-200">
-          <div className="text-center mb-10">
-            <h2 className="text-4xl font-bold text-gray-900 mb-3">Find Your Perfect Boarding</h2>
-            <p className="text-xl text-gray-600">Discover verified, safe, and affordable boarding options near campus</p>
-          </div>
-
-          <div className="space-y-6">
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1 relative">
-                <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Enter university or location..."
-                  className="w-full pl-14 pr-6 py-4 border-2 border-gray-200 rounded-2xl focus:border-red-500 focus:outline-none focus:ring-4 focus:ring-red-500/20 transition-all"
-                />
-              </div>
-              <button className="px-10 py-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl font-semibold hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
-                <Search className="w-5 h-5" />
-                Search Boardings
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <Tag className="w-4 h-4" /> Price Range
-                </label>
-                <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-red-500 focus:outline-none">
-                  <option>Any Price</option>
-                  <option>$100 - $300/month</option>
-                  <option>$300 - $600/month</option>
-                  <option>$600+/month</option>
-                </select>
-              </div>
-              <div>
-                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <Bed className="w-4 h-4" /> Room Type
-                </label>
-                <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-red-500 focus:outline-none">
-                  <option>Any Type</option>
-                  <option>Single Room</option>
-                  <option>Shared Room</option>
-                  <option>Apartment</option>
-                </select>
-              </div>
-              <div>
-                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <Wifi className="w-4 h-4" /> Amenities
-                </label>
-                <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-red-500 focus:outline-none">
-                  <option>Any Amenities</option>
-                  <option>WiFi Included</option>
-                  <option>Laundry</option>
-                  <option>Kitchen Access</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="text-center pt-4">
-              <p className="text-gray-600 mb-3">Popular Searches:</p>
-              <div className="flex flex-wrap justify-center gap-3">
-                {['University of Colombo', 'Kandy', 'Galle', 'Near Campus', 'Girls Only'].map((tag) => (
-                  <span key={tag} className="px-5 py-2 bg-orange-50 text-gray-700 rounded-full text-sm hover:bg-red-500 hover:text-white cursor-pointer transition-all">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-
-
-
-const Features = () => {
-  const features = [
-    { icon: <Search className="w-8 h-8" />, title: "Smart Search", desc: "Advanced filters to find what you need.", badge: "Instant Results" },
-    { icon: <Shield className="w-8 h-8" />, title: "Secure Payments", desc: "Encrypted and safe transactions.", badge: "100% Secure" },
-    { icon: <TrendingUp className="w-8 h-8" />, title: "Owner Dashboard", desc: "Manage bookings and payments easily.", badge: "Real-time Analytics" },
-    { icon: <Star className="w-8 h-8" />, title: "Verified Reviews", desc: "Real feedback from real students.", badge: "Authentic Feedback" },
-    { icon: <MessageSquare className="w-8 h-8" />, title: "Direct Messaging", desc: "Chat securely with owners.", badge: "Live Chat" },
-    { icon: <Headphones className="w-8 h-8" />, title: "24/7 Support", desc: "We are always here for you.", badge: "Always Available" },
-  ];
-
-  return (
-    <section id="features" className="py-24 bg-orange-50">
-      <div className="max-w-7xl mx-auto px-8">
-        <h2 className="text-4xl font-bold text-center mb-12">Everything You Need for Perfect Boarding</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((f, i) => (
-            <div key={i} className="bg-white p-8 rounded-3xl shadow-lg hover:shadow-xl transition-shadow">
-              <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center text-white mb-6">
-                {f.icon}
-              </div>
-              <h3 className="text-xl font-bold mb-4">{f.title}</h3>
-              <p className="text-gray-600 mb-6">{f.desc}</p>
-              <div className="inline-flex items-center gap-2 bg-orange-50 px-4 py-2 rounded-full text-sm text-red-500 font-medium">
-                <Zap className="w-4 h-4" /> {f.badge}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-
-const Users = () => {
-  const users = [
-    {
-      icon: <User className="w-12 h-12" />,
-      title: "Students",
-      desc: "Search, compare, and book verified boardings. View payment history, submit maintenance requests, and connect directly with owners.",
-      features: [
-        "Smart Search & Filters",
-        "Secure Online Payments",
-        "Verified Reviews",
-      ],
-      link: "Student Login",
-    },
-    {
-      icon: <Home className="w-12 h-12" />,
-      title: "Boarding Owners",
-      desc: "List and manage boardings efficiently. Accept/reject bookings, manage tenants, receive secure payments, and track performance.",
-      features: [
-        "Property Management Dashboard",
-        "Automated Booking System",
-        "Financial Reports",
-      ],
-      link: "Owner Login",
-    },
-    {
-      icon: <UsersIcon className="w-12 h-12" />,
-      title: "Administrators",
-      desc: "Verify boarding owners and listings. Oversee platform activity, resolve disputes, and ensure compliance with university policies.",
-      features: [
-        "Verification Dashboard",
-        "Dispute Resolution Tools",
-        "Platform Analytics",
-      ],
-      link: "Admin Login",
-    },
-  ];
-
-  return (
-    <section id="users" className="py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-8">
-        <div className="text-center mb-16">
-          <div className="inline-block bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-2 rounded-full text-sm font-semibold mb-4">
-            Who We Serve
-          </div>
-
-          <h2 className="text-5xl font-extrabold text-gray-900 mb-4">
-            Platform for Everyone
-          </h2>
-
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Tailored solutions for all stakeholders in university boarding ecosystem
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          {users.map((user, index) => (
-            <div
-              key={index}
-              className="bg-white p-8 rounded-3xl shadow-lg border border-gray-200 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col relative overflow-hidden"
-            >
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-orange-500"></div>
-
-              <div className="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center text-red-500 mx-auto mb-6 border-4 border-white shadow-lg">
-                {user.icon}
-              </div>
-
-              <h3 className="text-3xl font-bold text-gray-900 mb-4 text-center">
-                {user.title}
-              </h3>
-
-              <p className="text-gray-600 mb-6 text-center flex-grow">
-                {user.desc}
-              </p>
-
-              <ul className="space-y-3 mb-8">
-                {user.features.map((feature, i) => (
-                  <li key={i} className="flex items-center gap-3 text-gray-700">
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-
-              <button className="w-full px-6 py-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
-                <Lock className="w-5 h-5" />
-                {user.link}
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-
-
-
-const Footer = () => {
-  return (
-    <footer id="contact" className="bg-gray-900 text-white py-16">
-      <div className="max-w-7xl mx-auto px-8 grid md:grid-cols-4 gap-12">
-        <div>
-          <h3 className="text-xl font-bold mb-4 text-orange-500">SmartBoAD</h3>
-          <p className="text-white/70">Smart solution for university boarding management.</p>
-        </div>
-        <div>
-          <h4 className="font-bold mb-4">Quick Links</h4>
-          <ul className="space-y-2 text-white/70">
-            <li><a href="#" className="hover:text-orange-500">Home</a></li>
-            <li><a href="#features" className="hover:text-orange-500">Features</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="font-bold mb-4">Contact</h4>
-          <p className="flex items-center gap-2 text-white/70 mb-2"><MapPin size={16}/> Colombo</p>
-          <p className="flex items-center gap-2 text-white/70 mb-2"><Phone size={16}/> +94 11 234 5678</p>
-          <p className="flex items-center gap-2 text-white/70"><Mail size={16}/> info@smartboad.com</p>
-        </div>
-        <div className="flex gap-4">
-          <Facebook className="hover:text-orange-500 cursor-pointer" />
-          <Twitter className="hover:text-orange-500 cursor-pointer" />
-          <Instagram className="hover:text-orange-500 cursor-pointer" />
-          <Linkedin className="hover:text-orange-500 cursor-pointer" />
-        </div>
-      </div>
-      <div className="text-center mt-10 text-white/60 border-t border-white/10 pt-8">
-        © 2024 SmartBoAD. All rights reserved.
-      </div>
-    </footer>
-  );
-};
-
-
 const Home = () => {
+  const navigate = useNavigate();
+  
+  // Search State
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Boarding States
+  const [boardings, setBoardings] = useState([]);
+  const [loadingBoardings, setLoadingBoardings] = useState(false);
+  const [page, setPage] = useState(0);
+  const [pageSize] = useState(6);
+  const [totalPages, setTotalPages] = useState(0);
+  const [filters, setFilters] = useState({
+    minPrice: 0, maxPrice: 50000, gender: 'any', roomType: 'any'
+  });
+  
+  // Ad States
+  const [approvedAds, setApprovedAds] = useState([]);
+  const [loadingAds, setLoadingAds] = useState(false);
+
+
+  const fetchBoardings = async (p = page, size = pageSize) => {
+    setLoadingBoardings(true);
+    try {
+      const searchFilters = {
+        searchQuery: searchQuery || '',
+        minPrice: filters.minPrice,
+        maxPrice: filters.maxPrice,
+        gender: filters.gender,
+        roomTypes: filters.roomType === 'any' ? [] : [filters.roomType]
+      };
+      const data = await StudentService.searchBoardings(searchFilters, p, size);
+      const list = Array.isArray(data) ? data : (data.content || []);
+      
+      if (!list || list.length === 0) {
+        setBoardings(sampleBoardings.slice(0, size));
+        setTotalPages(1);
+      } else {
+        setBoardings(list);
+        setTotalPages(data.totalPages || 1);
+      }
+    } catch (e) {
+      setBoardings(sampleBoardings.slice(0, size));
+      setTotalPages(1);
+    } finally {
+      setLoadingBoardings(false);
+    }
+  };
+
+  const fetchApprovedAds = async () => {
+    setLoadingAds(true);
+    try {
+      const campaigns = await AdminService.getCampaigns();
+      const now = new Date();
+      const filteredAds = (campaigns || []).filter(ad => {
+        if (ad.status !== 'ACTIVE') return false;
+        if (!ad.targetPanels || !ad.targetPanels.includes('PUBLIC_DASHBOARD')) return false;
+        if (ad.expiryDate) {
+          const expiryDate = new Date(ad.expiryDate);
+          if (expiryDate < now) return false;
+        }
+        return true;
+      });
+      setApprovedAds(filteredAds);
+    } catch (error) {
+      console.error('Failed to fetch approved ads:', error);
+      setApprovedAds([]);
+    } finally {
+      setLoadingAds(false);
+    }
+  };
+
+
+
+  useEffect(() => {
+    fetchBoardings();
+    fetchApprovedAds();
+    
+    const interval = setInterval(() => {
+      fetchApprovedAds();
+    }, 2 * 60 * 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <div className="min-h-screen">
-      <Navbar />
-      <Hero />
-      <Features />
-      <Footer />
+    <div className="min-h-screen relative overflow-hidden font-sans">
+      {/* Background */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url(${backgroundImage})`,
+          filter: "blur(8px)",
+          transform: "scale(1.1)",
+        }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-accent/20 to-primary/30 backdrop-blur-sm" />
+
+      {/* Content */}
+      <div className="relative z-10 min-h-screen flex flex-col">
+        {/* Header */}
+        <motion.header
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full p-4 md:p-8"
+        >
+          <div className="max-w-6xl mx-auto bg-white/95 backdrop-blur-md border border-white/20 py-4 px-6 rounded-2xl shadow-2xl flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img src={logo} alt="SmartBoAD" className="h-10 w-10 rounded-lg shadow-inner" />
+              <h1 className="text-2xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent tracking-tight">
+                SmartBoAD
+              </h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate('/signup')}
+                className="px-6 py-2 bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white rounded-xl transition-all font-bold text-sm"
+              >
+                Sign Up
+              </button>
+              <button
+                onClick={() => navigate('/login')}
+                className="px-6 py-2 bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white rounded-xl transition-all font-bold text-sm"
+              >
+                Login
+              </button>
+            </div>
+          </div>
+        </motion.header>
+
+        {/* Hero */}
+        <section className="text-center py-12 px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <h2 className="text-5xl md:text-7xl font-extrabold text-white mb-6 leading-tight drop-shadow-lg">
+              Welcome To <span className="text-white">SmartBoAD</span>
+            </h2>
+            <p className="text-xl text-white/90 max-w-2xl mx-auto font-medium">
+              The premier destination for student boarding and property advertising.
+            </p>
+          </motion.div>
+        </section>
+
+        {/* Main */}
+        <main className="flex-1 px-4 md:px-8 pb-8">
+          <div className="max-w-7xl mx-auto space-y-8">
+            {/* Search Section */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <div className="bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-8 border border-white/20">
+                <h3 className="text-2xl font-bold text-text-dark mb-6">Find Your Boarding</h3>
+                
+                <div className="flex flex-col md:flex-row gap-4 mb-8">
+                  <input
+                    type="text"
+                    placeholder="Where do you want to stay?"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="flex-1 px-5 py-4 bg-white border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary text-text-dark placeholder:text-gray-400"
+                  />
+                  <button
+                    onClick={() => fetchBoardings()}
+                    className="px-8 py-4 bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white rounded-2xl font-bold transition-all shadow-lg transform hover:-translate-y-1"
+                  >
+                    Search Now
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap gap-6 items-end border-t border-gray-200 pt-8 text-text-dark">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-gray-600">Price Range (LKR)</label>
+                    <div className="flex gap-2">
+                      <input type="number" placeholder="Min" value={filters.minPrice} onChange={(e)=>setFilters(prev=>({...prev, minPrice: Number(e.target.value)}))} className="w-28 px-3 py-2 bg-white border border-gray-300 rounded-xl text-sm" />
+                      <input type="number" placeholder="Max" value={filters.maxPrice} onChange={(e)=>setFilters(prev=>({...prev, maxPrice: Number(e.target.value)}))} className="w-28 px-3 py-2 bg-white border border-gray-300 rounded-xl text-sm" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-gray-600">Gender</label>
+                    <select value={filters.gender} onChange={(e)=>setFilters(prev=>({...prev, gender: e.target.value}))} className="w-32 px-3 py-2 bg-white border border-gray-300 rounded-xl text-sm appearance-none cursor-pointer">
+                      <option value="any">Any</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-gray-600">Room Type</label>
+                    <select value={filters.roomType} onChange={(e)=>setFilters(prev=>({...prev, roomType: e.target.value}))} className="w-32 px-3 py-2 bg-white border border-gray-300 rounded-xl text-sm appearance-none cursor-pointer">
+                      <option value="any">Any</option>
+                      <option value="single">Single</option>
+                      <option value="shared">Shared</option>
+                      <option value="apartment">Apartment</option>
+                    </select>
+                  </div>
+
+                  <button onClick={() => { setPage(0); fetchBoardings(0, pageSize); }} className="ml-auto px-4 h-9 text-sm bg-gradient-to-r from-primary to-accent text-white rounded-xl font-bold hover:opacity-90 transition-all flex items-center justify-center self-end">
+                    Apply
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+                  {loadingBoardings ? (
+                    <div className="col-span-full text-center py-20 text-gray-600 font-medium animate-pulse">Loading listings...</div>
+                  ) : (
+                    boardings.map((b) => (
+                      <div key={b.id} className="transform hover:scale-[1.02] transition-transform">
+                        <BoardingCard boarding={{
+                          ...b,
+                          name: b.name || b.title || 'Boarding',
+                          price: b.price || b.monthlyRent || b.pricePerMonth || 0,
+                          image: b.image || (b.images && b.images[0]) || (b.imageUrls && b.imageUrls[0]) || '',
+                          location: b.location || b.address || '',
+                          amenities: b.amenities || b.features || [],
+                          badge: b.badge || (b.isBoosted ? 'Featured' : null),
+                        }} />
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between mt-12 pt-8 border-t border-gray-200">
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => { if (page > 0) { setPage(p => p - 1); fetchBoardings(page - 1, pageSize); } }}
+                      disabled={page <= 0}
+                      className="px-5 py-2 bg-white text-text-dark rounded-xl disabled:opacity-30 border border-gray-300 hover:bg-gray-50"
+                    >Previous</button>
+                    <button
+                      onClick={() => { if (page + 1 < totalPages) { setPage(p => p + 1); fetchBoardings(page + 1, pageSize); } }}
+                      disabled={page + 1 >= (totalPages || 1)}
+                      className="px-5 py-2 bg-white text-text-dark rounded-xl disabled:opacity-30 border border-gray-300 hover:bg-gray-50"
+                    >Next</button>
+                  </div>
+                  <span className="text-gray-600 text-sm font-bold uppercase tracking-widest">Page {page + 1} / {totalPages || 1}</span>
+                </div>
+              </div>
+            </motion.section>
+
+
+
+            {/* Sponsors */}
+            {!loadingAds && approvedAds && approvedAds.length > 0 && (
+              <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+                <h3 className="text-3xl font-black text-white mb-8 text-center">Featured Sponsors</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {approvedAds.slice(0, 6).map((ad) => (
+                    <motion.a key={ad.id} href={ad.redirectUrl || '#'} target={ad.redirectUrl ? '_blank' : undefined} rel={ad.redirectUrl ? 'noopener noreferrer' : undefined} whileHover={{ scale: 1.05, y: -5 }} className="bg-white/10 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden hover:bg-white/15 transition-all group">
+                      {ad.bannerImageUrl && (
+                        <div className="w-full h-40 overflow-hidden bg-gradient-to-br from-accent/30 to-primary/30 flex items-center justify-center">
+                          <img src={ad.bannerImageUrl} alt={ad.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                      )}
+                      <div className="p-6">
+                        <h4 className="text-lg font-bold text-white mb-2 line-clamp-2">{ad.title}</h4>
+                        <p className="text-white/60 text-sm mb-4 line-clamp-2">{ad.description}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-accent text-xs font-bold uppercase tracking-wider">{ad.companyName || 'Sponsor'}</span>
+                          <i className="fas fa-arrow-right text-white/40 group-hover:text-accent transition-colors"></i>
+                        </div>
+                      </div>
+                    </motion.a>
+                  ))}
+                </div>
+              </motion.section>
+            )}
+
+            {loadingAds && (
+              <div className="text-center py-12">
+                <div className="inline-block">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mb-4"></div>
+                  <p className="text-white/60 text-sm font-medium">Loading featured sponsors...</p>
+                </div>
+              </div>
+            )}
+
+            {/* Features */}
+            <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+              {[
+                { icon: 'fa-search', title: 'Smart Filters', desc: 'Find exactly what you need in seconds.' },
+                { icon: 'fa-shield-alt', title: 'Verified Hosts', desc: 'We vet every owner for your safety.' },
+                { icon: 'fa-clock', title: 'Real-time', desc: 'Instant bookings and availability updates.' },
+              ].map((feature, idx) => (
+                <article key={idx} className="bg-white/95 backdrop-blur-md border border-white/20 rounded-3xl p-8 text-center text-text-dark hover:shadow-xl transition-all shadow-lg">
+                  <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-primary">
+                    <i className={`fas ${feature.icon} text-2xl`}></i>
+                  </div>
+                  <h4 className="text-xl font-bold mb-3">{feature.title}</h4>
+                  <p className="text-gray-600 leading-relaxed">{feature.desc}</p>
+                </article>
+              ))}
+            </motion.section>
+          </div>
+        </main>
+
+        {/* Footer */}
+        <footer className="w-full bg-[#05080f]/90 backdrop-blur-md text-white/90 pt-20 pb-10 border-t border-white/5">
+          <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
+            <div className="space-y-4">
+              <h4 className="text-2xl font-black text-white">SmartBoAD</h4>
+              <p className="text-white/50 text-sm leading-relaxed">The island's most trusted platform for student housing. Connecting dreams with locations.</p>
+            </div>
+            <div>
+              <h5 className="font-bold mb-6 text-white uppercase tracking-widest text-xs">Navigation</h5>
+              <ul className="text-sm text-white/50 space-y-3">
+                <li className="hover:text-accent transition-colors cursor-pointer">Search Listings</li>
+                <li className="hover:text-accent transition-colors cursor-pointer">My Appointments</li>
+                <li className="hover:text-accent transition-colors cursor-pointer">Help Center</li>
+              </ul>
+            </div>
+            <div>
+              <h5 className="font-bold mb-6 text-white uppercase tracking-widest text-xs">For Partners</h5>
+              <ul className="text-sm text-white/50 space-y-3">
+                <li className="hover:text-accent transition-colors cursor-pointer">Add Property</li>
+                <li className="hover:text-accent transition-colors cursor-pointer">Business Solutions</li>
+                <li className="hover:text-accent transition-colors cursor-pointer">API Docs</li>
+              </ul>
+            </div>
+            <div>
+              <h5 className="font-bold mb-6 text-white uppercase tracking-widest text-xs">Connect</h5>
+              <div className="flex gap-4 mb-6">
+                {[1,2,3].map(i => <div key={i} className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center border border-white/10 hover:bg-accent transition-all cursor-pointer"></div>)}
+              </div>
+              <p className="text-white/40 text-xs tracking-tight">© 2026 SmartBoAD Digital. All Rights Reserved.</p>
+            </div>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 };
-
 
 export default Home;
