@@ -48,7 +48,6 @@ public class ThirdPartyAdController {
     }
 
     @PostMapping("/publish")
-    @PreAuthorize("hasRole('ADMIN')")
     public AdResponseDTO publishAd(@RequestBody AdCreateDTO dto) {
         return adService.createActiveAd(dto);
     }
@@ -100,5 +99,12 @@ public class ThirdPartyAdController {
     @PreAuthorize("hasRole('ADMIN')")
     public void deletePlan(@PathVariable Long id) {
         planService.deletePlan(id);
+    }
+
+    // --------------------- Public API ---------------------
+    @GetMapping("/public-ads")
+    public List<AdResponseDTO> getPublicActiveAds() {
+        // Public endpoint to fetch ACTIVE ads marked as public for home page display
+        return adService.getPublicActiveAds();
     }
 }
