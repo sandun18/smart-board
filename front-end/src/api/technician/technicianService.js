@@ -36,7 +36,13 @@ export const completeJob = async (maintenanceId, amount) => {
 
 // 6. Create Report (Against Owner)
 export const createTechnicianReport = async (formData) => {
-  const response = await api.post("/reports", formData);
+  const token = localStorage.getItem('token');
+  const response = await api.post("/reports", formData, {
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
+    },
+  });
   return response.data;
 };
 
