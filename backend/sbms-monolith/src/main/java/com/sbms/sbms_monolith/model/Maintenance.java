@@ -72,5 +72,5 @@ public class Maintenance extends BaseEntity {
     private int ownerRating = 0;// 1-5 stars
 
     @Column(length = 500)
-    private String ownerComment;
+    private String ownerComment; //
 }
