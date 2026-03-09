@@ -31,8 +31,8 @@ const ReportModal = ({ job, onClose }) => {
       const dataPackage = new FormData();
 
       // Append Fields
-      dataPackage.append("title", formData.title);
-      dataPackage.append("description", formData.description);
+      dataPackage.append("reportTitle", formData.title);
+      dataPackage.append("reportDescription", formData.description);
       dataPackage.append("type", formData.type);
       dataPackage.append("severity", formData.severity);
       dataPackage.append("senderId", currentTech.id);
@@ -44,7 +44,7 @@ const ReportModal = ({ job, onClose }) => {
 
       dataPackage.append("reportedUserId", ownerId); 
       dataPackage.append("reportedPersonName", ownerName);
-      dataPackage.append("boardingName", boardingTitle);
+      dataPackage.append("boarding", boardingTitle);
       
       dataPackage.append("incidentDate", new Date().toISOString().split("T")[0]);
       dataPackage.append("allowContact", true);
