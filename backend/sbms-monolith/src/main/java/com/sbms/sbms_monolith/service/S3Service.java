@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
@@ -55,7 +56,8 @@ public class S3Service {
                         .bucket(bucketName)
                         .key(key)
                         .contentType(contentType)
-                        .acl(ObjectCannedACL.PUBLIC_READ)
+                        .contentDisposition("inline")                // 🔑 important
+                        .acl(ObjectCannedACL.PUBLIC_READ)  
                         .build(),
                 software.amazon.awssdk.core.sync.RequestBody.fromBytes(data)
         );
@@ -89,5 +91,22 @@ public class S3Service {
                 .key(key)
                 .build()
         );
+    }
+    
+    
+    
+    public byte[] downloadFile(String fileUrl) {
+
+        String key = fileUrl.substring(fileUrl.indexOf(".com/") + 5);
+
+        ResponseBytes<GetObjectResponse> object =
+                s3Client.getObjectAsBytes(
+                        GetObjectRequest.builder()
+                                .bucket(bucketName)
+                                .key(key)
+                                .build()
+                );
+
+        return object.asByteArray();
     }
 }

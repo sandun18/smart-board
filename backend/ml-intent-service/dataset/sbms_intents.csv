@@ -1,0 +1,733 @@
+text,intent
+pay rent,PAYMENT_HELP
+pay monthly rent,PAYMENT_HELP
+pay boarding fee,PAYMENT_HELP
+make payment for rent,PAYMENT_HELP
+make payment for boarding,PAYMENT_HELP
+settle my boarding fee,PAYMENT_HELP
+settle rent amount,PAYMENT_HELP
+complete payment,PAYMENT_HELP
+complete my payment,PAYMENT_HELP
+complete rent payment,PAYMENT_HELP
+pay utilities,PAYMENT_HELP
+pay electricity charge,PAYMENT_HELP
+pay water charge,PAYMENT_HELP
+pay electricity and water,PAYMENT_HELP
+where to pay rent,PAYMENT_HELP
+where can i pay boarding fee,PAYMENT_HELP
+where do i pay monthly rent,PAYMENT_HELP
+steps to pay rent,PAYMENT_HELP
+steps to pay boarding fee,PAYMENT_HELP
+steps to complete payment,PAYMENT_HELP
+how to pay rent online,PAYMENT_HELP
+how to pay boarding fee online,PAYMENT_HELP
+how to make payment in app,PAYMENT_HELP
+how to settle rent using app,PAYMENT_HELP
+how to complete payment using card,PAYMENT_HELP
+how to pay utilities online,PAYMENT_HELP
+how to pay both rent and utilities,PAYMENT_HELP
+payment option not visible,PAYMENT_HELP
+payment button missing,PAYMENT_HELP
+payment page not showing,PAYMENT_HELP
+where is payment section,PAYMENT_HELP
+where do i click to pay,PAYMENT_HELP
+how to start payment process,PAYMENT_HELP
+how to proceed with payment,PAYMENT_HELP
+pay first month boarding fee,PAYMENT_HELP
+pay after registration,PAYMENT_HELP
+pay after owner approval,PAYMENT_HELP
+how to retry payment,PAYMENT_HELP
+retry rent payment,PAYMENT_HELP
+pay from mobile phone,PAYMENT_HELP
+pay using card,PAYMENT_HELP
+pay using bank transfer,PAYMENT_HELP
+is cash payment allowed,PAYMENT_HELP
+can i split payment,PAYMENT_HELP
+pay outstanding amount,PAYMENT_HELP
+settle unpaid rent,PAYMENT_HELP
+clear pending payment,PAYMENT_HELP
+pay dues,PAYMENT_HELP
+pay current month bill,PAYMENT_HELP
+make rent payment now,PAYMENT_HELP
+make utility payment,PAYMENT_HELP
+payment instructions unclear,PAYMENT_HELP
+need steps to pay,PAYMENT_HELP
+where can i pay online,PAYMENT_HELP
+how to confirm payment success,PAYMENT_HELP
+upload payment proof,PAYMENT_HELP
+pay boarding bill,PAYMENT_HELP
+finish payment process,PAYMENT_HELP
+pay hostel fee,PAYMENT_HELP
+pay room charges,PAYMENT_HELP
+payment help for rent,PAYMENT_HELP
+how do payments work,PAYMENT_HELP
+pay charges online,PAYMENT_HELP
+rent payment process,PAYMENT_HELP
+payment method explanation,PAYMENT_HELP
+settle fees today,PAYMENT_HELP
+payment for boarding,PAYMENT_HELP
+pay my bill,PAYMENT_HELP
+pay shown amount,PAYMENT_HELP
+how to clear dues,PAYMENT_HELP
+finish paying rent,PAYMENT_HELP
+
+payment history,PAYMENT_HISTORY
+view payment history,PAYMENT_HISTORY
+see payment history,PAYMENT_HISTORY
+previous payments,PAYMENT_HISTORY
+previous rent payments,PAYMENT_HISTORY
+payment records,PAYMENT_HISTORY
+transaction history,PAYMENT_HISTORY
+billing history,PAYMENT_HISTORY
+old payment details,PAYMENT_HISTORY
+last payment,PAYMENT_HISTORY
+check previous payments,PAYMENT_HISTORY
+show past payments,PAYMENT_HISTORY
+see old transactions,PAYMENT_HISTORY
+payment receipt,PAYMENT_HISTORY
+download receipt,PAYMENT_HISTORY
+download payment receipt,PAYMENT_HISTORY
+receipt for rent,PAYMENT_HISTORY
+invoice download,PAYMENT_HISTORY
+paid invoice,PAYMENT_HISTORY
+payment invoice,PAYMENT_HISTORY
+payment confirmation,PAYMENT_HISTORY
+proof of payment,PAYMENT_HISTORY
+payment summary,PAYMENT_HISTORY
+monthly payment record,PAYMENT_HISTORY
+utility payment history,PAYMENT_HISTORY
+rent payment history,PAYMENT_HISTORY
+payment logs,PAYMENT_HISTORY
+transaction list,PAYMENT_HISTORY
+paid bills history,PAYMENT_HISTORY
+receipt not showing,PAYMENT_HISTORY
+history not loading,PAYMENT_HISTORY
+missing payment record,PAYMENT_HISTORY
+check if bill paid,PAYMENT_HISTORY
+show completed payments,PAYMENT_HISTORY
+old receipts,PAYMENT_HISTORY
+download old invoice,PAYMENT_HISTORY
+payment archive,PAYMENT_HISTORY
+billing records,PAYMENT_HISTORY
+see last month payment,PAYMENT_HISTORY
+payment details,PAYMENT_HISTORY
+past bill records,PAYMENT_HISTORY
+transaction proof,PAYMENT_HISTORY
+invoice history,PAYMENT_HISTORY
+rent invoice,PAYMENT_HISTORY
+utility invoice,PAYMENT_HISTORY
+previous utility payments,PAYMENT_HISTORY
+payment confirmation details,PAYMENT_HISTORY
+receipt download missing,PAYMENT_HISTORY
+paid transaction list,PAYMENT_HISTORY
+history of transactions,PAYMENT_HISTORY
+payment report,PAYMENT_HISTORY
+billing statement,PAYMENT_HISTORY
+account payment history,PAYMENT_HISTORY
+past fee payments,PAYMENT_HISTORY
+rent payment record,PAYMENT_HISTORY
+utility payment receipt,PAYMENT_HISTORY
+old billing info,PAYMENT_HISTORY
+download bill,PAYMENT_HISTORY
+invoice for previous month,PAYMENT_HISTORY
+receipt for utilities,PAYMENT_HISTORY
+payment summary page,PAYMENT_HISTORY
+payment trail,PAYMENT_HISTORY
+records of payments,PAYMENT_HISTORY
+payment timeline,PAYMENT_HISTORY
+
+payment failed,PAYMENT_FAILED
+rent payment failed,PAYMENT_FAILED
+utility payment failed,PAYMENT_FAILED
+card payment failed,PAYMENT_FAILED
+bank payment failed,PAYMENT_FAILED
+payment declined,PAYMENT_FAILED
+payment rejected,PAYMENT_FAILED
+transaction failed,PAYMENT_FAILED
+money deducted but failed,PAYMENT_FAILED
+amount debited but unpaid,PAYMENT_FAILED
+payment stuck pending,PAYMENT_FAILED
+payment showing error,PAYMENT_FAILED
+gateway error,PAYMENT_FAILED
+checkout failed,PAYMENT_FAILED
+payment timeout,PAYMENT_FAILED
+payment unsuccessful,PAYMENT_FAILED
+failed transaction message,PAYMENT_FAILED
+error during payment,PAYMENT_FAILED
+payment did not complete,PAYMENT_FAILED
+rent payment error,PAYMENT_FAILED
+utility payment error,PAYMENT_FAILED
+payment page froze,PAYMENT_FAILED
+payment not confirmed,PAYMENT_FAILED
+payment failed twice,PAYMENT_FAILED
+retry payment failed,PAYMENT_FAILED
+online payment failed,PAYMENT_FAILED
+payment pending too long,PAYMENT_FAILED
+payment failed after submit,PAYMENT_FAILED
+card declined,PAYMENT_FAILED
+bank declined,PAYMENT_FAILED
+system says failed,PAYMENT_FAILED
+payment processing error,PAYMENT_FAILED
+money gone but failed,PAYMENT_FAILED
+payment not successful,PAYMENT_FAILED
+error code shown,PAYMENT_FAILED
+payment aborted,PAYMENT_FAILED
+payment interrupted,PAYMENT_FAILED
+transaction not completed,PAYMENT_FAILED
+payment failure issue,PAYMENT_FAILED
+payment failed suddenly,PAYMENT_FAILED
+rent amount deducted,PAYMENT_FAILED
+utility amount deducted,PAYMENT_FAILED
+payment failed notification,PAYMENT_FAILED
+payment issue occurred,PAYMENT_FAILED
+failed checkout,PAYMENT_FAILED
+payment pending then failed,PAYMENT_FAILED
+payment stuck,PAYMENT_FAILED
+failed payment status,PAYMENT_FAILED
+payment not processed,PAYMENT_FAILED
+
+what is the rent due date,LATE_PAYMENT_RULES
+what is the last day to pay rent,LATE_PAYMENT_RULES
+payment deadline for this month,LATE_PAYMENT_RULES
+late payment rules for boarding,LATE_PAYMENT_RULES
+penalty for paying rent late,LATE_PAYMENT_RULES
+fine charged for late payment,LATE_PAYMENT_RULES
+is there a grace period,LATE_PAYMENT_RULES
+how many days grace period allowed,LATE_PAYMENT_RULES
+what happens if i pay late,LATE_PAYMENT_RULES
+late rent consequences,LATE_PAYMENT_RULES
+late utility payment fine,LATE_PAYMENT_RULES
+is late payment allowed,LATE_PAYMENT_RULES
+late fee policy explained,LATE_PAYMENT_RULES
+rules for delayed rent payment,LATE_PAYMENT_RULES
+will i get warning before fine,LATE_PAYMENT_RULES
+after how many days fine starts,LATE_PAYMENT_RULES
+late payment impact on stay,LATE_PAYMENT_RULES
+what if rent is overdue,LATE_PAYMENT_RULES
+missed payment deadline,LATE_PAYMENT_RULES
+penalty amount for late rent,LATE_PAYMENT_RULES
+can owner charge extra for delay,LATE_PAYMENT_RULES
+late payment rules clarification,LATE_PAYMENT_RULES
+late bill payment rules,LATE_PAYMENT_RULES
+what happens if utilities paid late,LATE_PAYMENT_RULES
+late payment allowed once,LATE_PAYMENT_RULES
+late fee applied immediately,LATE_PAYMENT_RULES
+delay payment consequences,LATE_PAYMENT_RULES
+how strict is due date,LATE_PAYMENT_RULES
+late payment warning system,LATE_PAYMENT_RULES
+is there reminder before fine,LATE_PAYMENT_RULES
+penalty rules for boarding,LATE_PAYMENT_RULES
+late payment policy details,LATE_PAYMENT_RULES
+late payment grace days,LATE_PAYMENT_RULES
+payment overdue rules,LATE_PAYMENT_RULES
+late rent charge rules,LATE_PAYMENT_RULES
+what if i pay one day late,LATE_PAYMENT_RULES
+how late is considered late,LATE_PAYMENT_RULES
+late bill charges explained,LATE_PAYMENT_RULES
+late payment affects registration,LATE_PAYMENT_RULES
+late payment rules summary,LATE_PAYMENT_RULES
+penalty applied after due date,LATE_PAYMENT_RULES
+can registration be cancelled for late pay,LATE_PAYMENT_RULES
+late payment conditions,LATE_PAYMENT_RULES
+late fee calculation rules,LATE_PAYMENT_RULES
+late rent policy explanation,LATE_PAYMENT_RULES
+how many late payments allowed,LATE_PAYMENT_RULES
+late payment restrictions,LATE_PAYMENT_RULES
+penalty for unpaid bills,LATE_PAYMENT_RULES
+late payment rules for utilities,LATE_PAYMENT_RULES
+rent overdue penalty,LATE_PAYMENT_RULES
+payment delay fine,LATE_PAYMENT_RULES
+late fee start date,LATE_PAYMENT_RULES
+late payment information needed,LATE_PAYMENT_RULES
+late rent allowed or not,LATE_PAYMENT_RULES
+late payment impact on account,LATE_PAYMENT_RULES
+rules if bill unpaid,LATE_PAYMENT_RULES
+late payment notice,LATE_PAYMENT_RULES
+late payment policy question,LATE_PAYMENT_RULES
+
+how is my total bill calculated,BILL_CALCULATION
+bill calculation explanation,BILL_CALCULATION
+how rent and utilities combine,BILL_CALCULATION
+monthly bill breakdown needed,BILL_CALCULATION
+why is my bill amount high,BILL_CALCULATION
+how final bill amount decided,BILL_CALCULATION
+explain charges in my bill,BILL_CALCULATION
+how billing system works,BILL_CALCULATION
+what makes up my bill total,BILL_CALCULATION
+bill calculation logic,BILL_CALCULATION
+how owner calculates bill,BILL_CALCULATION
+rent plus utility total,BILL_CALCULATION
+how charges are added together,BILL_CALCULATION
+why extra charges included,BILL_CALCULATION
+bill amount seems incorrect,BILL_CALCULATION
+explain monthly charges,BILL_CALCULATION
+how utility cost added to rent,BILL_CALCULATION
+billing formula explanation,BILL_CALCULATION
+how final payable amount is set,BILL_CALCULATION
+breakdown of total bill,BILL_CALCULATION
+why bill increased this month,BILL_CALCULATION
+how shared costs calculated,BILL_CALCULATION
+explain billing structure,BILL_CALCULATION
+how utility part affects bill,BILL_CALCULATION
+bill calculation method,BILL_CALCULATION
+how rent and charges summed,BILL_CALCULATION
+billing process explanation,BILL_CALCULATION
+how owner generates bill,BILL_CALCULATION
+how charges are computed,BILL_CALCULATION
+bill calculation confusion,BILL_CALCULATION
+how electricity cost added,BILL_CALCULATION
+how water cost added,BILL_CALCULATION
+why total is higher,BILL_CALCULATION
+how bill amount is computed,BILL_CALCULATION
+billing logic clarification,BILL_CALCULATION
+what are components of bill,BILL_CALCULATION
+how utility and rent combine,BILL_CALCULATION
+final bill calculation steps,BILL_CALCULATION
+bill calculation issue,BILL_CALCULATION
+how billing works monthly,BILL_CALCULATION
+explain payable amount,BILL_CALCULATION
+how extra fees included,BILL_CALCULATION
+bill generation logic,BILL_CALCULATION
+how charges are calculated,BILL_CALCULATION
+how bill is formed,BILL_CALCULATION
+how monthly bill created,BILL_CALCULATION
+billing breakdown unclear,BILL_CALCULATION
+explain billing amount,BILL_CALCULATION
+bill calculation details needed,BILL_CALCULATION
+how total charges calculated,BILL_CALCULATION
+billing amount explanation,BILL_CALCULATION
+how system calculates bill,BILL_CALCULATION
+why bill changed suddenly,BILL_CALCULATION
+how final amount shown,BILL_CALCULATION
+bill structure details,BILL_CALCULATION
+explain bill calculation,BILL_CALCULATION
+how owner sets final bill,BILL_CALCULATION
+bill computation explanation,BILL_CALCULATION
+
+how to register for boarding,REGISTRATION_PROCESS
+how to apply for a room,REGISTRATION_PROCESS
+boarding registration steps,REGISTRATION_PROCESS
+how to submit registration request,REGISTRATION_PROCESS
+where is register option,REGISTRATION_PROCESS
+how to apply through app,REGISTRATION_PROCESS
+steps to register online,REGISTRATION_PROCESS
+how to start registration process,REGISTRATION_PROCESS
+how to send join request,REGISTRATION_PROCESS
+boarding apply process,REGISTRATION_PROCESS
+registration procedure explained,REGISTRATION_PROCESS
+how to register after visit,REGISTRATION_PROCESS
+what details needed to register,REGISTRATION_PROCESS
+how to complete registration form,REGISTRATION_PROCESS
+how registration works in app,REGISTRATION_PROCESS
+apply for boarding step by step,REGISTRATION_PROCESS
+how to submit boarding application,REGISTRATION_PROCESS
+registration instructions needed,REGISTRATION_PROCESS
+how to register for this boarding,REGISTRATION_PROCESS
+how to apply once visit done,REGISTRATION_PROCESS
+where do i start registration,REGISTRATION_PROCESS
+how to register using system,REGISTRATION_PROCESS
+boarding registration method,REGISTRATION_PROCESS
+how to apply online,REGISTRATION_PROCESS
+how to join boarding,REGISTRATION_PROCESS
+registration flow explanation,REGISTRATION_PROCESS
+how to send application,REGISTRATION_PROCESS
+apply for boarding room,REGISTRATION_PROCESS
+how to submit join request online,REGISTRATION_PROCESS
+registration steps confusion,REGISTRATION_PROCESS
+how to request room registration,REGISTRATION_PROCESS
+boarding apply steps,REGISTRATION_PROCESS
+how registration submission works,REGISTRATION_PROCESS
+register through mobile app,REGISTRATION_PROCESS
+how to complete boarding registration,REGISTRATION_PROCESS
+registration help needed,REGISTRATION_PROCESS
+how to fill registration details,REGISTRATION_PROCESS
+how to start boarding application,REGISTRATION_PROCESS
+registration guide for students,REGISTRATION_PROCESS
+how to submit registration properly,REGISTRATION_PROCESS
+boarding join process,REGISTRATION_PROCESS
+how to register without issues,REGISTRATION_PROCESS
+registration steps not clear,REGISTRATION_PROCESS
+how to apply after appointment,REGISTRATION_PROCESS
+how registration request sent,REGISTRATION_PROCESS
+boarding registration workflow,REGISTRATION_PROCESS
+apply for room online,REGISTRATION_PROCESS
+how to submit request form,REGISTRATION_PROCESS
+registration process help,REGISTRATION_PROCESS
+how to apply successfully,REGISTRATION_PROCESS
+how to request boarding spot,REGISTRATION_PROCESS
+boarding registration help needed,REGISTRATION_PROCESS
+registration form submission steps,REGISTRATION_PROCESS
+how registration process flows,REGISTRATION_PROCESS
+how to complete application,REGISTRATION_PROCESS
+registration apply instructions,REGISTRATION_PROCESS
+how to start join request,REGISTRATION_PROCESS
+boarding registration explanation,REGISTRATION_PROCESS
+how to register stepwise,REGISTRATION_PROCESS
+how to apply for room,REGISTRATION_PROCESS
+registration procedure help,REGISTRATION_PROCESS
+how to fill application form,REGISTRATION_PROCESS
+how to complete join request,REGISTRATION_PROCESS
+registration process clarification,REGISTRATION_PROCESS
+how to register using app,REGISTRATION_PROCESS
+
+check my registration status,REGISTRATION_STATUS
+is my registration approved,REGISTRATION_STATUS
+registration still pending,REGISTRATION_STATUS
+waiting for owner approval,REGISTRATION_STATUS
+has my registration been accepted,REGISTRATION_STATUS
+registration decision pending,REGISTRATION_STATUS
+registration status not updated,REGISTRATION_STATUS
+where can i see registration status,REGISTRATION_STATUS
+registration confirmation pending,REGISTRATION_STATUS
+registration under review,REGISTRATION_STATUS
+registration approval delayed,REGISTRATION_STATUS
+owner response not received,REGISTRATION_STATUS
+registration status unclear,REGISTRATION_STATUS
+check boarding registration status,REGISTRATION_STATUS
+registration request status,REGISTRATION_STATUS
+is my room booking confirmed,REGISTRATION_STATUS
+registration approval check,REGISTRATION_STATUS
+registration waiting too long,REGISTRATION_STATUS
+registration update missing,REGISTRATION_STATUS
+registration processing status,REGISTRATION_STATUS
+registration still waiting,REGISTRATION_STATUS
+how long for registration approval,REGISTRATION_STATUS
+registration decision not shown,REGISTRATION_STATUS
+owner has not responded yet,REGISTRATION_STATUS
+registration state check,REGISTRATION_STATUS
+boarding registration pending,REGISTRATION_STATUS
+registration accepted or not,REGISTRATION_STATUS
+registration confirmation status,REGISTRATION_STATUS
+registration progress check,REGISTRATION_STATUS
+status of my join request,REGISTRATION_STATUS
+registration approval status,REGISTRATION_STATUS
+registration waiting response,REGISTRATION_STATUS
+registration result not visible,REGISTRATION_STATUS
+registration status page not loading,REGISTRATION_STATUS
+registration decision delay,REGISTRATION_STATUS
+approval still pending,REGISTRATION_STATUS
+registration response from owner,REGISTRATION_STATUS
+registration status help needed,REGISTRATION_STATUS
+check if registration approved,REGISTRATION_STATUS
+registration confirmation not received,REGISTRATION_STATUS
+registration status explanation,REGISTRATION_STATUS
+registration outcome pending,REGISTRATION_STATUS
+registration approval not yet,REGISTRATION_STATUS
+registration request still pending,REGISTRATION_STATUS
+boarding join status,REGISTRATION_STATUS
+registration review status,REGISTRATION_STATUS
+registration state unclear,REGISTRATION_STATUS
+status of application,REGISTRATION_STATUS
+registration decision update,REGISTRATION_STATUS
+waiting for registration confirmation,REGISTRATION_STATUS
+registration progress not shown,REGISTRATION_STATUS
+registration status delayed,REGISTRATION_STATUS
+check application status,REGISTRATION_STATUS
+registration decision awaited,REGISTRATION_STATUS
+owner approval status check,REGISTRATION_STATUS
+registration confirmation check,REGISTRATION_STATUS
+registration approval waiting,REGISTRATION_STATUS
+registration response delay,REGISTRATION_STATUS
+registration status inquiry,REGISTRATION_STATUS
+registration status tracking,REGISTRATION_STATUS
+registration status follow up,REGISTRATION_STATUS
+
+registration rejected,REGISTRATION_REJECTION
+my registration was declined,REGISTRATION_REJECTION
+why was my registration rejected,REGISTRATION_REJECTION
+owner rejected my request,REGISTRATION_REJECTION
+boarding application rejected,REGISTRATION_REJECTION
+registration denial reason,REGISTRATION_REJECTION
+why was i rejected,REGISTRATION_REJECTION
+registration not accepted,REGISTRATION_REJECTION
+registration rejection explanation,REGISTRATION_REJECTION
+join request rejected,REGISTRATION_REJECTION
+registration declined without reason,REGISTRATION_REJECTION
+why owner rejected my registration,REGISTRATION_REJECTION
+registration refusal details,REGISTRATION_REJECTION
+boarding request rejected,REGISTRATION_REJECTION
+registration rejection help,REGISTRATION_REJECTION
+can i reapply after rejection,REGISTRATION_REJECTION
+rejection reason not clear,REGISTRATION_REJECTION
+registration denial explanation needed,REGISTRATION_REJECTION
+why my application failed,REGISTRATION_REJECTION
+registration failed due to owner,REGISTRATION_REJECTION
+registration rejected message unclear,REGISTRATION_REJECTION
+why was my join request declined,REGISTRATION_REJECTION
+registration rejection details needed,REGISTRATION_REJECTION
+registration request declined,REGISTRATION_REJECTION
+owner said no to registration,REGISTRATION_REJECTION
+registration rejected by owner,REGISTRATION_REJECTION
+can rejected request be reviewed,REGISTRATION_REJECTION
+registration rejection appeal,REGISTRATION_REJECTION
+registration denial clarification,REGISTRATION_REJECTION
+why i was not selected,REGISTRATION_REJECTION
+registration rejection reason asked,REGISTRATION_REJECTION
+boarding registration denied,REGISTRATION_REJECTION
+registration refusal reason,REGISTRATION_REJECTION
+registration got rejected,REGISTRATION_REJECTION
+registration rejection next steps,REGISTRATION_REJECTION
+why registration declined,REGISTRATION_REJECTION
+registration rejection explanation needed,REGISTRATION_REJECTION
+owner declined registration,REGISTRATION_REJECTION
+registration denial help,REGISTRATION_REJECTION
+registration not approved reason,REGISTRATION_REJECTION
+why application rejected,REGISTRATION_REJECTION
+registration refusal message unclear,REGISTRATION_REJECTION
+boarding join request rejected,REGISTRATION_REJECTION
+registration rejection appeal process,REGISTRATION_REJECTION
+registration declined status,REGISTRATION_REJECTION
+why owner refused request,REGISTRATION_REJECTION
+registration rejection review,REGISTRATION_REJECTION
+registration failed explanation,REGISTRATION_REJECTION
+rejected registration reason,REGISTRATION_REJECTION
+registration rejection guidance,REGISTRATION_REJECTION
+why boarding request denied,REGISTRATION_REJECTION
+registration rejection clarification,REGISTRATION_REJECTION
+registration denied without explanation,REGISTRATION_REJECTION
+registration rejection follow up,REGISTRATION_REJECTION
+registration rejection resolution,REGISTRATION_REJECTION
+why registration failed,REGISTRATION_REJECTION
+registration refusal clarification,REGISTRATION_REJECTION
+
+room light not working,MAINTENANCE
+fan not working in room,MAINTENANCE
+water leaking in bathroom,MAINTENANCE
+tap leaking continuously,MAINTENANCE
+bed is broken,MAINTENANCE
+electric socket damaged,MAINTENANCE
+room door broken,MAINTENANCE
+ceiling fan not working,MAINTENANCE
+plumbing issue in bathroom,MAINTENANCE
+room needs repair,MAINTENANCE
+how to submit maintenance request,MAINTENANCE
+send maintenance request,MAINTENANCE
+maintenance request pending,MAINTENANCE
+maintenance not fixed yet,MAINTENANCE
+repair request unanswered,MAINTENANCE
+maintenance issue unresolved,MAINTENANCE
+how to report maintenance problem,MAINTENANCE
+owner not responding to maintenance,MAINTENANCE
+maintenance delay issue,MAINTENANCE
+bathroom issue needs repair,MAINTENANCE
+water problem in room,MAINTENANCE
+electrical issue in room,MAINTENANCE
+maintenance follow up needed,MAINTENANCE
+repair still not done,MAINTENANCE
+maintenance complaint submitted,MAINTENANCE
+how to track maintenance request,MAINTENANCE
+maintenance request status,MAINTENANCE
+maintenance problem in my room,MAINTENANCE
+broken furniture issue,MAINTENANCE
+repair request stuck,MAINTENANCE
+maintenance help needed urgently,MAINTENANCE
+how to upload maintenance images,MAINTENANCE
+maintenance escalation required,MAINTENANCE
+room repair delay,MAINTENANCE
+maintenance ticket still open,MAINTENANCE
+maintenance request ignored,MAINTENANCE
+fan repair needed,MAINTENANCE
+water leakage unresolved,MAINTENANCE
+maintenance issue pending for days,MAINTENANCE
+how long maintenance takes,MAINTENANCE
+repair issue not solved,MAINTENANCE
+maintenance request follow up,MAINTENANCE
+room maintenance problem,MAINTENANCE
+broken bathroom door,MAINTENANCE
+maintenance problem reporting,MAINTENANCE
+maintenance request unanswered,MAINTENANCE
+room electrical fault,MAINTENANCE
+maintenance issue escalation,MAINTENANCE
+repair problem in room,MAINTENANCE
+maintenance help request,MAINTENANCE
+maintenance issue still open,MAINTENANCE
+maintenance service delay,MAINTENANCE
+maintenance complaint unresolved,MAINTENANCE
+repair not completed yet,MAINTENANCE
+maintenance follow up issue,MAINTENANCE
+room maintenance pending,MAINTENANCE
+maintenance problem persists,MAINTENANCE
+maintenance request problem,MAINTENANCE
+
+electricity usage details,UTILITIES_HELP
+water usage details,UTILITIES_HELP
+electricity units used,UTILITIES_HELP
+water units used,UTILITIES_HELP
+how utilities are shared,UTILITIES_HELP
+shared electricity charges,UTILITIES_HELP
+shared water charges,UTILITIES_HELP
+utility usage explanation,UTILITIES_HELP
+utility reading information,UTILITIES_HELP
+who takes electricity reading,UTILITIES_HELP
+who manages water reading,UTILITIES_HELP
+utility amount seems high,UTILITIES_HELP
+utility charges explanation,UTILITIES_HELP
+utility bill details unclear,UTILITIES_HELP
+how utilities billed monthly,UTILITIES_HELP
+are utilities shared equally,UTILITIES_HELP
+utility cost per room,UTILITIES_HELP
+electricity usage increased,UTILITIES_HELP
+water usage increased,UTILITIES_HELP
+utility amount changed this month,UTILITIES_HELP
+utility charge distribution,UTILITIES_HELP
+how utility usage tracked,UTILITIES_HELP
+utility cost explanation needed,UTILITIES_HELP
+electricity usage spike,UTILITIES_HELP
+water consumption high,UTILITIES_HELP
+utility charge seems unfair,UTILITIES_HELP
+how utilities divided among students,UTILITIES_HELP
+utility usage record check,UTILITIES_HELP
+utility reading mismatch,UTILITIES_HELP
+electricity usage per room,UTILITIES_HELP
+water usage per room,UTILITIES_HELP
+utility cost sharing rules,UTILITIES_HELP
+utility amount confusion,UTILITIES_HELP
+how utilities added monthly,UTILITIES_HELP
+utility charges not clear,UTILITIES_HELP
+how utility consumption calculated,UTILITIES_HELP
+utility meter access,UTILITIES_HELP
+who decides utility amount,UTILITIES_HELP
+utility bill explanation needed,UTILITIES_HELP
+utility usage seems wrong,UTILITIES_HELP
+electricity usage details needed,UTILITIES_HELP
+water usage details needed,UTILITIES_HELP
+utility charge allocation,UTILITIES_HELP
+how utility readings work,UTILITIES_HELP
+utility amount breakdown needed,UTILITIES_HELP
+utility billing confusion,UTILITIES_HELP
+utility usage explanation needed,UTILITIES_HELP
+utility cost calculation question,UTILITIES_HELP
+electricity usage explanation,UTILITIES_HELP
+water usage explanation,UTILITIES_HELP
+utility charges applied how,UTILITIES_HELP
+utility usage difference,UTILITIES_HELP
+how shared utility works,UTILITIES_HELP
+utility charge verification,UTILITIES_HELP
+utility cost sharing explanation,UTILITIES_HELP
+utility amount verification,UTILITIES_HELP
+utility usage info required,UTILITIES_HELP
+utility charge clarification,UTILITIES_HELP
+how utilities billed,UTILITIES_HELP
+utility billing process,UTILITIES_HELP
+utility usage tracking,UTILITIES_HELP
+utility reading process,UTILITIES_HELP
+utility charge issue,UTILITIES_HELP
+utility amount issue,UTILITIES_HELP
+utility usage issue,UTILITIES_HELP
+
+how to book visit,APPOINTMENT_HELP
+how to book appointment,APPOINTMENT_HELP
+schedule boarding visit,APPOINTMENT_HELP
+request visit appointment,APPOINTMENT_HELP
+choose visit time slot,APPOINTMENT_HELP
+appointment request pending,APPOINTMENT_HELP
+appointment not confirmed yet,APPOINTMENT_HELP
+how to reschedule appointment,APPOINTMENT_HELP
+how to cancel appointment,APPOINTMENT_HELP
+appointment approval pending,APPOINTMENT_HELP
+owner not responding to appointment,APPOINTMENT_HELP
+visit booking steps,APPOINTMENT_HELP
+appointment booking process,APPOINTMENT_HELP
+how to send visit request,APPOINTMENT_HELP
+appointment request rejected,APPOINTMENT_HELP
+how to change appointment time,APPOINTMENT_HELP
+visit schedule not confirmed,APPOINTMENT_HELP
+appointment status check,APPOINTMENT_HELP
+appointment response delayed,APPOINTMENT_HELP
+how appointment system works,APPOINTMENT_HELP
+book another visit,APPOINTMENT_HELP
+how to request new appointment,APPOINTMENT_HELP
+appointment slot selection issue,APPOINTMENT_HELP
+appointment booking help needed,APPOINTMENT_HELP
+visit appointment pending,APPOINTMENT_HELP
+appointment confirmation missing,APPOINTMENT_HELP
+how long appointment approval takes,APPOINTMENT_HELP
+appointment request not answered,APPOINTMENT_HELP
+appointment declined by owner,APPOINTMENT_HELP
+how to rebook visit,APPOINTMENT_HELP
+visit arrangement problem,APPOINTMENT_HELP
+appointment scheduling help,APPOINTMENT_HELP
+appointment booking confusion,APPOINTMENT_HELP
+how to manage booked appointment,APPOINTMENT_HELP
+appointment date change request,APPOINTMENT_HELP
+visit request status,APPOINTMENT_HELP
+appointment not scheduled yet,APPOINTMENT_HELP
+how to confirm visit time,APPOINTMENT_HELP
+appointment booking issue faced,APPOINTMENT_HELP
+appointment slot unavailable,APPOINTMENT_HELP
+visit request waiting approval,APPOINTMENT_HELP
+appointment response not received,APPOINTMENT_HELP
+how to submit appointment request,APPOINTMENT_HELP
+appointment booking guide,APPOINTMENT_HELP
+appointment approval delay,APPOINTMENT_HELP
+appointment time conflict,APPOINTMENT_HELP
+visit scheduling issue,APPOINTMENT_HELP
+appointment help required,APPOINTMENT_HELP
+how to check appointment decision,APPOINTMENT_HELP
+appointment management issue,APPOINTMENT_HELP
+appointment booking error,APPOINTMENT_HELP
+appointment process explanation,APPOINTMENT_HELP
+visit appointment help,APPOINTMENT_HELP
+appointment slot problem,APPOINTMENT_HELP
+appointment booking clarification,APPOINTMENT_HELP
+appointment request issue,APPOINTMENT_HELP
+appointment scheduling confusion,APPOINTMENT_HELP
+
+how to report owner,REPORT_ISSUES_HELP
+how to report boarding,REPORT_ISSUES_HELP
+submit complaint against owner,REPORT_ISSUES_HELP
+report unfair behavior,REPORT_ISSUES_HELP
+report safety issue in boarding,REPORT_ISSUES_HELP
+file complaint through app,REPORT_ISSUES_HELP
+report rule violation by owner,REPORT_ISSUES_HELP
+how to submit issue report,REPORT_ISSUES_HELP
+complaint about boarding conditions,REPORT_ISSUES_HELP
+report problem to admin,REPORT_ISSUES_HELP
+owner behaving unfairly,REPORT_ISSUES_HELP
+report harassment by owner,REPORT_ISSUES_HELP
+how to complain formally,REPORT_ISSUES_HELP
+submit report against boarding,REPORT_ISSUES_HELP
+report unsafe living condition,REPORT_ISSUES_HELP
+how to raise complaint,REPORT_ISSUES_HELP
+complaint submission steps,REPORT_ISSUES_HELP
+report issue with owner behavior,REPORT_ISSUES_HELP
+how to escalate issue,REPORT_ISSUES_HELP
+report serious problem,REPORT_ISSUES_HELP
+complaint against boarding owner,REPORT_ISSUES_HELP
+how admin handles complaints,REPORT_ISSUES_HELP
+report violation of rules,REPORT_ISSUES_HELP
+report problem through system,REPORT_ISSUES_HELP
+how to submit complaint online,REPORT_ISSUES_HELP
+owner misconduct report,REPORT_ISSUES_HELP
+report unfair charges,REPORT_ISSUES_HELP
+how to complain about owner,REPORT_ISSUES_HELP
+report safety concern,REPORT_ISSUES_HELP
+submit issue report to admin,REPORT_ISSUES_HELP
+complaint about facilities,REPORT_ISSUES_HELP
+report inappropriate behavior,REPORT_ISSUES_HELP
+how to file report,REPORT_ISSUES_HELP
+report boarding problem,REPORT_ISSUES_HELP
+complaint about living conditions,REPORT_ISSUES_HELP
+report issue formally,REPORT_ISSUES_HELP
+how to raise safety complaint,REPORT_ISSUES_HELP
+complaint process explanation,REPORT_ISSUES_HELP
+report violation details,REPORT_ISSUES_HELP
+report issue with boarding,REPORT_ISSUES_HELP
+how to send complaint,REPORT_ISSUES_HELP
+report serious safety issue,REPORT_ISSUES_HELP
+complaint about owner conduct,REPORT_ISSUES_HELP
+report unfair treatment,REPORT_ISSUES_HELP
+how to escalate complaint,REPORT_ISSUES_HELP
+issue reporting help,REPORT_ISSUES_HELP
+report owner behavior,REPORT_ISSUES_HELP
+how to submit issue complaint,REPORT_ISSUES_HELP
+complaint submission help,REPORT_ISSUES_HELP
+report problem to authorities,REPORT_ISSUES_HELP
+complaint against boarding management,REPORT_ISSUES_HELP
+report issue not resolved,REPORT_ISSUES_HELP
+how to report ongoing issue,REPORT_ISSUES_HELP
+issue escalation to admin,REPORT_ISSUES_HELP
+report violation complaint,REPORT_ISSUES_HELP
+complaint about safety,REPORT_ISSUES_HELP
+report issue with evidence,REPORT_ISSUES_HELP
+complaint about unfair rules,REPORT_ISSUES_HELP

@@ -7,18 +7,18 @@ const OwnerProtectedRoute = ({ children }) => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-light flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex items-center justify-center min-h-screen bg-light">
+        <div className="w-12 h-12 border-4 rounded-full border-primary border-t-transparent animate-spin"></div>
       </div>
     );
   }
 
-  // Redirect to owner-specific login
   if (!isAuthenticated) {
     return <Navigate to="/owner/login" replace />;
   }
 
-  return <Outlet />;
+  // ✅ FIX: Render children if they exist, otherwise render Outlet
+  return children ? children : <Outlet />;
 };
 
 export default OwnerProtectedRoute;

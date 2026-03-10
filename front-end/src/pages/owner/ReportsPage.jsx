@@ -167,35 +167,25 @@ const ReportsPage = () => {
   return (
     <div className="space-y-8 min-h-screen bg-light pb-20">
       <HeaderBar
-        title="Incident Reports"
-        subtitle="File complaints against Students or Technicians."
+        title="Student Incident Reports"
+        subtitle="Manage and submit formal reports regarding student conduct."
+        // Optional: Add a button here if you want
       />
-      {!selectedType && (
-        <div className="flex justify-center mb-6">
-          <div className="bg-white p-1 rounded-full border shadow-sm flex">
-            <button
-              onClick={() => setTargetMode("STUDENT")}
-              className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold text-sm transition-all ${targetMode === "STUDENT" ? "bg-primary text-white shadow-md" : "text-gray-500"}`}
-            >
-              <FaUserGraduate /> Report Student
-            </button>
-            <button
-              onClick={() => setTargetMode("TECHNICIAN")}
-              className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold text-sm transition-all ${targetMode === "TECHNICIAN" ? "bg-red-600 text-white shadow-md" : "text-gray-500"}`}
-            >
-              <FaTools /> Report Technician
-            </button>
-          </div>
-        </div>
+
+      {/* --- SECTION 1: REPORT TYPES --- */}
+      {!selectedReportType && (
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, height: "auto" }}
+        >
+          <h2 className="mb-6 text-2xl font-bold text-primary">
+            Create New Report
+          </h2>
+          <ReportTypesGrid onSelectType={handleSelectType} />
+        </motion.section>
       )}
-      {!selectedType && (
-        <ReportTypesGrid
-          onSelectType={(type, name) =>
-            setSelectedType({ type, typeName: name })
-          }
-          targetMode={targetMode}
-        />
-      )}
+
+      {/* --- SECTION 2: REPORT FORM --- */}
       <AnimatePresence>
         {selectedType && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>

@@ -212,6 +212,10 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    public boolean hasAdmins() {
+        return userRepository.countByRole(UserRole.ADMIN) > 0;
+    }
+
     // ---------------------------------------------------------
     // REGISTRATION WITH OTP
     // ---------------------------------------------------------
@@ -278,7 +282,8 @@ public class UserService {
         user.setAccNo(p.getAccNo());
         user.setStudentUniversity(p.getStudentUniversity());
         user.setRole(p.getRole());
-        user.setVerifiedOwner(p.getRole() == UserRole.OWNER);
+        // Admins and Owners are verified by default, Students need verification later
+        user.setVerifiedOwner(p.getRole() == UserRole.OWNER || p.getRole() == UserRole.ADMIN);
 
         if (p.getRole() == UserRole.TECHNICIAN) {
             user.setCity(p.getCity());

@@ -8,18 +8,16 @@ import java.time.LocalDate;
 public class RegistrationRequestDTO {
 
     private Long boardingId;
-
     private int numberOfStudents;
 
     private String studentNote;
-    
-    private boolean keyMoneyPaid;
 
     private LocalDate moveInDate;
     private String contractDuration;
     private String emergencyContact;
     private String emergencyPhone;
     private String specialRequirements;
-    private String paymentMethod;
-    private String paymentTransactionRef;
+
+    private String studentSignatureBase64;
 }
+

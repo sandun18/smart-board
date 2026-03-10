@@ -5,7 +5,6 @@ import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -15,6 +14,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -48,10 +48,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
+            .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .sessionManagement(sm ->
+                    sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            .authorizeHttpRequests(auth -> auth
+            		// .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // -----------------------------------------------------------
                         // -----------------------------------------------------------
@@ -113,11 +116,24 @@ public class SecurityConfig {
                         .requestMatchers("/api/technician-workflow/*/decision").hasAnyAuthority("ROLE_TECHNICIAN", "TECHNICIAN")
                         .requestMatchers("/api/technician-workflow/*/complete").hasAnyAuthority("ROLE_TECHNICIAN", "TECHNICIAN")
                         .requestMatchers("/api/technician-workflow/profile").hasAnyAuthority("ROLE_TECHNICIAN", "TECHNICIAN")
+             //   .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                
+                .requestMatchers("/api/payments/**").hasRole("STUDENT")
 
-                        .anyRequest().authenticated()
-                )
-                .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .requestMatchers("/api/owner/**").hasRole("OWNER")
+                .requestMatchers("/api/boardings/owner/**").hasRole("OWNER")
+
+                .requestMatchers("/api/reports/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/reports/**").hasAnyRole("STUDENT", "OWNER")
+
+                .requestMatchers("/api/student/**").hasRole("STUDENT")
+                .requestMatchers("/api/bills/student/**").hasRole("STUDENT")
+                
+
+                .anyRequest().authenticated()
+            )
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -125,7 +141,7 @@ public class SecurityConfig {
     @Bean
     public AuthenticationProvider authenticationProvider() {
 
-        // 🔥 NEW constructor (Spring Security 6.3)
+        // NEW constructor (Spring Security 6.3)
         DaoAuthenticationProvider provider =
                 new DaoAuthenticationProvider(customUserDetailsService);
 
@@ -133,6 +149,8 @@ public class SecurityConfig {
 
         return provider;
     }
+    
+   
 
   
     @Bean
@@ -146,19 +164,34 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+    
+    
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of(
+      /*  config.setAllowedOrigins(List.of(
         		"https://smartboard.thareesha.software",
                 "http://13.233.34.226:8086",
                 "http://localhost:5173"
-        		));
+        		)); */
+       // config.setAllowedOriginPatterns(List.of("*"));
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
+
+        
+        
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+       
         config.setAllowedHeaders(List.of("*"));
+        
+     /*   config.setAllowedHeaders(List.of(
+        	    "Authorization",
+        	    "Content-Type"
+        	));
+*/
+        
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

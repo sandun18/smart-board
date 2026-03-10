@@ -1,22 +1,18 @@
-package com.sbms.sbms_monolith.dto.utility;
-
-
-import lombok.Data;
+package com.sbms.sbms_monolith.dto.billing;
 
 import java.math.BigDecimal;
+
+import lombok.Data;
 
 @Data
 public class UtilityBillResponseDTO {
 
-    private Long id;
-
+	private Long id;
     private Long boardingId;
-    private String boardingTitle;
+    private String boardingName;
 
     private String month;
-
     private BigDecimal electricityAmount;
     private BigDecimal waterAmount;
-
-    private BigDecimal totalUtilityCost;
+    private BigDecimal perStudentUtility;
 }

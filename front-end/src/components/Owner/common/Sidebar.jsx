@@ -29,6 +29,12 @@ const navItems = [
     key: "Appointments",
   },
   {
+    path: "/owner/registrations",
+    icon: FaFileAlt,
+    label: "Registrations",
+    key: "Registrations",
+  },
+  {
     path: "/owner/myboardings",
     icon: FaBuilding,
     label: "My Boardings",
@@ -69,7 +75,7 @@ const SidebarItem = ({ path, Icon, label, currentPath }) => {
       `}
     >
       {/* CHANGED: Slightly smaller icon size */}
-      <Icon className="w-4 h-4 text-center text-lg" />
+      <Icon className="w-4 h-4 text-lg text-center" />
       <span className="text-sm font-medium">{label}</span>
     </Link>
   );
@@ -117,7 +123,7 @@ const Sidebar = () => {
       <aside className="hidden lg:flex flex-col flex-shrink-0 bg-primary w-64 text-white p-4 rounded-large m-4 shadow-custom sticky top-4 h-[calc(100vh-2rem)] z-20">
         {/* LOGO HEADER */}
         {/* CHANGED: Reduced bottom margin/padding */}
-        <div className="pb-3 mb-2 border-b border-white/10 flex-shrink-0">
+        <div className="flex-shrink-0 pb-3 mb-2 border-b border-white/10">
           <Link
             to="/owner/dashboard"
             className="flex items-center gap-3 text-white"
@@ -140,7 +146,7 @@ const Sidebar = () => {
         </div>
 
         {/* NAVIGATION AREA */}
-        <nav className="flex-1 overflow-y-auto custom-scrollbar flex flex-col justify-start">
+        <nav className="flex flex-col justify-start flex-1 overflow-y-auto custom-scrollbar">
           {/* CHANGED: Reduced section header padding */}
           <h3 className="px-4 pb-1 pt-1 uppercase text-[11px] tracking-wider text-orange-200 border-b border-white/10 mb-1 font-semibold opacity-90">
             MAIN NAVIGATION
@@ -157,7 +163,7 @@ const Sidebar = () => {
           ))}
 
           {/* Visual Divider - CHANGED: Reduced margin */}
-          <div className="my-2 border-t border-white/10 mx-2"></div>
+          <div className="mx-2 my-2 border-t border-white/10"></div>
 
           <h3 className="px-4 pb-1 uppercase text-[11px] tracking-wider text-orange-200 font-semibold opacity-90">
             ACCOUNT
@@ -184,7 +190,7 @@ const Sidebar = () => {
                 <img
                   src={currentOwner.avatar}
                   alt="Profile"
-                  className="w-full h-full rounded-full object-cover"
+                  className="object-cover w-full h-full rounded-full"
                 />
               ) : (
                 <FaUser className="text-[10px]" />
@@ -200,7 +206,7 @@ const Sidebar = () => {
             onClick={handleLogout}
             className="flex items-center gap-3 p-2 mx-2 my-0.5 w-[calc(100%-1rem)] rounded-btn text-white hover:bg-red-500/20 hover:text-red-200 transition-all duration-300 text-left"
           >
-            <FaSignOutAlt className="w-4 text-center text-lg" />
+            <FaSignOutAlt className="w-4 text-lg text-center" />
             <span className="text-sm font-medium">Logout</span>
           </button>
         </nav>
@@ -209,7 +215,7 @@ const Sidebar = () => {
       {/* Mobile/Tablet Navigation (Kept exactly the same) */}
       <nav
         ref={mobileNavRef}
-        className="lg:hidden w-full bg-primary text-white shadow-lg fixed bottom-0 left-0 z-50 overflow-x-auto scrollbar-hide"
+        className="fixed bottom-0 left-0 z-50 w-full overflow-x-auto text-white shadow-lg lg:hidden bg-primary scrollbar-hide"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         <div className="flex min-w-full px-2 md:justify-center">
@@ -237,7 +243,7 @@ const Sidebar = () => {
                     }
                   `}
                 >
-                  <IconComponent className="text-xl mb-1" />
+                  <IconComponent className="mb-1 text-xl" />
                   <span className="text-[10px] font-medium leading-tight">
                     {item.label}
                   </span>

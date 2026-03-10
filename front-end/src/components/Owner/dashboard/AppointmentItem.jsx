@@ -6,6 +6,7 @@ const AppointmentItem = ({ appointment }) => {
     pending: "bg-orange-100 text-orange-700",
     confirmed: "bg-green-100 text-green-700",
     visited: "bg-indigo-100 text-indigo-700",
+    cancelled: "bg-red-100 text-red-700",
   };
 
   const currentStatusStyle =
@@ -14,58 +15,56 @@ const AppointmentItem = ({ appointment }) => {
   return (
     <div
       className={`
-        flex items-start sm:items-center gap-3 md:gap-4 p-4 md:p-5 border-b border-light relative transition-all duration-300
+        flex items-center gap-3 md:gap-4 p-4 border-b border-light relative transition-colors duration-200
         ${appointment.isNew ? "bg-accent/5" : "bg-card-bg"}
-        hover:bg-light/20 active:bg-light/40
+        hover:bg-light/30
       `}
     >
-      {/* New Appointment Indicator */}
+      {/* New Appointment Indicator (Left Border) */}
       {appointment.isNew && (
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent" />
+        <div className="absolute top-0 bottom-0 left-0 w-1 bg-accent" />
       )}
 
-      {/* Student Avatar: Scaled slightly smaller for mobile */}
-      <div className="w-10 h-10 md:w-11 md:h-11 rounded-full overflow-hidden shrink-0 border border-light shadow-sm">
+      {/* Avatar */}
+      <div className="w-10 h-10 overflow-hidden border rounded-full shadow-sm md:w-11 md:h-11 shrink-0 border-light">
         <img
           src={appointment.avatar}
           alt={appointment.student}
-          className="w-full h-full object-cover"
+          className="object-cover w-full h-full"
         />
       </div>
 
-      {/* Appointment Info */}
-      <div className="flex-1 min-w-0 py-0.5">
-        <p className="font-bold text-xs md:text-sm text-text mb-1 leading-snug break-words">
-          <strong className="text-primary font-black uppercase tracking-tight">
-            {appointment.student}
-          </strong>{" "}
-          <span className="text-muted/60 hidden xs:inline">—</span>{" "}
-          <span className="block xs:inline text-muted md:text-text italic md:not-italic">
-            {appointment.property}
-          </span>
-        </p>
+      {/* Info Container */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start justify-between">
+          {/* Main Details */}
+          <div>
+            <h4 className="text-sm font-bold leading-snug text-text">
+              {appointment.student}
+            </h4>
+            <p className="text-xs text-muted mt-0.5 truncate">
+              {appointment.property}
+            </p>
+          </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-          {/* Time: Scaled down for mobile */}
-          <span className="text-[9px] md:text-[11px] block text-muted/80 font-black uppercase tracking-widest leading-none">
-            {appointment.time}
-          </span>
-
-          {/* Status Badge */}
+          {/* Status Badge (Right Aligned) */}
           <span
             className={`
-              w-fit text-[8px] md:text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest 
+              shrink-0 ml-2 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest
               ${currentStatusStyle}
             `}
           >
             {appointment.status}
           </span>
         </div>
-      </div>
 
-      {/* Optional: Desktop-only Action Icon */}
-      <div className="hidden md:block text-muted/30 group-hover:text-accent transition-colors">
-        <i className="fas fa-chevron-right text-xs"></i>
+        {/* Time - Placed below for clear hierarchy */}
+        <div className="mt-1.5 flex items-center gap-2">
+          <i className="far fa-clock text-[10px] text-muted/60"></i>
+          <span className="text-[10px] md:text-[11px] font-bold uppercase tracking-wide text-muted/80">
+            {appointment.time}
+          </span>
+        </div>
       </div>
     </div>
   );

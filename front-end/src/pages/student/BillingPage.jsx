@@ -1,130 +1,163 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
 import StudentLayout from '../../components/student/common/StudentLayout';
-import useBillingLogic from '../../hooks/student/useBillingLogic.js';
-import OverviewCards from '../../components/student/billing/OverviewCards';
-import PaymentMethodsList from '../../components/student/billing/PaymentMethodsList';
-import QuickPay from '../../components/student/billing/QuickPay';
-import BillingHistory from '../../components/student/billing/BillingHistory';
-import BillingDetails from '../../components/student/billing/BillingDetails';
-import PaymentMethodModal from '../../components/student/billing/PaymentMethodModal';
+import api from '../../api/api';
 import Notification from '../../components/student/maintenance/Notification';
 
 const BillingPage = () => {
-  const {
-    overview,
-    paymentMethods,
-    billingHistory,
-    billingDetails,
-    activePaymentMethod,
-    setActivePaymentMethod,
-    addPaymentMethod,
-    removePaymentMethod,
-    processPayment,
-  } = useBillingLogic();
-
+  const [bills, setBills] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState(null);
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
 
+  /* =========================
+     NOTIFICATION
+  ========================= */
   const showNotification = (message, type = 'info') => {
     setNotification({ message, type });
-    setTimeout(() => setNotification(null), 5000);
+    setTimeout(() => setNotification(null), 4000);
   };
 
-  const handleAddPaymentMethod = (paymentData) => {
-    addPaymentMethod(paymentData);
-    setIsPaymentModalOpen(false);
-    showNotification('Payment method added successfully!', 'success');
-  };
+  /* =========================
+     LOAD DATA
+  ========================= */
+  const loadBillingData = async () => {
+    try {
+      setLoading(true);
 
-  const handleRemovePaymentMethod = (methodId) => {
-    if (window.confirm('Are you sure you want to remove this payment method?')) {
-      removePaymentMethod(methodId);
-      showNotification('Payment method removed successfully', 'success');
+      const billsRes = await api.get('/bills/student');
+      const historyRes = await api.get('/payments/history');
+
+      setBills(billsRes.data);
+      setHistory(historyRes.data);
+
+    } catch (err) {
+      console.error(err);
+      showNotification('Failed to load billing data', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleEditPaymentMethod = () => {
-    showNotification('Edit payment method feature would open here');
-  };
+  useEffect(() => {
+    loadBillingData();
+  }, []);
 
-  const handleProcessPayment = async (amount) => {
-    if (!amount || amount <= 0) {
-      showNotification('Please enter a valid amount', 'warning');
-      return;
+  /* =========================
+     PAY BILL (SAME AS MOBILE)
+  ========================= */
+  const handlePayBill = async (bill) => {
+    try {
+      const res = await api.post('/payments/intent', {
+        ownerId: bill.ownerId,
+        boardingId: bill.boardingId,
+        type: 'MONTHLY_RENT',
+        monthlyBillId: bill.id,
+        amount: bill.totalAmount,
+        description: `Monthly Bill - ${bill.month}`,
+      });
+
+      window.location.href =
+        `/student/payments/pay/select-method/${res.data.id}?boardingId=${bill.boardingId}`;
+
+    } catch (err) {
+      console.error(err);
+      showNotification('Unable to start payment', 'error');
     }
-
-    setIsProcessing(true);
-
-    setTimeout(() => {
-      processPayment(amount);
-      setIsProcessing(false);
-      showNotification(`Payment of $${amount} processed successfully!`, 'success');
-    }, 2000);
-  };
-
-  const handleViewReceipt = (paymentId) => {
-    showNotification('Opening receipt...');
-  };
-
-  const handleDownloadStatement = () => {
-    showNotification('Downloading payment statement...', 'info');
   };
 
   return (
     <StudentLayout
       title="Billing & Payments"
-      subtitle="Manage your rent payments and billing history"
+      subtitle="Manage your monthly rent payments"
     >
-      {/* Overview Cards */}
-      <OverviewCards overview={overview} />
+      {loading ? (
+        <div className="text-center py-20">Loading bills...</div>
+      ) : (
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
 
-      {/* Main Billing Layout */}
-      <div className="grid grid-cols-1 min-[1400px]:grid-cols-2 gap-8 mt-8 items-start">
-        
-        {/* Left Column (Payment Methods & Quick Pay) */}
-        <div className="space-y-6">
-          <PaymentMethodsList
-            paymentMethods={paymentMethods}
-            activeMethodId={activePaymentMethod}
-            onSelectMethod={setActivePaymentMethod}
-            onAddMethod={() => setIsPaymentModalOpen(true)}
-            onEditMethod={handleEditPaymentMethod}
-            onRemoveMethod={handleRemovePaymentMethod}
-          />
+          {/* ================= BILLS ================= */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4">My Bills</h2>
 
-          <QuickPay
-            // FIXED: Passing .amount ensures we pass a Number, not an Object
-            defaultAmount={overview.currentBalance?.amount || 0}
-            paymentMethods={paymentMethods}
-            activeMethodId={activePaymentMethod}
-            onPayment={handleProcessPayment}
-            isProcessing={isProcessing}
-          />
+            {bills.length === 0 ? (
+              <p>No bills available 🎉</p>
+            ) : (
+              bills.map((b) => (
+                <div
+                  key={b.id}
+                  className="border rounded-xl p-5 mb-4 shadow-sm bg-white"
+                >
+                  <div className="flex justify-between mb-2">
+                    <h3 className="font-semibold">{b.month}</h3>
+                    <span className={`px-3 py-1 rounded-full text-sm ${
+                      b.status === 'PAID'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-red-100 text-red-700'
+                    }`}>
+                      {b.status}
+                    </span>
+                  </div>
+
+                  <p className="text-gray-600">{b.boardingTitle}</p>
+                  <p className="text-lg font-bold mt-2">
+                    Rs. {b.totalAmount}
+                  </p>
+
+                  <div className="text-sm text-gray-500 mt-2">
+                    Rent: Rs. {b.boardingFee} <br />
+                    Electricity: Rs. {b.electricityFee} <br />
+                    Water: Rs. {b.waterFee}
+                  </div>
+
+                  <p className="text-sm text-gray-500 mt-2">
+                    Due in {b.dueInDays} day(s) • {b.dueDate}
+                  </p>
+
+                  {b.status === 'UNPAID' && (
+                    <button
+                      onClick={() => handlePayBill(b)}
+                      className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg"
+                    >
+                      Pay Now
+                    </button>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* ================= PAYMENT HISTORY ================= */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Payment History</h2>
+
+            {history.length === 0 ? (
+              <p>No payments yet</p>
+            ) : (
+              history.map((p) => (
+                <div
+                  key={p.id}
+                  className="border rounded-xl p-4 mb-3 bg-white"
+                >
+                  <p className="font-semibold">Rs. {p.amount}</p>
+                  <p className="text-sm text-gray-600">
+                    {p.method} • {p.status}
+                  </p>
+
+                  {p.receiptUrl && (
+                    <button
+                      onClick={() => window.open(p.receiptUrl, '_blank')}
+                      className="text-blue-600 text-sm mt-2 underline"
+                    >
+                      View Receipt (PDF)
+                    </button>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
         </div>
+      )}
 
-        {/* Right Column (History & Details) */}
-        <div className="space-y-6">
-          <BillingHistory
-            history={billingHistory}
-            onViewReceipt={handleViewReceipt}
-            onDownloadStatement={handleDownloadStatement}
-            onPayNow={handleProcessPayment}
-          />
-
-          <BillingDetails details={billingDetails} />
-        </div>
-      </div>
-
-      {/* Payment Method Modal */}
-      <PaymentMethodModal
-        isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
-        onSubmit={handleAddPaymentMethod}
-      />
-
-      {/* Notification Toast */}
       <Notification notification={notification} />
     </StudentLayout>
   );

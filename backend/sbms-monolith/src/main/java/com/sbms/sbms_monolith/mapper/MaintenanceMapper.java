@@ -33,6 +33,8 @@ public class MaintenanceMapper {
         dto.setStudentNote(m.getStudentNote());
         dto.setOwnerNote(m.getOwnerNote());
         dto.setMaintenanceUrgency(m.getMaintenanceUrgency());
+        dto.setCreatedAt(m.getCreatedAt());
+        dto.setUpdatedAt(m.getUpdatedAt());
 
 
         return dto;

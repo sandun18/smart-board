@@ -2,7 +2,8 @@ package com.sbms.sbms_monolith.model.enums;
 
 
 public enum MonthlyBillStatus {
-    UNPAID,
-    PAID,
-    PARTIALLY_PAID
+	 PENDING,        // Bill generated but not paid
+	    PAID,           // Fully paid
+	    OVERDUE,
+	    UNPAID
 }

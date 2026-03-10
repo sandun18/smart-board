@@ -1,129 +1,145 @@
-import React from "react";
+import { useState } from "react";
+import api from "../../../api/api";
 
-const formatCost = (cost) => `LKR ${Math.round(cost).toLocaleString()}`;
+const UtilityCard = ({ utility, onSaved, onView }) => {
+  if (!utility) return null;
 
-const UtilityCard = ({ boarding, onOpenModal }) => {
-  const totalUtilityCost = boarding.electricityCost + boarding.waterCost;
-  const totalMonthlyBill = boarding.baseRent + totalUtilityCost;
-  const isUpdated = boarding.lastUpdated !== "N/A";
+  const [month, setMonth] = useState(
+    utility.month || new Date().toISOString().slice(0, 7)
+  );
+  const [electricity, setElectricity] = useState(
+    utility.electricityAmount ?? ""
+  );
+  const [water, setWater] = useState(
+    utility.waterAmount ?? ""
+  );
+  const [loading, setLoading] = useState(false);
 
-  // New Feature: Tenant Logic (Default to 4 if not in data)
-  const tenantCount = boarding.tenantCount || 4;
-  const perStudentCost = totalMonthlyBill / tenantCount;
+  /* =======================
+     🔥 MATCH MOBILE DATA
+     ======================= */
 
-  // New Feature: Mock Trend Logic (For demo purposes)
-  // In real backend, you'd compare current vs previous month
-  const isHighConsumption = totalUtilityCost > 3000;
+  const boardingName =
+    utility.boardingName || utility.boarding?.title || "Unknown Boarding";
+
+  const baseRent =
+    Number(utility.boarding?.pricePerMonth || 0);
+
+  const studentCount =
+    Number(utility.boarding?.currentStudents || 0);
+
+  const perStudentUtility =
+    Number(utility.perStudentUtility || 0);
+
+  const totalUtility =
+    Number(electricity || 0) + Number(water || 0);
+
+  /* ======================= */
+
+  const handleSave = async () => {
+    if (!month || electricity === "" || water === "") {
+      alert("Please fill all fields");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await api.post("/owner/utilities", {
+        boardingId: utility.boardingId,
+        month,
+        electricityAmount: Number(electricity),
+        waterAmount: Number(water),
+      });
+
+      onSaved?.();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save utility data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="flex flex-col p-5 rounded-report shadow-custom transition-all duration-300 hover:-translate-y-1 relative bg-card-bg border border-light group">
-      {/* Status Badge (Top Right) */}
-      <div className="absolute top-4 right-4 z-10">
-        {isUpdated ? (
-          <span className="bg-success/10 text-success text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-md border border-success/20">
-            Updated
-          </span>
-        ) : (
-          <span className="bg-primary/10 text-primary text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-md border border-primary/20 animate-pulse">
-            Action Needed
-          </span>
-        )}
+    <div className="bg-card-bg border border-light rounded-xl p-4 space-y-4 shadow-sm">
+
+      {/* HEADER */}
+      <div>
+        <h3 className="text-sm font-bold text-text">
+          {boardingName}
+        </h3>
+
+       
       </div>
 
-      {/* Image Section */}
-      <div className="mb-4 w-full h-[100px] overflow-hidden rounded-card relative">
-        <img
-          src={boarding.image}
-          alt={boarding.name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-        />
-        {/* Overlay Gradient for text readability if needed */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-      </div>
-
-      <div className="flex-1 w-full space-y-4">
-        {/* Header */}
+      {/* INPUTS */}
+      <div className="space-y-3">
         <div>
-          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-1 truncate pr-16">
-            {boarding.name}
-          </h3>
-          <div className="flex items-end gap-2">
-            <div className="text-2xl font-black text-text tracking-tighter leading-none">
-              {formatCost(totalMonthlyBill)}
-            </div>
-            {/* Trend Indicator */}
-            {isUpdated && (
-              <div
-                className={`text-[9px] font-bold mb-1 ${
-                  isHighConsumption ? "text-error" : "text-success"
-                }`}
-              >
-                <i
-                  className={`fas fa-arrow-${
-                    isHighConsumption ? "up" : "down"
-                  } mr-1`}
-                ></i>
-                {isHighConsumption ? "12%" : "4%"}
-              </div>
-            )}
-          </div>
-          <span className="text-[10px] font-bold text-muted/60 block mt-1">
-            Total Monthly Estimate
-          </span>
+          <label className="text-xs font-semibold">Billing Month</label>
+          <input
+            type="month"
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 text-sm"
+          />
         </div>
 
-        {/* Smart Split Section (New) */}
-        <div className="bg-light/30 p-3 rounded-xl border border-light flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-muted shadow-sm">
-              <i className="fas fa-user-friends text-xs"></i>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[9px] font-black uppercase text-muted tracking-widest">
-                Per Head
-              </span>
-              <span className="text-[10px] font-bold text-text">
-                {tenantCount} Students
-              </span>
-            </div>
-          </div>
-          <div className="text-right">
-            <span className="block text-sm font-black text-accent tracking-tight">
-              {formatCost(perStudentCost)}
-            </span>
-          </div>
+        <div>
+          <label className="text-xs font-semibold">Electricity (LKR)</label>
+          <input
+            type="number"
+            value={electricity}
+            onChange={(e) => setElectricity(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 text-sm"
+          />
         </div>
 
-        {/* Detailed Breakdown */}
-        <div className="space-y-1 pt-2">
-          <div className="flex justify-between text-[11px] font-bold text-muted border-b border-light/50 pb-1">
-            <span>Base Rent</span>
-            <span className="text-text">{formatCost(boarding.baseRent)}</span>
-          </div>
-          <div className="flex justify-between text-[11px] font-bold text-muted border-b border-light/50 pb-1">
-            <span>Utilities</span>
-            <span className="text-text">{formatCost(totalUtilityCost)}</span>
-          </div>
+        <div>
+          <label className="text-xs font-semibold">Water (LKR)</label>
+          <input
+            type="number"
+            value={water}
+            onChange={(e) => setWater(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 text-sm"
+          />
         </div>
       </div>
 
-      {/* Footer Action */}
-      <div className="mt-5 pt-0 w-full">
+      {/* SUMMARY */}
+      <div className="bg-light/40 rounded-lg p-3 text-xs">
+        <div className="flex justify-between">
+          <span>Total Utility</span>
+          <span>LKR {totalUtility.toLocaleString()}</span>
+        </div>
+        <div className="flex justify-between font-bold text-accent">
+          <span>Per Student</span>
+          <span>LKR {perStudentUtility.toFixed(2)}</span>
+        </div>
+      </div>
+
+      {/* ACTIONS */}
+      <div className="flex gap-2">
         <button
-          className={`
-            w-full py-3 text-[10px] font-black uppercase tracking-widest rounded-xl 
-            transition-all duration-300 shadow-sm active:scale-95 flex items-center justify-center gap-2 border
-            ${
-              isUpdated
-                ? "bg-white text-text border-light hover:border-accent hover:text-accent"
-                : "bg-accent text-white border-transparent shadow-accent/20 hover:shadow-accent/40 hover:-translate-y-0.5"
-            }
-          `}
-          onClick={() => onOpenModal(boarding)}
+          onClick={handleSave}
+          disabled={loading}
+          className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase transition ${
+            loading
+              ? "bg-gray-300"
+              : "bg-accent text-white hover:bg-primary"
+          }`}
         >
-          <i className={`fas ${isUpdated ? "fa-pencil-alt" : "fa-plus"}`}></i>
-          {isUpdated ? "Edit Costs" : "Add Bill Data"}
+          Update Utilities
         </button>
+
+        {onView && (
+          <button
+            onClick={onView}
+            className="px-3 py-2 rounded-lg text-xs font-bold border"
+          >
+            View
+          </button>
+        )}
       </div>
     </div>
   );

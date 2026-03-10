@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.sbms.sbms_monolith.common.BaseEntity;
 import com.sbms.sbms_monolith.model.enums.MonthlyBillStatus;
@@ -49,4 +50,11 @@ public class MonthlyBill extends BaseEntity {
     
     @Column(nullable = false)
     private LocalDate dueDate;
+    
+    private LocalDateTime paidAt;
+    
+    @Column(name = "monthly_bill_id" ,  nullable = true)
+    private Long monthlyBillId;
+
+
 }

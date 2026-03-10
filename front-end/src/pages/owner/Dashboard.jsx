@@ -1,126 +1,152 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import HeaderBar from "../../components/Owner/common/HeaderBar";
 import StatWidget from "../../components/Owner/dashboard/StatWidget";
+import SkeletonWidget from "../../components/Owner/dashboard/SkeletonWidget";
+import HeroAction from "../../components/Owner/dashboard/HeroAction";
 import DashButton from "../../components/Owner/dashboard/DashButton";
-import DashboardSection from "../../components/Owner/dashboard/DashboardSection";
 import AppointmentItem from "../../components/Owner/dashboard/AppointmentItem";
-import ActivityItem from "../../components/Owner/dashboard/ActivityItem";
-import {
-  dashboardData,
-  recentAppointments,
-  recentActivity,
-  ownerData,
-} from "../../data/mockData.js";
+import DashboardSection from "../../components/Owner/dashboard/DashboardSection";
+import RecentTransactions from "../../components/Owner/dashboard/RecentTransactions";
+import RevenueChart from "../../components/Owner/dashboard/RevenueChart";
+import { recentAppointments, ownerData } from "../../data/mockData.js";
 
 export default function Dashboard() {
-  const { firstName: userName, avatar: userAvatar } = ownerData;
+  const [loading, setLoading] = useState(true);
+
+  // Simulate data fetching from backend
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <div className="space-y-6 md:space-y-8 pt-4 pb-10 bg-light min-h-screen">
-      {/* HeaderBar usually handles internal responsiveness, but ensure it has room */}
+    <div className="min-h-screen pb-12 bg-light/30">
       <HeaderBar
-        title={`Welcome back, ${userName}!`}
-        subtitle="Manage your boarding properties efficiently"
+        title={`Welcome back, ${ownerData.firstName}!`}
+        subtitle="Here is your daily property overview."
         notificationCount={3}
-        userAvatar={userAvatar}
-        userName={userName}
+        userAvatar={ownerData.avatar}
+        userName={ownerData.firstName}
       />
 
-      {/* 1. Stats Overview - Responsive Grid 
-          Mobile: 1 col | Tablet: 2 cols | Desktop: 4 cols */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 px-4 md:px-6">
-        <StatWidget
-          icon="fas fa-building"
-          title="Total Ads"
-          mainValue={`${dashboardData.totalAds} Properties`}
-          subValue={`${dashboardData.activeAds} Active`}
-        />
-        <StatWidget
-          icon="fas fa-users"
-          title="Active Tenants"
-          mainValue={`${dashboardData.totalTenants} Students`}
-          subValue={`${dashboardData.occupancyRate} Occupancy`}
-        />
-        <StatWidget
-          icon="fas fa-money-bill-wave"
-          title="Monthly Revenue"
-          mainValue={`$${dashboardData.monthlyRevenue.toLocaleString()}`}
-          subValue={`${dashboardData.revenueGrowth} growth`}
-        />
-        <StatWidget
-          icon="fas fa-star"
-          title="Average Rating"
-          mainValue={dashboardData.avgRating}
-          subValue="From 45 reviews"
-        />
-      </div>
+      {/* FULL WIDTH CONTAINER (Removes gaps) */}
+      <div className="w-full px-4 py-8 space-y-8 sm:px-6 md:px-8">
+        {/* 1. STATS ROW - 4 Columns */}
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {loading ? (
+            [...Array(4)].map((_, i) => <SkeletonWidget key={i} />)
+          ) : (
+            <>
+              <StatWidget
+                icon="fas fa-money-bill-wave"
+                title="Total Revenue"
+                mainValue="$12,450"
+                subValue="Last 30 days"
+                trend={{ value: "12%", isPositive: true }}
+              />
+              <StatWidget
+                icon="fas fa-users"
+                title="Occupancy"
+                mainValue="92%"
+                subValue="45/49 Beds Filled"
+                trend={{ value: "2%", isPositive: true }}
+              />
+              <StatWidget
+                icon="fas fa-star"
+                title="Avg Rating"
+                mainValue="4.8"
+                subValue="Top Rated Owner"
+              />
+              <StatWidget
+                icon="fas fa-bullhorn"
+                title="Active Ads"
+                mainValue="3"
+                subValue="1 Expiring Soon"
+                trend={{ value: "Low", isPositive: false }}
+              />
+            </>
+          )}
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 px-4 md:px-6">
-        {/* 2. Quick Actions Section 
-            Uses a tighter grid on mobile to save vertical space */}
-        <section className="space-y-4">
-          <h2 className="text-xl md:text-2xl font-black text-primary flex items-center gap-2 uppercase tracking-tight">
-            Quick Actions
-          </h2>
-          <div className="bg-card-bg p-4 md:p-6 rounded-report shadow-custom border border-light">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <DashButton
-                to="/ownerLayout/myAds/createAd"
-                icon="fas fa-plus"
-                label="Add New Ad"
-              />
-              <DashButton
-                to="/ownerLayout/appointments"
-                icon="fas fa-calendar-check"
-                label="Manage Appointments"
-              />
-              <DashButton
-                to="/ownerLayout/utility"
-                icon="fas fa-bolt"
-                label="Add Utility Costs"
-              />
-              <DashButton
-                to="/ownerLayout/myAds"
-                icon="fas fa-crown"
-                label="Boost Ads"
-              />
-              <DashButton
-                to="/ownerLayout/myAds"
-                icon="fas fa-eye"
-                label="View Ads"
-              />
-              <DashButton
-                to="/ownerLayout/payment"
-                icon="fas fa-credit-card"
-                label="View Payments"
-              />
+        {/* 2. MAIN LAYOUT - Asymmetric Grid (2/3 + 1/3) */}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          {/* LEFT COLUMN (Wide): Financials & Deep Data */}
+          <div className="space-y-8 lg:col-span-2">
+            {/* Revenue Analytics Chart Area */}
+            <div className="bg-card-bg rounded-xl border border-light p-6 shadow-sm min-h-[400px] flex flex-col">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold text-text">
+                  Revenue Analytics
+                </h3>
+                <select className="text-xs font-bold tracking-wide uppercase rounded-lg outline-none border-light text-muted bg-light/30 focus:border-primary">
+                  <option>This Year</option>
+                  <option>Last Year</option>
+                </select>
+              </div>
+
+              {/* 2. Insert the Chart Component here */}
+              <div className="flex-1 w-full">
+                <RevenueChart />
+              </div>
             </div>
-          </div>
-        </section>
 
-        {/* 3. Recent Appointments Section 
-            Reduced max-height on mobile for better scrolling behavior */}
-        <DashboardSection
-          title="Recent Appointments"
-          badge={`${dashboardData.newAppointmentsCount} New`}
-        >
-          <div className="max-h-[300px] md:max-h-[380px] overflow-y-auto custom-scrollbar pr-2">
-            {recentAppointments.map((app) => (
-              <AppointmentItem key={app.id} appointment={app} />
-            ))}
+            {/* Recent Transactions Table (Replaces Activity) */}
+            <RecentTransactions />
           </div>
-        </DashboardSection>
-      </div>
 
-      {/* 4. Recent Activity - Full Width */}
-      <div className="px-4 md:px-6">
-        <DashboardSection title="Recent Activity">
-          <div className="max-h-[350px] md:max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
-            {recentActivity.map((activity, index) => (
-              <ActivityItem key={index} data={activity} />
-            ))}
+          {/* RIGHT COLUMN (Sidebar): Actions & Lists */}
+          <div className="space-y-6">
+            {/* Hero Action (Primary Call to Action) */}
+            <HeroAction />
+
+            {/* Quick Actions Grid */}
+            <div className="p-5 border shadow-sm bg-card-bg rounded-xl border-light">
+              <h3 className="mb-4 text-xs font-black tracking-widest uppercase text-muted/50">
+                Management
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                <DashButton
+                  to="/ownerLayout/utility"
+                  icon="fas fa-bolt"
+                  label="Utility"
+                />
+                <DashButton
+                  to="/ownerLayout/myAds"
+                  icon="fas fa-eye"
+                  label="View Ads"
+                />
+                <DashButton
+                  to="/ownerLayout/payment"
+                  icon="fas fa-credit-card"
+                  label="Payments"
+                />
+                <DashButton
+                  to="/ownerLayout/profile"
+                  icon="fas fa-cog"
+                  label="Settings"
+                />
+              </div>
+            </div>
+
+            {/* Upcoming Appointments List */}
+            <DashboardSection
+              title="Appointments"
+              badge={`${recentAppointments.filter((a) => a.status === "pending").length} Pending`}
+            >
+              <div className="max-h-[400px] overflow-y-auto custom-scrollbar divide-y divide-light">
+                {recentAppointments.map((app) => (
+                  <AppointmentItem key={app.id} appointment={app} />
+                ))}
+
+                {recentAppointments.length === 0 && (
+                  <div className="p-8 text-sm text-center text-muted">
+                    No upcoming appointments
+                  </div>
+                )}
+              </div>
+            </DashboardSection>
           </div>
-        </DashboardSection>
+        </div>
       </div>
     </div>
   );

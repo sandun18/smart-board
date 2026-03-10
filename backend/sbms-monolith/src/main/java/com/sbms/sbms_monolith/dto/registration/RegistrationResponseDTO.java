@@ -26,5 +26,11 @@ public class RegistrationResponseDTO {
     private BigDecimal keyMoney;
     private BigDecimal monthlyPrice;
     private boolean keyMoneyPaid;
+    
+    private String paymentMethod;       // CARD / BANK_SLIP / CASH
+    private String paymentSlipUrl;  
+    
+    private String agreementPdfPath;
+
 
 }

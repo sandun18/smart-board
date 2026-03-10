@@ -190,11 +190,23 @@ const useMaintenanceLogic = () => {
 
   // 2. Status Update Handler
   const handleStatusUpdate = async (id, newStatus) => {
-    // Optimistic Update (Update UI instantly)
-    const oldRequests = [...requests];
+    // 1. Capture the current date immediately
+    const now = new Date();
+    const isoDate = now.toISOString(); // e.g., "2023-10-27T10:00:00.000Z"
+
+    // 2. Optimistic Update
+    const originalRequests = [...requests];
+    const statusToSend = newStatus.toUpperCase();
+
     setRequests((prev) =>
       prev.map((r) =>
-        r.id === id ? { ...r, status: newStatus.toLowerCase() } : r,
+        r.id === id 
+          ? { 
+              ...r, 
+              status: newStatus.toLowerCase(), 
+              updatedDate: isoDate // <--- ADDS THE DATE TO UI INSTANTLY
+            } 
+          : r,
       ),
     );
 

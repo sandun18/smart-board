@@ -172,100 +172,111 @@ const MaintenanceCard = ({ request, onUpdateStatus }) => {
   const statusStyle = STATUS_CONFIG[statusKey] || STATUS_CONFIG.pending;
 
   return (
-    <>
-      <motion.div
-        layout
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full hover:shadow-md transition-all duration-300"
-      >
-        <div className={`h-2 w-full ${urgencyStyle.color.split(" ")[0]}`} />
-        <div className="p-5 flex flex-col flex-1">
-          <div className="flex justify-between items-center text-xs text-gray-400 mb-3">
-            <span className="flex items-center gap-1">
-              <FaCalendar className="text-gray-300" />{" "}
-              {new Date(request.date).toLocaleDateString()}
-            </span>
-            <span className="font-mono">#{request.id}</span>
-          </div>
-          <div className="mb-4">
-            <h3 className="text-lg font-bold text-gray-800 mb-1 line-clamp-1">
-              {request.issueType}
-            </h3>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <FaMapMarkerAlt className="text-gray-300" size={12} />
-              <span>
-                {request.boardingName} • Room {request.roomNumber || "?"}
-              </span>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2 mb-4">
-            <span
-              className={`px-2.5 py-1 rounded-full text-xs font-semibold ${urgencyStyle.color}`}
-            >
-              {urgencyKey} Priority
-            </span>
-            <span
-              className={`px-2.5 py-1 rounded-full text-xs font-semibold ${statusStyle.color}`}
-            >
-              {statusStyle.label}
-            </span>
-          </div>
-          <p className="text-gray-600 text-sm line-clamp-2 mb-4">
-            {request.description}
-          </p>
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      whileHover={{ y: -4 }}
+      className="flex flex-col h-full overflow-hidden transition-all duration-300 bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md"
+    >
+      <div className={`h-2 w-full ${urgencyStyle.color.split(' ')[0].replace('bg-', 'bg-')}`} />
+      
+      <div className="flex flex-col flex-1 p-5">
+        {/* Top Row */}
+        <div className="flex items-center justify-between mb-3 text-xs text-gray-400">
+          <span className="flex items-center gap-1">
+            <FaCalendar className="text-gray-300" /> {formatDate(request.createdDate)}
+          </span>
+        </div>
 
-          <div className="pt-4 border-t border-gray-50 flex gap-2 mt-auto">
-            {statusKey === "pending" && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowAssignModal(true);
-                }}
-                className="w-full py-2 rounded-lg bg-black text-white text-sm font-semibold hover:bg-gray-800 flex items-center justify-center gap-2"
-              >
-                <FaTools size={12} /> Find Technician
-              </button>
-            )}
-            {(statusKey === "assigned" || statusKey === "in_progress") && (
-              <div className="w-full text-center text-xs text-blue-600 bg-blue-50 py-2 rounded-lg font-bold">
-                Technician Working...
-              </div>
-            )}
-            {(statusKey === "work_done" || statusKey === "paid") && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowReviewModal(true);
-                }}
-                className="w-full py-2 rounded-lg bg-accent text-white text-sm font-semibold hover:bg-orange-600 animate-pulse flex items-center justify-center gap-2"
-              >
-                <FaStar size={12} /> Review & Complete
-              </button>
-            )}
-            {(statusKey === "completed" || statusKey === "resolved") && (
-              <div className="w-full text-center text-sm text-green-600 bg-green-50 py-2 rounded-lg font-bold flex items-center justify-center gap-2">
-                <FaCheckCircle /> Completed
-              </div>
-            )}
+        {/* Title */}
+        <div className="mb-4">
+          <h3 className="mb-1 text-lg font-bold text-gray-800 line-clamp-1">
+            {request.issueType || "Maintenance Request"}
+          </h3>
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <FaMapMarkerAlt className="text-gray-300" size={12} />
+            <span>{request.boardingName || "Unknown Property"} • Room {request.roomNumber || "?"}</span>
           </div>
         </div>
-      </motion.div>
-      {showAssignModal && (
-        <AssignTechnicianModal
-          request={request}
-          onClose={() => setShowAssignModal(false)}
-          onSuccess={() => onUpdateStatus(request.id, "ASSIGNED")}
-        />
-      )}
-      {showReviewModal && (
-        <ReviewTechnicianModal
-          request={request}
-          onClose={() => setShowReviewModal(false)}
-          onSuccess={() => onUpdateStatus(request.id, "COMPLETED")}
-        />
-      )}
-    </>
+
+        {/* Badges */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          <span className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 ${urgencyStyle.color}`}>
+            {urgencyStyle.icon}
+            <span className="capitalize">{urgencyKey} Priority</span>
+          </span>
+          <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${statusStyle.color}`}>
+            {statusStyle.label}
+          </span>
+        </div>
+
+        {/* Description */}
+        <p className="mb-4 text-sm text-gray-600 line-clamp-2">
+          {request.description}
+        </p>
+
+        {/* 🔥 UPDATED: IMAGE GALLERY SECTION */}
+        {hasImages && (
+          <div className="mb-4">
+             <p className="text-[10px] uppercase font-bold text-gray-400 mb-2 flex items-center gap-1">
+               <FaImage /> Attached Evidence ({request.image.length})
+             </p>
+             <div className="flex gap-2 pb-2 overflow-x-auto scrollbar-hide">
+               {request.image.map((imgUrl, index) => (
+                 <img 
+                   key={index}
+                   // ✅ FIX: Use imgUrl directly. Do NOT add BASE_IMAGE_URL.
+                   src={imgUrl} 
+                   alt={`Evidence ${index + 1}`}
+                   className="object-cover w-24 h-16 border border-gray-100 rounded-lg cursor-pointer hover:opacity-90"
+                   onClick={() => window.open(imgUrl, '_blank')}
+                 />
+               ))}
+             </div>
+          </div>
+        )}
+
+        {/* Action Footer */}
+        <div className="flex gap-2 pt-4 mt-auto border-t border-gray-50">
+          
+          {/* CASE 1: PENDING - Only show 'Start Work' */}
+          {statusKey === 'pending' && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onUpdateStatus(request.id, 'IN_PROGRESS');
+              }}
+              className="flex items-center justify-center w-full gap-2 py-2 text-sm font-semibold text-blue-600 transition-colors rounded-lg bg-blue-50 hover:bg-blue-100"
+            >
+              <FaClock size={12} /> Start Work
+            </button>
+          )}
+
+          {/* CASE 2: IN PROGRESS - Only show 'Mark Done' */}
+          {(statusKey === 'in_progress' || statusKey === 'in-progress') && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onUpdateStatus(request.id, 'COMPLETED');
+              }}
+              className="flex items-center justify-center w-full gap-2 py-2 text-sm font-semibold text-green-600 transition-colors rounded-lg bg-green-50 hover:bg-green-100"
+            >
+              <FaCheckCircle size={12} /> Mark Done
+            </button>
+          )}
+
+          {/* CASE 3: COMPLETED - Show Date */}
+          {(statusKey === 'completed' || statusKey === 'resolved') && (
+            <div className="w-full py-2 text-sm font-medium text-center text-gray-400 rounded-lg bg-gray-50">
+              Completed on {formatDate(request.updatedDate)}
+            </div>
+          )}
+          
+        </div>
+      </div>
+    </motion.div>
   );
 };
 export default MaintenanceCard;

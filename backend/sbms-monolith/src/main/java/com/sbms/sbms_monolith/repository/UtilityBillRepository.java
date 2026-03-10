@@ -15,4 +15,6 @@ public interface UtilityBillRepository extends JpaRepository<UtilityBill, Long> 
     List<UtilityBill> findByBoarding_Owner_Id(Long ownerId);
 
     List<UtilityBill> findByBoarding_Id(Long boardingId);
+    List<UtilityBill> findByMonth(String month);
+
 }

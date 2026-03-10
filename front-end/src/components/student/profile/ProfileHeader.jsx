@@ -18,22 +18,22 @@ const ProfileHeader = ({ userData, onChangeAvatar }) => {
     <motion.section
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card-bg rounded-large shadow-custom p-8"
+      className="p-8 bg-card-bg rounded-large shadow-custom"
     >
-      <div className="flex flex-col lg:flex-row justify-between items-start gap-8">
+      <div className="flex flex-col items-start justify-between gap-8 lg:flex-row">
         {/* Avatar and Info */}
-        <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start w-full lg:w-auto">
+        <div className="flex flex-col items-center w-full gap-6 sm:flex-row sm:items-start lg:w-auto">
           <div className="relative flex-shrink-0">
             <img
               src={userData.avatar}
               alt={`${userData.firstName} ${userData.lastName}`}
-              className="w-32 h-32 rounded-full object-cover border-4 border-accent"
+              className="object-cover w-32 h-32 border-4 rounded-full border-accent"
             />
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={onChangeAvatar}
-              className="absolute bottom-1 right-1 w-10 h-10 bg-accent text-white rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300 shadow-lg"
+              className="absolute flex items-center justify-center w-10 h-10 text-white transition-colors duration-300 rounded-full shadow-lg bottom-1 right-1 bg-accent hover:bg-primary"
             >
               <FaCamera />
             </motion.button>
@@ -42,19 +42,19 @@ const ProfileHeader = ({ userData, onChangeAvatar }) => {
           <div className="text-center sm:text-left">
             <div 
                 onClick={handleNameClick}
-                className="group flex items-center justify-center sm:justify-start gap-3 cursor-pointer mb-2"
+                className="flex items-center justify-center gap-3 mb-2 cursor-pointer group sm:justify-start"
                 title="View Public Profile"
             >
-                <h2 className="text-3xl font-bold text-text-dark group-hover:text-accent transition-colors duration-200">
+                <h2 className="text-3xl font-bold transition-colors duration-200 text-text-dark group-hover:text-accent">
                   {userData.firstName} {userData.lastName}
                 </h2>
-                <FaExternalLinkAlt className="text-sm text-text-muted opacity-0 group-hover:opacity-100 transition-opacity duration-200 group-hover:text-accent" />
+                <FaExternalLinkAlt className="text-sm transition-opacity duration-200 opacity-0 text-text-muted group-hover:opacity-100 group-hover:text-accent" />
             </div>
-            <p className="text-lg text-text-muted mb-1">{userData.email}</p>
-            <p className="text-accent font-semibold mb-3">Student Member</p>
+            <p className="mb-1 text-lg text-text-muted">{userData.email}</p>
+            <p className="mb-3 font-semibold text-accent">Student Member</p>
             
-            <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-              <span className="flex items-center gap-2 px-3 py-1 rounded-full bg-success/20 text-success text-xs font-semibold">
+            <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
+              <span className="flex items-center gap-2 px-3 py-1 text-xs font-semibold rounded-full bg-success/20 text-success">
                 <FaCheckCircle />
                 Email Verified
               </span>
@@ -67,7 +67,7 @@ const ProfileHeader = ({ userData, onChangeAvatar }) => {
         </div>
 
         {/* Stats Grid */}
-        {/* <div className="grid grid-cols-2 gap-4 w-full lg:w-auto">
+        {/* <div className="grid w-full grid-cols-2 gap-4 lg:w-auto">
           {[
             { label: 'Visits Booked', value: '12' },
             { label: 'Reviews Posted', value: '5' },
@@ -79,9 +79,9 @@ const ProfileHeader = ({ userData, onChangeAvatar }) => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.1 }}
-              className="text-center p-4 bg-background-light rounded-large"
+              className="p-4 text-center bg-background-light rounded-large"
             >
-              <div className="text-3xl font-bold text-primary mb-1">{stat.value}</div>
+              <div className="mb-1 text-3xl font-bold text-primary">{stat.value}</div>
               <div className="text-sm text-text-muted">{stat.label}</div>
             </motion.div>
           ))}

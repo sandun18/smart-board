@@ -1,6 +1,7 @@
 package com.sbms.sbms_monolith.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -22,6 +23,8 @@ import com.sbms.sbms_monolith.repository.MonthlyBillRepository;
 import com.sbms.sbms_monolith.repository.RegistrationRepository;
 import com.sbms.sbms_monolith.repository.UtilityBillRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class MonthlyBillService {
 
@@ -34,27 +37,52 @@ public class MonthlyBillService {
     @Autowired
     private RegistrationRepository registrationRepo;
 
+   
+    
+    @Transactional
     public void generateBillsForMonth(String month) {
 
-        List<UtilityBill> utilities = utilityRepo.findAll()
-                .stream()
-                .filter(u -> u.getMonth().equals(month))
-                .toList();
+        // 1️ Get utility bills for the given month
+        List<UtilityBill> utilities = utilityRepo.findByMonth(month);
 
         for (UtilityBill utility : utilities) {
 
             Boarding boarding = utility.getBoarding();
 
+            // 2️ Get all APPROVED registrations for this boarding
             List<Registration> registrations =
                     registrationRepo.findByBoarding_IdAndStatus(
                             boarding.getId(),
                             RegistrationStatus.APPROVED
                     );
 
+            // No students → no bills
+            if (registrations.isEmpty()) {
+                continue;
+            }
+
+            int studentCount = registrations.size();
+
+            // 3️Split RENT per student
+            BigDecimal boardingFeePerStudent =
+                    boarding.getPricePerMonth()
+                            .divide(BigDecimal.valueOf(studentCount), 2, RoundingMode.HALF_UP);
+
+            // 4️ Split UTILITIES per student
+            BigDecimal electricityPerStudent =
+                    utility.getElectricityAmount()
+                            .divide(BigDecimal.valueOf(studentCount), 2, RoundingMode.HALF_UP);
+
+            BigDecimal waterPerStudent =
+                    utility.getWaterAmount()
+                            .divide(BigDecimal.valueOf(studentCount), 2, RoundingMode.HALF_UP);
+
+            // 5️ Generate bill per student
             for (Registration reg : registrations) {
 
                 User student = reg.getStudent();
 
+                // 🔒 Prevent duplicate bills
                 boolean exists = billRepo
                         .findByStudent_IdAndBoarding_IdAndMonth(
                                 student.getId(),
@@ -65,24 +93,23 @@ public class MonthlyBillService {
 
                 if (exists) continue;
 
-                BigDecimal boardingFee = boarding.getPricePerMonth();
-                BigDecimal electricity = utility.getElectricityAmount();
-                BigDecimal water = utility.getWaterAmount();
+                // 6️Total per student
+                BigDecimal total =
+                        boardingFeePerStudent
+                                .add(electricityPerStudent)
+                                .add(waterPerStudent);
 
-                BigDecimal total = boardingFee
-                        .add(electricity)
-                        .add(water);
-
+                // 7️ Create Monthly Bill
                 MonthlyBill bill = new MonthlyBill();
                 bill.setStudent(student);
                 bill.setBoarding(boarding);
                 bill.setMonth(month);
-                
-                bill.setBoardingFee(boardingFee);
-                bill.setElectricityFee(electricity);
-                bill.setWaterFee(water);
+
+                bill.setBoardingFee(boardingFeePerStudent);
+                bill.setElectricityFee(electricityPerStudent);
+                bill.setWaterFee(waterPerStudent);
                 bill.setTotalAmount(total);
-                
+
                 bill.setStatus(MonthlyBillStatus.UNPAID);
                 bill.setDueDate(LocalDate.parse(month + "-10"));
 
@@ -90,6 +117,8 @@ public class MonthlyBillService {
             }
         }
     }
+
+
 
     public List<MonthlyBillResponseDTO> getForStudent(Long studentId) {
         return billRepo.findByStudent_Id(studentId)

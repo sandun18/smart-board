@@ -1,73 +1,89 @@
 package com.sbms.sbms_monolith.service;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
 
-import com.sbms.sbms_monolith.dto.utility.UtilityBillCreateDTO;
-import com.sbms.sbms_monolith.dto.utility.UtilityBillResponseDTO;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sbms.sbms_monolith.dto.billing.CreateUtilityBillDTO;
+import com.sbms.sbms_monolith.dto.billing.UtilityBillResponseDTO;
 import com.sbms.sbms_monolith.mapper.UtilityBillMapper;
 import com.sbms.sbms_monolith.model.Boarding;
 import com.sbms.sbms_monolith.model.UtilityBill;
+import com.sbms.sbms_monolith.model.enums.RegistrationStatus;
 import com.sbms.sbms_monolith.repository.BoardingRepository;
+import com.sbms.sbms_monolith.repository.RegistrationRepository;
 import com.sbms.sbms_monolith.repository.UtilityBillRepository;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class UtilityBillService {
 
-    @Autowired
-    private UtilityBillRepository utilityBillRepo;
+    private final UtilityBillRepository utilityRepo;
+    private final BoardingRepository boardingRepo;
+    private final RegistrationRepository registrationRepo;
+    private final MonthlyBillService monthlyBillService;
 
-    @Autowired
-    private BoardingRepository boardingRepo;
-
-    // ----------------------------------------
-    // OWNER: ADD / UPDATE UTILITY BILL
-    // ----------------------------------------
-    public UtilityBillResponseDTO saveOrUpdate(Long ownerId, UtilityBillCreateDTO dto) {
+    @Transactional
+    public void createOrUpdate(CreateUtilityBillDTO dto) {
 
         Boarding boarding = boardingRepo.findById(dto.getBoardingId())
-                .orElseThrow(() -> new RuntimeException("Boarding not found"));
+                .orElseThrow();
 
-        if (!boarding.getOwner().getId().equals(ownerId)) {
-            throw new RuntimeException("You are not the owner of this boarding");
-        }
-
-        UtilityBill bill = utilityBillRepo
+        UtilityBill bill = utilityRepo
                 .findByBoarding_IdAndMonth(dto.getBoardingId(), dto.getMonth())
-                .orElse(new UtilityBill());
+                .orElseGet(UtilityBill::new);
 
         bill.setBoarding(boarding);
         bill.setMonth(dto.getMonth());
         bill.setElectricityAmount(dto.getElectricityAmount());
         bill.setWaterAmount(dto.getWaterAmount());
+        bill.setProofUrl(dto.getProofUrl());
 
-        utilityBillRepo.save(bill);
+        utilityRepo.save(bill);
 
-        return UtilityBillMapper.toDTO(bill);
+        // 🔥 IMPORTANT: generate student bills AFTER owner input
+        monthlyBillService.generateBillsForMonth(dto.getMonth());
     }
 
-    // ----------------------------------------
-    // OWNER: VIEW ALL UTILITY BILLS
-    // ----------------------------------------
     public List<UtilityBillResponseDTO> getForOwner(Long ownerId) {
 
-        return utilityBillRepo.findByBoarding_Owner_Id(ownerId)
+        return utilityRepo.findByBoarding_Owner_Id(ownerId)
                 .stream()
-                .map(UtilityBillMapper::toDTO)
+                .map(this::map)
                 .toList();
     }
 
-    // ----------------------------------------
-    // VIEW UTILITY BILLS FOR A BOARDING
-    // ----------------------------------------
-    public List<UtilityBillResponseDTO> getForBoarding(Long boardingId) {
+    private UtilityBillResponseDTO map(UtilityBill bill) {
 
-        return utilityBillRepo.findByBoarding_Id(boardingId)
-                .stream()
-                .map(UtilityBillMapper::toDTO)
-                .toList();
+        int studentCount = registrationRepo
+                .countByBoarding_IdAndStatus(
+                        bill.getBoarding().getId(),
+                        RegistrationStatus.APPROVED
+                );
+
+        BigDecimal perStudent =
+                studentCount == 0
+                        ? BigDecimal.ZERO
+                        : bill.getElectricityAmount()
+                              .add(bill.getWaterAmount())
+                              .divide(BigDecimal.valueOf(studentCount), 2, RoundingMode.HALF_UP);
+
+        UtilityBillResponseDTO dto = new UtilityBillResponseDTO();
+        dto.setId(bill.getId());
+        dto.setBoardingId(bill.getBoarding().getId());
+        dto.setBoardingName(bill.getBoarding().getTitle());
+        dto.setMonth(bill.getMonth());
+        dto.setElectricityAmount(bill.getElectricityAmount());
+        dto.setWaterAmount(bill.getWaterAmount());
+        dto.setPerStudentUtility(perStudent);
+
+        return dto;
     }
 }
+

@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import StudentLayout from "../../components/student/common/StudentLayout";
 import StatWidget from "../../components/student/dashbord/StatWidget";
 import QuickActionsSection from "../../components/student/dashbord/QuickActionsSection";
@@ -9,21 +10,20 @@ import {
   FaStar,
   FaHome,
   FaFileInvoiceDollar,
+  FaComments, // ✅ NEW
 } from "react-icons/fa";
-import useDashboardLogic from "../../hooks/student/useDashboardLogic"; // ✅ Import Logic Hook
+import useDashboardLogic from "../../hooks/student/useDashboardLogic";
 
 const StudentDashboard = () => {
-  const { stats, recentActivity, loading, currentUser } = useDashboardLogic();
+  const { stats, recentActivity, loading } = useDashboardLogic();
+  const navigate = useNavigate();
 
   const handlePayNow = () => {
     window.location.href = "/student/billing";
   };
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good Morning";
-    if (hour < 18) return "Good Afternoon";
-    return "Good Evening";
+  const goToChats = () => {
+    navigate("/student/chats");
   };
 
   return (
@@ -31,7 +31,7 @@ const StudentDashboard = () => {
       {/* Stats Overview */}
       <section className="mb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 min-[1400px]:grid-cols-4 gap-4 md:gap-6 items-stretch">
-          {/* 1. Upcoming Visit Widget Update */}
+          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: loading ? 0.5 : 1, y: 0 }}
@@ -59,7 +59,6 @@ const StudentDashboard = () => {
             />
           </motion.div>
 
-          {/* 2. Monthly Rent (Pending Payments) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: loading ? 0.5 : 1, y: 0 }}
@@ -86,7 +85,6 @@ const StudentDashboard = () => {
             />
           </motion.div>
 
-          {/* 3. Current Boarding */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: loading ? 0.5 : 1, y: 0 }}
@@ -110,7 +108,6 @@ const StudentDashboard = () => {
             />
           </motion.div>
 
-          {/* 4. My Reviews */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: loading ? 0.5 : 1, y: 0 }}
@@ -130,9 +127,23 @@ const StudentDashboard = () => {
         </div>
       </section>
 
+      {/* ✅ CHAT BUTTON SECTION */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8"
+      >
+        <button
+          onClick={goToChats}
+          className="w-full sm:w-auto flex items-center gap-3 px-6 py-3 rounded-xl bg-accent text-white font-semibold shadow-md hover:bg-primary transition-all"
+        >
+          <FaComments className="text-lg" />
+          Open Chats
+        </button>
+      </motion.div>
+
       <QuickActionsSection />
 
-      {/* Pass the real activity data to the section */}
       <RecentActivitySection activities={recentActivity} />
     </StudentLayout>
   );

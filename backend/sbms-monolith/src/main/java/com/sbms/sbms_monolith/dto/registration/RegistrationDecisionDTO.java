@@ -9,4 +9,7 @@ public class RegistrationDecisionDTO {
     private RegistrationStatus status; // APPROVED or DECLINED
 
     private String ownerNote;
+    
+    private String ownerSignatureBase64;
+    private boolean approveWithPendingPayment;
 }

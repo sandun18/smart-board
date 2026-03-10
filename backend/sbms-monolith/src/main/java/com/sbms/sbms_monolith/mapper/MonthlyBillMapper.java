@@ -19,6 +19,7 @@ public class MonthlyBillMapper {
 
         dto.setBoardingId(b.getBoarding().getId());
         dto.setBoardingTitle(b.getBoarding().getTitle());
+        dto.setOwnerId(b.getBoarding().getOwner().getId());
 
         dto.setMonth(b.getMonth());
 

@@ -3,13 +3,13 @@ package com.sbms.sbms_monolith.model.enums;
 
 public enum PaymentIntentStatus {
 
-    CREATED,                  // intent created
+	CREATED,                  // intent created
     IN_PROGRESS,              // card redirect / upload started
 
     AWAITING_MANUAL_APPROVAL, // cash or bank slip submitted
 
-    SUCCESS,
-
+    SUCCESS,  
+    
     PROCESSING,
     // payment confirmed (card webhook OR owner approval)
 

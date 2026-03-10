@@ -1,103 +1,161 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState } from "react";
+import HeaderBar from "../../components/Owner/common/HeaderBar";
+import Notification from "../../components/student/maintenance/Notification";
 
-// --- Imports ---
-// 1. Common Components
-import HeaderBar from '../../components/Owner/common/HeaderBar'; // Replaced StudentLayout with HeaderBar
-import Notification from '../../components/student/maintenance/Notification';
+// Hooks
+import useProfileLogic from "../../hooks/owner/useProfileLogic";
 
-// 2. Profile Components (Reusing generic logic/UI where possible)
-import ChangeAvatarModal from '../../components/student/profile/ChangeAvatarModal';
-import PreferencesSection from '../../components/student/profile/PreferencesSection';
+// Components
+import ProfileHeader from "../../components/Owner/profile/ProfileHeader";
+import BusinessInfoSection from "../../components/Owner/profile/BusinessInfoSection";
+import AccountSection from "../../components/Owner/profile/AccountSection";
+import PreferencesSection from "../../components/student/profile/PreferencesSection";
 
-// 3. Owner Specific Components
-import ProfileHeader from '../../components/Owner/profile/ProfileHeader'; // Your Owner Header
-import BusinessInfoSection from '../../components/Owner/profile/BusinessInfoSection';
-import AccountSection from '../../components/Owner/profile/AccountSection'; // Renamed from OwnerAccountSection
-import EditBusinessModal from '../../components/Owner/profile/EditBusinessModal';
-import useProfileLogic from '../../hooks/owner/useProfileLogic'; // Your Owner Hook
+// Modals
+import EditBusinessModal from "../../components/Owner/profile/EditBusinessModal";
+import EditAccountModal from "../../components/Owner/profile/EditAccountModal";
+import ChangeAvatarModal from "../../components/student/profile/ChangeAvatarModal";
 
 const ProfilePage = () => {
   const {
     ownerData,
+    isLoading,
+    error,
     updateBusinessInfo,
     updateAvatar,
+    updateAccountSettings, // ✅ Import new function from hook
     updatePreferences,
   } = useProfileLogic();
 
   const [notification, setNotification] = useState(null);
+
+  // Modal States
   const [isEditBusinessOpen, setIsEditBusinessOpen] = useState(false);
+  const [isEditAccountOpen, setIsEditAccountOpen] = useState(false);
   const [isChangeAvatarOpen, setIsChangeAvatarOpen] = useState(false);
 
-  // --- Handlers ---
-  const showNotification = (message, type = 'info') => {
+  // --- Helpers ---
+  const showNotification = (message, type = "info") => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 4000);
   };
 
-  const handleUpdateBusiness = (data) => {
-    updateBusinessInfo(data);
-    setIsEditBusinessOpen(false);
-    showNotification('Business information updated successfully!', 'success');
+  // --- Handlers ---
+
+  // 1. Update Business Info
+  const handleUpdateBusiness = async (formData) => {
+    try {
+      await updateBusinessInfo(formData);
+      setIsEditBusinessOpen(false);
+      showNotification("Business information updated successfully!", "success");
+    } catch (err) {
+      console.error(err);
+      showNotification("Failed to update information.", "error");
+    }
   };
 
-  const handleUpdateAvatar = (avatarUrl) => {
-    updateAvatar(avatarUrl);
-    setIsChangeAvatarOpen(false);
-    showNotification('Profile picture updated successfully!', 'success');
+  // 2. Update Account Info (Using Hook Logic)
+  const handleUpdateAccount = async (formData) => {
+    try {
+      // ✅ Call the hook function which handles both Bank & Password calls
+      await updateAccountSettings(formData);
+
+      setIsEditAccountOpen(false);
+      showNotification("Account settings saved!", "success");
+    } catch (err) {
+      console.error(err);
+      // Re-throw so modal can show the specific error
+      throw new Error(
+        err.response?.data?.message || "Failed to update account."
+      );
+    }
   };
+
+  // 3. Update Avatar
+  const handleUpdateAvatar = async (avatarUrl) => {
+    try {
+      await updateAvatar(avatarUrl);
+      setIsChangeAvatarOpen(false);
+      showNotification("Profile picture updated!", "success");
+    } catch (err) {
+      showNotification("Failed to update image.", "error");
+    }
+  };
+
+  // --- Render ---
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-light">
+        <div className="w-12 h-12 border-b-2 rounded-full animate-spin border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-red-500 bg-light">
+        {error}
+      </div>
+    );
+  }
 
   return (
-    // Replaced StudentLayout with a standard div container
-    <div className="pt-4 space-y-6 min-h-screen pb-12 bg-light">
-      
-      {/* 1. Top Header Bar (Standard for Owner Pages) */}
-      <HeaderBar 
-        title="My Profile" 
+    <div className="min-h-screen pt-4 pb-12 space-y-6 bg-light">
+      {/* Header Bar */}
+      <HeaderBar
+        title="My Profile"
         subtitle="Manage your business identity and account settings"
-        // If your HeaderBar supports user props, pass them here:
         userAvatar={ownerData.avatar}
-        userName={ownerData.firstName} 
+        userName={ownerData.businessName}
       />
 
-      {/* 2. Main Content Container */}
       <div className="px-4 max-w-[1600px] mx-auto space-y-6 mt-8">
-        
-        {/* Profile Header (Avatar + Stats) */}
+        {/* Profile Header */}
         <ProfileHeader
           ownerData={ownerData}
           onChangeAvatar={() => setIsChangeAvatarOpen(true)}
         />
 
-        {/* Sections Grid */}
+        {/* Info Grid */}
         <div className="space-y-6">
-          {/* Business Info */}
+          {/* Business Info Section */}
           <BusinessInfoSection
             ownerData={ownerData}
             onEdit={() => setIsEditBusinessOpen(true)}
           />
 
-          {/* Account Info */}
+          {/* Account Section */}
           <AccountSection
             ownerData={ownerData}
-            onSecurity={() => showNotification('Security settings coming soon!', 'info')}
+            onEditAccount={() => setIsEditAccountOpen(true)}
           />
 
-          {/* Preferences */}
+          {/* Preferences Section */}
           <PreferencesSection
             preferences={ownerData.preferences}
             onPreferenceChange={updatePreferences}
-            onSettings={() => showNotification('Settings page coming soon!', 'info')}
+            onSettings={() =>
+              showNotification("Global settings coming soon!", "info")
+            }
           />
         </div>
       </div>
 
       {/* --- Modals --- */}
+
       <EditBusinessModal
         isOpen={isEditBusinessOpen}
         onClose={() => setIsEditBusinessOpen(false)}
         ownerData={ownerData}
         onSubmit={handleUpdateBusiness}
+      />
+
+      <EditAccountModal
+        isOpen={isEditAccountOpen}
+        onClose={() => setIsEditAccountOpen(false)}
+        currentAccNo={ownerData.paymentMethod}
+        onSubmit={handleUpdateAccount}
       />
 
       <ChangeAvatarModal

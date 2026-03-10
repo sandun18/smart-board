@@ -180,12 +180,14 @@ import { motion } from "framer-motion";
 import { useAuth as useStudentAuth } from "../../context/student/StudentAuthContext";
 import { useOwnerAuth } from "../../context/owner/OwnerAuthContext";
 import { useTechAuth } from "../../context/technician/TechnicianAuthContext"; // ✅ Added
+import { useAuth as useAdminAuth } from "../../context/admin/AdminAuthContext";
 
 // --- COMPONENT IMPORTS ---
 import StudentLoginForm from "../../components/student/auth/StudentLoginForm";
 import OwnerLoginForm from "../../components/Owner/auth/OwnerLoginForm";
 // We reuse OwnerLoginForm for Tech because fields (Email/Pass) are identical
 // If you want a specific one, duplicate the OwnerLoginForm file.
+import AdminLoginForm from "../../components/admin/auth/AdminLoginForm";
 
 // --- ASSETS ---
 import backgroundImage from "../../assets/s5.jpg";
@@ -201,10 +203,19 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // AUTH HOOKS
-  const { login: studentLogin } = useStudentAuth();
-  const { login: ownerLogin } = useOwnerAuth();
-  const { login: techLogin } = useTechAuth(); // ✅ Added
+  const { login: studentLogin, isAuthenticated: isStudentAuth } =
+    useStudentAuth();
+  const { login: ownerLogin, isAuthenticated: isOwnerAuth } = useOwnerAuth();
+  const { login: adminLogin, isAuthenticated: isAdminAuth } = useAdminAuth();
+  const { login: techLogin } = useTechAuth();
 
+  // REDIRECT: If already logged in, send to appropriate dashboard
+  //   useEffect(() => {
+  //     if (isStudentAuth) navigate("/student", { replace: true });
+  //     if (isOwnerAuth) navigate("/owner/dashboard", { replace: true });
+  //   }, [isStudentAuth, isOwnerAuth, navigate]);
+
+  // HANDLER: Switch logic based on active Role
   const handleLogin = async (formData) => {
     setIsLoading(true);
     setError("");
@@ -218,14 +229,19 @@ const LoginPage = () => {
       } else if (role === "technician") {
         // ✅ Added Tech Logic
         result = await techLogin(formData.email, formData.password);
+      } else if (role === "admin") {
+        // Call Admin Context
+        result = await adminLogin(formData.email, formData.password);
       }
 
       if (result && result.success) {
-        // Redirect based on Role
-        if (role === "student") navigate("/student", { replace: true });
-        if (role === "owner") navigate("/owner/dashboard", { replace: true });
-        if (role === "technician")
-          navigate("/technician/dashboard", { replace: true });
+        const pathMap = {
+          student: "/student",
+          owner: "/owner/dashboard",
+          admin: "/admin/dashboard",
+          technician: "/technician/dashboard", 
+        };
+        navigate(pathMap[role], { replace: true });
       } else {
         setError(
           result?.message || "Login failed. Please check your credentials.",
@@ -271,7 +287,7 @@ const LoginPage = () => {
 
           {/* ROLE TOGGLE TABS (Updated for 3 Roles) */}
           <div className="flex p-1 bg-gray-100 rounded-lg mb-6 shadow-inner">
-            {["student", "owner", "technician"].map((r) => (
+            {["student", "owner", "technician", "admin"].map((r) => (
               <button
                 key={r}
                 onClick={() => {
@@ -306,6 +322,12 @@ const LoginPage = () => {
             ) : (
               // Owner and Technician share the same simple Email/Pass structure
               <OwnerLoginForm
+                onSubmit={handleLogin}
+                isLoading={isLoading}
+                error={error}
+              />
+            ) : (
+              <AdminLoginForm
                 onSubmit={handleLogin}
                 isLoading={isLoading}
                 error={error}

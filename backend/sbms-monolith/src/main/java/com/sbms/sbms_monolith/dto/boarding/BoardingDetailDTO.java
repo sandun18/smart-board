@@ -27,11 +27,13 @@ public class BoardingDetailDTO {
     private String description;
     private String address;
 
-    private Double latitude;
-    private Double longitude;
-
     private BigDecimal pricePerMonth;
     private BigDecimal keyMoney;
+    
+    private Double latitude;
+    private Double longitude;
+    
+    private Long ownerId;
     
     private Gender genderType;
     private BoardingType boardingType;

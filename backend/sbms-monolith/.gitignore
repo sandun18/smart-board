@@ -35,3 +35,4 @@ build/
 
 # Local Spring profile (DO NOT COMMIT)
 src/main/resources/application-local.yml
+/.apt_generated_tests/

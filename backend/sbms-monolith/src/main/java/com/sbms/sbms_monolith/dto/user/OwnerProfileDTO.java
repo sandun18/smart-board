@@ -16,6 +16,8 @@ public class OwnerProfileDTO {
     @Schema(example = "saman@gmail.com")
     private String email;
 
+    
+
     @Schema(example = "0761234567")
     private String phone;
 

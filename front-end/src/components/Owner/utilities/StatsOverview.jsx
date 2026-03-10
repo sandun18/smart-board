@@ -1,8 +1,8 @@
 import React from "react";
 
 const StatsCard = ({ title, value, subtext, icon, colorClass, bgClass }) => (
-  <div className="flex-1 bg-card-bg p-6 rounded-report border border-light shadow-custom hover:-translate-y-1 transition-all duration-300">
-    <div className="flex justify-between items-start">
+  <div className="flex-1 p-6 transition-all duration-300 border bg-card-bg rounded-report border-light shadow-custom hover:-translate-y-1">
+    <div className="flex items-start justify-between">
       <div className="space-y-2">
         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted">
           {title}
@@ -24,25 +24,26 @@ const StatsCard = ({ title, value, subtext, icon, colorClass, bgClass }) => (
 );
 
 const StatsOverview = ({ boardings }) => {
-  // 1. Calculate Total Utility Cost (All properties)
+  // SAFE CALCULATIONS: Handle empty lists or undefined values
+  
+  // 1. Total Utility Cost
   const totalUtility = boardings.reduce(
-    (acc, curr) => acc + curr.electricityCost + curr.waterCost,
+    (acc, curr) => acc + (Number(curr.electricityCost) || 0) + (Number(curr.waterCost) || 0), 
     0
   );
 
-  // 2. Find the Highest Single Bill
-  const highestBillValue = Math.max(
-    ...boardings.map((b) => b.electricityCost + b.waterCost),
-    0
-  );
+  // 2. Highest Single Bill
+  const highestBillValue = boardings.length > 0 
+    ? Math.max(...boardings.map((b) => (Number(b.electricityCost) || 0) + (Number(b.waterCost) || 0)))
+    : 0;
 
-  // 3. Count Properties with "N/A" (Pending Updates)
+  // 3. Count Pending Updates (Check specific string logic)
   const pendingUpdates = boardings.filter(
-    (b) => b.lastUpdated === "N/A"
+    (b) => !b.lastUpdated || b.lastUpdated === "N/A"
   ).length;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
+    <div className="grid grid-cols-1 gap-6 px-4 md:grid-cols-3">
       {/* Total Utilities Card */}
       <StatsCard
         title="Total Utilities (Nov)"

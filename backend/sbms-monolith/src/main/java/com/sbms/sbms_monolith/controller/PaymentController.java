@@ -1,79 +1,217 @@
 package com.sbms.sbms_monolith.controller;
 
-import java.util.List;
+import com.sbms.sbms_monolith.dto.payment.*;
+import com.sbms.sbms_monolith.model.PaymentIntent;
+import com.sbms.sbms_monolith.model.PaymentTransaction;
+import com.sbms.sbms_monolith.model.User;
+import com.sbms.sbms_monolith.model.enums.ManualApprovalStatus;
+import com.sbms.sbms_monolith.model.enums.PaymentIntentStatus;
+import com.sbms.sbms_monolith.model.enums.PaymentMethod;
+import com.sbms.sbms_monolith.model.enums.PaymentStatus;
+import com.sbms.sbms_monolith.model.enums.PaymentType;
+import com.sbms.sbms_monolith.repository.PaymentIntentRepository;
+import com.sbms.sbms_monolith.repository.PaymentTransactionRepository;
+import com.sbms.sbms_monolith.repository.UserRepository;
+import com.sbms.sbms_monolith.security.JwtService;
+import com.sbms.sbms_monolith.service.BankSlipPaymentService;
+import com.sbms.sbms_monolith.service.CashPaymentService;
+import com.sbms.sbms_monolith.service.PaymentIntentService;
+import com.sbms.sbms_monolith.service.PaymentService;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import com.sbms.sbms_monolith.dto.payment.PaymentHistoryDTO;
-import com.sbms.sbms_monolith.dto.payment.PaymentRequestDTO;
-import com.sbms.sbms_monolith.dto.payment.PaymentResult;
-import com.sbms.sbms_monolith.model.MonthlyBill;
-import com.sbms.sbms_monolith.model.User;
-import com.sbms.sbms_monolith.model.enums.MonthlyBillStatus;
-import com.sbms.sbms_monolith.repository.MonthlyBillRepository;
-import com.sbms.sbms_monolith.service.PaymentService;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/payment")
+@RequestMapping("/api/payments")
 @RequiredArgsConstructor
 public class PaymentController {
-	
-	@Autowired
-	public MonthlyBillRepository monthlyBillRepo;
-	
-	public PaymentService paymentService;
 
-	@PostMapping("/pay-bill")
-	@PreAuthorize("hasRole('STUDENT')")
-	public ResponseEntity<?> payMonthlyBill(
-	        @RequestBody PaymentRequestDTO dto,
-	        Authentication authentication
-	) {
-	    User student = (User) authentication.getPrincipal();
+    private final PaymentService paymentService;
+    private final PaymentIntentService paymentIntentService;
+    private final CashPaymentService cashPaymentService;
+    private final BankSlipPaymentService bankSlipPaymentService;
+    private final PaymentIntentRepository paymentIntentRepo;
+    private final PaymentTransactionRepository txRepo;
+    private final   UserRepository userRepository;
+    
+    private final JwtService jwtService;
 
-	    if (!student.getId().equals(dto.getUserId())) {
-	        throw new RuntimeException("Unauthorized");
-	    }
 
-	    MonthlyBill bill = monthlyBillRepo.findById(dto.getMonthlyBillId())
-	            .orElseThrow(() -> new RuntimeException("Bill not found"));
+    // 1️ CREATE PAYMENT INTENT
+    @PostMapping("/intent")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<PaymentIntent> createIntent(
+            @RequestBody CreatePaymentIntentDTO dto,
+            Authentication authentication
+    ) {
+        // Get user email from JWT
+        String email = authentication.getName();
 
-	    if (!bill.getStudent().getId().equals(student.getId())) {
-	        throw new RuntimeException("Forbidden");
-	    }
+        User student = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-	    PaymentResult result = paymentService.processPayment(
-	            student.getId(),
-	            bill.getTotalAmount(),
-	            dto.getPaymentMethod()
-	    );
+        // FORCE studentId from JWT (not frontend)
+        dto.setStudentId(student.getId());
 
-	    if (!result.isSuccess()) {
-	        throw new RuntimeException("Payment failed");
-	    }
-
-	    bill.setStatus(MonthlyBillStatus.PAID);
-	    monthlyBillRepo.save(bill);
-
-	    return ResponseEntity.ok(result);
-	}
-	
-	@GetMapping("/my")
-    public ResponseEntity<List<PaymentHistoryDTO>> myPayments(Authentication auth) {
-
-        // Extract logged-in user ID safely
-        Long userId = Long.parseLong(auth.getName());
-
-        List<PaymentHistoryDTO> payments =
-                paymentService.getPaymentHistory(userId);
-
-        return ResponseEntity.ok(payments);
+        return ResponseEntity.ok(paymentIntentService.create(dto));
     }
 
+    
+    @PostMapping("/{intentId}/reject")
+    @PreAuthorize("hasRole('OWNER')")
+    @Transactional
+    public void reject(@PathVariable Long intentId) {
+
+        PaymentIntent intent = paymentIntentRepo.findById(intentId)
+                .orElseThrow(() -> new RuntimeException("Payment intent not found"));
+
+        if (intent.getStatus() != PaymentIntentStatus.AWAITING_MANUAL_APPROVAL) {
+            throw new RuntimeException("Payment cannot be rejected");
+        }
+
+        intent.setManualApprovalStatus(ManualApprovalStatus.REJECTED);
+        intent.setStatus(PaymentIntentStatus.FAILED);
+
+        paymentIntentRepo.save(intent);
+    }
+
+
+    // 2️ CARD PAYMENT (PAYHERE)
+    @PostMapping("/pay/{intentId}")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<PaymentResult> pay(
+            @PathVariable Long intentId,
+            @RequestParam PaymentMethod method
+    ) {
+        return ResponseEntity.ok(paymentService.pay(intentId, method));
+    }
+
+   
+    
+    
+    @PostMapping("/cash/{intentId}")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<String> cashPayment(
+            @PathVariable Long intentId,
+            Authentication authentication
+    ) {
+        String email = authentication.getName(); // JWT subject
+
+        PaymentIntent intent = paymentIntentRepo.findById(intentId)
+                .orElseThrow(() -> new RuntimeException("Payment intent not found"));
+
+        // ✅ JWT-based ownership check
+       
+
+        cashPaymentService.createCashPayment(intentId);
+        return ResponseEntity.ok("CASH_PAYMENT_SUBMITTED");
+    }
+
+
+
+    // 4️ BANK SLIP (URL-BASED, NO MULTIPART)
+    @PostMapping("/bank-slip/{intentId}")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<String> submitBankSlipUrl(
+            @PathVariable Long intentId,
+            @RequestParam String slipUrl,
+            @RequestHeader("X-User-Id") Long studentId
+    ) {
+        PaymentIntent intent = paymentIntentRepo.findById(intentId)
+                .orElseThrow(() -> new RuntimeException("Payment intent not found"));
+
+        // 🔒 OWNERSHIP
+        if (!intent.getStudentId().equals(studentId)) {
+            throw new RuntimeException("Unauthorized access");
+        }
+
+        bankSlipPaymentService.attachSlipUrl(intentId, slipUrl);
+
+        return ResponseEntity.ok("SLIP_SUBMITTED");
+    }
+
+    
+    @GetMapping("/history")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<List<PaymentHistoryDTO>> history(
+            Authentication authentication,
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        String token = authHeader.substring(7); // remove "Bearer "
+        Long studentId = jwtService.extractUserId(token);
+
+        return ResponseEntity.ok(paymentService.history(studentId));
+    }
+
+
+
+    // 6️ KEY MONEY STATUS (FOR REGISTRATION PAGE)
+    @GetMapping("/key-money-status")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<Boolean> keyMoneyStatus(
+            @RequestParam Long boardingId,
+            @RequestHeader("X-User-Id") Long studentId
+    ) {
+        Optional<PaymentIntent> intentOpt =
+                paymentIntentRepo.findTopByStudentIdAndBoardingIdAndTypeOrderByCreatedAtDesc(
+                        studentId,
+                        boardingId,
+                        PaymentType.KEY_MONEY
+                );
+
+        if (intentOpt.isEmpty()) {
+            return ResponseEntity.ok(false);
+        }
+
+        PaymentIntentStatus status = intentOpt.get().getStatus();
+
+        //  STUDENT VIEW: paid OR pending verification
+        boolean visibleAsPaid =
+                status == PaymentIntentStatus.SUCCESS
+             || status == PaymentIntentStatus.AWAITING_MANUAL_APPROVAL;
+
+        return ResponseEntity.ok(visibleAsPaid);
+    }
+    
+    
+    
+    
+    
+    
+    @PostMapping("/gateway/callback")
+    @Transactional
+    public void handleGatewayCallback(
+            @RequestParam String transactionRef,
+            @RequestParam boolean success
+    ) {
+        PaymentTransaction tx = txRepo
+                .findByTransactionRef(transactionRef)
+                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+
+        if (!success) {
+            tx.setStatus(PaymentStatus.FAILED);
+            txRepo.save(tx);
+            return;
+        }
+
+        tx.setStatus(PaymentStatus.SUCCESS);
+        tx.setPaidAt(LocalDateTime.now());
+        txRepo.save(tx);
+
+        PaymentIntent intent = tx.getIntent();
+        intent.setStatus(PaymentIntentStatus.SUCCESS);
+        intent.setMethod(tx.getMethod());
+        intent.setCompletedAt(LocalDateTime.now());
+
+        paymentIntentRepo.save(intent); //  FIXED
+    }
 
 }

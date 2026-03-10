@@ -1,0 +1,13 @@
+{
+  "default_threshold": 0.60,
+  "ambiguity_margin": 0.10,
+  "intent_thresholds": {
+    "PAYMENT_HELP": 0.65,
+    "PAYMENT_FAILED": 0.70,
+    "PAYMENT_HISTORY": 0.68,
+    "REGISTRATION_PROCESS": 0.72,
+    "REGISTRATION_STATUS": 0.68,
+    "UTILITIES_HELP": 0.70,
+    "BILL_CALCULATION": 0.70
+  }
+}

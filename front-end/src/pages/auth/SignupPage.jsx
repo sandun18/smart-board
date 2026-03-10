@@ -287,11 +287,13 @@ import { FaArrowLeft } from "react-icons/fa";
 import { useAuth as useStudentAuth } from "../../context/student/StudentAuthContext";
 import { useOwnerAuth } from "../../context/owner/OwnerAuthContext";
 import { useTechAuth } from "../../context/technician/TechnicianAuthContext"; // ✅ Added
+import { useAuth as useAdminAuth } from "../../context/admin/AdminAuthContext";
 
 // Forms
 import StudentSignupForm from "../../components/student/auth/StudentSignupForm";
 import OwnerSignupForm from "../../components/Owner/auth/OwnerSignupForm";
 import TechnicianSignupForm from "../../components/technician/auth/TechnicianSignupForm"; // ✅ Added
+import AdminSignupForm from "../../components/admin/auth/AdminSignupForm";
 
 import backgroundImage from "../../assets/s5.jpg";
 import logo from "../../assets/logo.png";
@@ -315,7 +317,10 @@ const SignupPage = () => {
     useOwnerAuth();
   const { signup: signupTech, verifyRegistration: verifyTech } = useTechAuth(); // ✅ Added
 
-  // --- Step 1: Signup ---
+  const { signup: signupAdmin, verifyRegistration: verifyAdmin } =
+    useAdminAuth();
+
+  // --- HANDLER: Step 1 (Submit Details) ---
   const handleSignup = async (formData) => {
     setIsLoading(true);
     setError("");
@@ -325,7 +330,8 @@ const SignupPage = () => {
 
       if (role === "student") result = await signupStudent(formData);
       else if (role === "owner") result = await signupOwner(formData);
-      else if (role === "technician") result = await signupTech(formData); // ✅ Tech
+      else if (role === "technician") result = await signupTech(formData); //  Tech
+      else if (role === "admin") result = await signupAdmin(formData); //  Admin
 
       if (result && result.success) setStep(2);
       else setError(result?.message || "Registration failed.");
@@ -354,6 +360,12 @@ const SignupPage = () => {
         result = await verifyTech(emailForOtp, otpCode);
         if (result?.success)
           navigate("/technician/dashboard", { replace: true });
+      }  else if (role === "admin") {
+        // Verify Admin
+        result = await verifyAdmin(emailForOtp, otpCode);
+        if (result && result.success) {
+          navigate("/admin/dashboard", { replace: true });
+        }
       }
 
       if (!result?.success) setError(result?.message || "Invalid OTP");
@@ -416,7 +428,7 @@ const SignupPage = () => {
           {/* Role Toggle */}
           {step === 1 && (
             <div className="flex max-w-md mx-auto p-1 bg-gray-100 rounded-lg mb-8 shadow-inner">
-              {["student", "owner", "technician"].map((r) => (
+              {["student", "owner", "technician", "admin"].map((r) => (
                 <button
                   key={r}
                   onClick={() => {
@@ -480,6 +492,18 @@ const SignupPage = () => {
                 )}
                 {role === "owner" && (
                   <OwnerSignupForm
+                    onSubmit={handleSignup}
+                    isLoading={isLoading}
+                  />
+                )}
+                {role === "admin" && (
+                  <AdminSignupForm
+                    onSubmit={handleSignup}
+                    isLoading={isLoading}
+                  />
+                )}
+                {role === "technician" && (
+                  <TechnicianSignupForm
                     onSubmit={handleSignup}
                     isLoading={isLoading}
                   />

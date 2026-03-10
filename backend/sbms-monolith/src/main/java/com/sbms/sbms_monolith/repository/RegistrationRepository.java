@@ -24,6 +24,8 @@ public interface RegistrationRepository extends JpaRepository<Registration, Long
     
     Optional<Registration> findById(Long id);
     
+    int countByBoarding_IdAndStatus(Long boardingId, RegistrationStatus status);
+    
     List<Registration> findByBoarding_IdAndStatus(Long boardingId, RegistrationStatus status);
 
     List<Registration> findByBoarding_OwnerAndStatus(User owner, RegistrationStatus status);

@@ -2,8 +2,11 @@ server:
   port: 8086
 
 spring:
-  application:
+  application: 
     name: sbms-backend
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
 
   # Database Configuration
   datasource:
@@ -59,5 +62,9 @@ aws:
   s3:
     bucketName: smart-board-project
 
+
+sbms:
+  rabbitmq:
+    exchange: emergency
 
 #url: jdbc:postgresql://smart-board-db.c7miuo2k4f6h.ap-south-1.rds.amazonaws.com:5432/smart-board

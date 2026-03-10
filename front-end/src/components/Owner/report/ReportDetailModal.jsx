@@ -1,217 +1,238 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-const getStatusBadgeStyle = (status) => {
-  switch (status) {
-    case "New":
-      return {
-        bgClass: "bg-accent/10",
-        textClass: "text-accent",
-        icon: "fas fa-flag",
-      };
-    case "In Progress":
-      return {
-        bgClass: "bg-info/10",
-        textClass: "text-info",
-        icon: "fas fa-sync-alt",
-      };
-    case "Resolved":
-      return {
-        bgClass: "bg-success/10",
-        textClass: "text-success",
-        icon: "fas fa-check-circle",
-      };
-    default:
-      return {
-        bgClass: "bg-muted/10",
-        textClass: "text-muted",
-        icon: "fas fa-file",
-      };
-  }
-};
-
-const backdropVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1 },
-  exit: { opacity: 0 },
-};
-
-const modalVariants = {
-  hidden: { scale: 0.8, opacity: 0, y: 50 },
-  visible: {
-    scale: 1,
-    opacity: 1,
-    y: 0,
-    transition: { type: "spring", bounce: 0.3, duration: 0.5 },
-  },
-  exit: { scale: 0.8, opacity: 0, y: 50 },
-};
-
 const ReportDetailModal = ({ report, onClose }) => {
   if (!report) return null;
 
-  const statusStyle = getStatusBadgeStyle(report.status);
+  // 🟢 DATA MAPPING (Matches ReportResponseDTO.java)
+  const data = {
+    id: report.id,
+    title: report.title,
+    description: report.description,
+    status: report.status || "PENDING",
+    type: report.type || "General",
+    priority: report.priority || "LOW", // DTO uses 'priority' (enum)
+    date: report.date,
+
+    // Boarding Info
+    property: report.property,
+
+    // User Info (Handle DTO nested objects or flat strings)
+    student: report.reportedUser?.name || report.student || "N/A",
+    sender: report.sender?.name || "Unknown",
+
+    // Admin Resolutions (From DTO)
+    adminResponse: report.adminResponse,
+    actionTaken: report.actionTaken,
+    actionDuration: report.actionDuration,
+
+    // Evidence (Handle single object DTO or List)
+    evidence: report.evidence ? [report.evidence] : [], // Wrap single DTO in array for map
+    evidenceCount: report.evidenceCount || 0,
+  };
+
+  const isResolved = data.status === "RESOLVED" || data.status === "DISMISSED";
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-text/40 backdrop-blur-md"
-      variants={backdropVariants}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm"
       onClick={onClose}
     >
       <motion.div
-        className="bg-light w-full max-w-3xl rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col border border-light"
-        variants={modalVariants}
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 20 }}
         onClick={(e) => e.stopPropagation()}
+        className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
       >
-        {/* --- Header Section --- */}
-        <div className="px-8 py-6 bg-light border-b border-muted/10 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <motion.div
-              initial={{ rotate: -180, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-sm ${statusStyle.bgClass} ${statusStyle.textClass}`}
-            >
-              <i className={statusStyle.icon}></i>
-            </motion.div>
-            <div>
-              <h3 className="text-2xl font-black text-text tracking-tight">
-                View Incident Report
-              </h3>
-              <p className="text-[11px] text-muted font-black uppercase tracking-widest">
-                Reference ID: #{report.id}
-              </p>
+        {/* --- HEADER --- */}
+        <div className="flex items-start justify-between px-8 py-5 border-b border-gray-100 bg-gray-50/50">
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <h2 className="text-xl font-bold leading-tight text-gray-800">
+                {data.title}
+              </h2>
             </div>
+            <p className="text-xs font-medium text-gray-500">
+              Submitted on <span className="text-gray-700">{data.date}</span> •
+            </p>
           </div>
-          <motion.button
-            whileHover={{ rotate: 90, scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+
+          <button
             onClick={onClose}
-            className="w-10 h-10 rounded-full bg-card-bg flex items-center justify-center text-muted hover:text-text shadow-sm border border-light"
+            className="flex items-center justify-center w-8 h-8 text-gray-400 transition-colors bg-white border border-gray-200 rounded-full shadow-sm hover:text-red-500 hover:border-red-200"
           >
-            <i className="fas fa-times text-lg"></i>
-          </motion.button>
+            <i className="fas fa-times"></i>
+          </button>
         </div>
 
-        {/* --- Content Area --- */}
-        <div className="p-8 space-y-6 overflow-y-auto bg-light/30">
-          {/* Card 1: Involved Parties */}
-          <motion.div
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className="bg-card-bg p-6 rounded-report shadow-custom border border-light grid grid-cols-2 gap-6 relative overflow-hidden"
-          >
-            <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-accent"></div>
+        {/* --- SCROLLABLE CONTENT --- */}
+        <div className="p-8 space-y-8 overflow-y-auto custom-scrollbar">
+          {/* 1. Status & Priority Banner */}
+          <div className="flex gap-4">
+            <div
+              className={`flex-1 p-4 rounded-xl border flex flex-col justify-center items-center gap-1 
+              ${
+                data.status === "PENDING"
+                  ? "bg-blue-50 border-blue-100 text-blue-700"
+                  : data.status === "RESOLVED"
+                    ? "bg-emerald-50 border-emerald-100 text-emerald-700"
+                    : "bg-gray-50 border-gray-100 text-gray-600"
+              }`}
+            >
+              <span className="text-[10px] uppercase font-black tracking-widest opacity-60">
+                Current Status
+              </span>
+              <span className="text-lg font-bold">
+                {data.status.replace("_", " ")}
+              </span>
+            </div>
+            <div className="flex flex-col items-center justify-center flex-1 gap-1 p-4 text-gray-600 border border-gray-100 rounded-xl bg-gray-50">
+              <span className="text-[10px] uppercase font-black tracking-widest opacity-60">
+                Severity Level
+              </span>
+              <span className="text-lg font-bold">{data.priority}</span>
+            </div>
+          </div>
 
-            <div className="space-y-1">
-              <label className="text-[10px] font-black text-muted uppercase tracking-widest">
-                Boarding Property
+          {/* 2. Key Parties (Grid) */}
+          <div className="grid grid-cols-2 gap-6">
+            {/* Boarding */}
+            <div>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">
+                Property
               </label>
-              <div className="flex items-center gap-2 text-text">
-                <i className="fas fa-building text-info"></i>
-                <span className="font-black text-lg">{report.property}</span>
+              <div className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg">
+                <div className="flex items-center justify-center w-8 h-8 text-gray-400 bg-gray-100 rounded-lg">
+                  <i className="fas fa-building"></i>
+                </div>
+                <span className="text-sm font-bold text-gray-700 truncate">
+                  {data.property}
+                </span>
               </div>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-[10px] font-black text-muted uppercase tracking-widest">
-                Assigned Student
+            {/* Student */}
+            <div>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">
+                Reported Individual
               </label>
-              <div className="flex items-center gap-2 text-text">
-                <i className="fas fa-user-circle text-accent"></i>
-                <span className="font-black text-lg">{report.student}</span>
+              <div className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg">
+                <div className="flex items-center justify-center w-8 h-8 text-gray-400 bg-gray-100 rounded-lg">
+                  <i className="fas fa-user"></i>
+                </div>
+                <span className="text-sm font-bold text-gray-700 truncate">
+                  {data.student}
+                </span>
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          {/* Card 2: Incident Details */}
-          <motion.div
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="bg-card-bg p-8 rounded-report shadow-custom border border-light space-y-6"
-          >
-            <div className="flex justify-between items-start">
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-muted uppercase tracking-widest">
-                  Incident Category
-                </label>
-                <p className="text-xl font-black text-text">{report.type}</p>
-              </div>
-              <div className="text-right">
-                <label className="text-[10px] font-black text-muted uppercase tracking-widest">
-                  Submission Date
-                </label>
-                <p className="font-bold text-muted tracking-tight">
-                  {report.date}
-                </p>
-              </div>
+          {/* 3. Description */}
+          <div>
+            <h3 className="flex items-center gap-2 mb-3 text-sm font-bold text-gray-900">
+              <i className="text-gray-300 fas fa-align-left"></i> Incident
+              Details
+            </h3>
+            <div className="p-6 text-sm font-medium leading-relaxed text-gray-600 whitespace-pre-wrap border border-gray-100 bg-gray-50 rounded-xl">
+              "{data.description}"
             </div>
+          </div>
 
-            <div className="p-6 bg-light/20 rounded-2xl border border-light">
-              <label className="text-[10px] font-black text-muted uppercase tracking-widest mb-3 block">
-                Full Description
-              </label>
-              <p className="text-text leading-relaxed font-medium italic">
-                "{report.description}"
-              </p>
-            </div>
-          </motion.div>
+          {/* 4. Admin Resolution (Only if Resolved/Dismissed) */}
+          {isResolved && (data.adminResponse || data.actionTaken) && (
+            <div className="p-6 border bg-emerald-50/50 border-emerald-100 rounded-xl">
+              <h3 className="flex items-center gap-2 mb-4 text-sm font-bold text-emerald-800">
+                <i className="fas fa-check-circle"></i> Official Resolution
+              </h3>
 
-          {/* Card 3: Evidence Files */}
-          <motion.div
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="bg-card-bg p-8 rounded-report shadow-custom border border-light"
-          >
-            <h4 className="text-xs font-black text-text uppercase tracking-widest mb-4 flex items-center gap-2">
-              <i className="fas fa-paperclip text-muted"></i> Attached Evidence
-            </h4>
-
-            {report.evidenceCount > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {[...Array(report.evidenceCount)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    className="group relative aspect-square rounded-2xl bg-light/20 border-2 border-dashed border-light flex flex-col items-center justify-center cursor-default"
-                  >
-                    <i className="fas fa-file-image text-2xl text-muted/40"></i>
-                    <span className="text-[10px] font-bold text-muted mt-2">
-                      Evidence_{i + 1}.jpg
+              <div className="space-y-4">
+                {data.actionTaken && (
+                  <div className="flex justify-between pb-2 border-b border-emerald-100/50">
+                    <span className="text-xs font-bold uppercase text-emerald-600">
+                      Action Taken:
                     </span>
-                  </motion.div>
+                    <span className="text-xs font-medium text-emerald-900">
+                      {data.actionTaken} ({data.actionDuration})
+                    </span>
+                  </div>
+                )}
+                {data.adminResponse && (
+                  <div>
+                    <span className="block mb-1 text-xs font-bold uppercase text-emerald-600">
+                      Admin Notes:
+                    </span>
+                    <p className="text-sm text-emerald-900">
+                      {data.adminResponse}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 5. Evidence Section */}
+          <div>
+            <h3 className="flex items-center gap-2 mb-3 text-sm font-bold text-gray-900">
+              <i className="text-gray-300 fas fa-paperclip"></i> Evidence (
+              {data.evidenceCount})
+            </h3>
+
+            {data.evidenceCount > 0 ? (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {/* Map EvidenceDTO or generic array */}
+                {data.evidence.map((file, i) => (
+                  <a
+                    href={file.url || "#"}
+                    target="_blank"
+                    rel="noreferrer"
+                    key={i}
+                    className="relative overflow-hidden transition-all bg-gray-100 border border-gray-200 cursor-pointer group aspect-square rounded-xl hover:border-accent"
+                  >
+                    {/* If it's an image, show it, otherwise show icon */}
+                    {file.type === "image" ||
+                    (file.url && file.url.match(/\.(jpeg|jpg|png|gif)$/)) ? (
+                      <img
+                        src={file.url}
+                        alt="Evidence"
+                        className="object-cover w-full h-full"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center w-full h-full text-gray-400 group-hover:text-accent">
+                        <i className="mb-1 text-2xl fas fa-file-alt"></i>
+                        <span className="text-[9px] uppercase font-bold">
+                          Document
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold backdrop-blur-[2px]">
+                      View File
+                    </div>
+                  </a>
                 ))}
               </div>
             ) : (
-              <div className="py-8 text-center bg-light/10 rounded-2xl border border-dashed border-light">
-                <p className="text-sm text-muted font-medium italic">
-                  No evidence files attached.
+              <div className="py-8 text-center border border-gray-200 border-dashed bg-gray-50 rounded-xl">
+                <p className="text-xs italic text-gray-400">
+                  No evidence files attached to this report.
                 </p>
               </div>
             )}
-          </motion.div>
+          </div>
         </div>
 
-        {/* --- Footer Section --- */}
-        <div className="p-6 bg-light border-t border-muted/10 flex justify-between items-center">
-          <div className="text-[10px] font-black text-muted uppercase tracking-widest">
-            <i className="fas fa-lock mr-1 opacity-50"></i> Official System Log
-            - Read Only
-          </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+        {/* --- FOOTER --- */}
+        <div className="flex justify-end gap-3 p-5 border-t border-gray-200 bg-gray-50">
+          <button
             onClick={onClose}
-            className="px-10 py-3 bg-text text-white rounded-full font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-black transition-all"
+            className="px-8 py-2.5 rounded-lg text-xs font-bold text-white bg-gray-900 hover:bg-black transition-colors shadow-lg"
           >
             Close Viewer
-          </motion.button>
+          </button>
         </div>
       </motion.div>
     </motion.div>

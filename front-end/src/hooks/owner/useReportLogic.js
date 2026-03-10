@@ -99,13 +99,35 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useOwnerAuth } from "../../context/owner/OwnerAuthContext";
-import { getOwnerReports, createOwnerReport } from "../../api/owner/service";
+import { getOwnerReports, createReport } from "../../api/owner/service";
+
+// 🛠️ HELPER: Fixes Backend vs Frontend mismatch
+// Converts "New" -> "PENDING", "In Progress" -> "UNDER_REVIEW"
+const normalizeStatus = (status) => {
+  if (!status) return "PENDING";
+
+  const s = String(status).toUpperCase();
+
+  // Map typical Display Strings to Enums
+  if (s === "NEW" || s === "PENDING") return "PENDING";
+  if (s === "IN PROGRESS" || s === "IN_PROGRESS" || s === "UNDER_REVIEW")
+    return "UNDER_REVIEW";
+  if (s === "RESOLVED") return "RESOLVED";
+  if (s === "DISMISSED") return "DISMISSED";
+  if (s === "INVESTIGATING") return "INVESTIGATING";
+
+  return "PENDING"; // Default fallback
+};
 
 const useReportLogic = () => {
   const { currentOwner } = useOwnerAuth();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("New"); // Default filter: New, In Progress, Resolved
+  const [error, setError] = useState(null);
+
+  // UI State
+  const [filter, setFilter] = useState("All");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 1. Fetch Reports
   const fetchReports = async () => {
@@ -114,24 +136,21 @@ const useReportLogic = () => {
     try {
       const data = await getOwnerReports(currentOwner.id);
 
-      // Map Backend DTO to Frontend UI Structure
-      const mappedData = data.map((r) => ({
-        id: r.id,
-        title: r.reportTitle,
-        description: r.reportDescription,
-        status: r.status || "New", // Default to New if null
-        date: r.incidentDate,
-        type: r.type,
-        severity: r.severity,
-        student: r.reportedUserName || "Unknown User", // Works for Student or Tech
-        studentId: r.reportedUserId,
-        property: r.boardingTitle || "General",
-        evidenceCount: 0, // You can update this if backend sends file count
+      const safeData = Array.isArray(data) ? data : [];
+
+      // 🛠️ FIX APPLIED HERE: Normalize the data immediately
+      const cleanedData = safeData.map((report) => ({
+        ...report,
+        // Overwrite the 'status' with the correct Enum Key
+        status: normalizeStatus(report.status),
       }));
 
-      setReports(mappedData);
-    } catch (error) {
-      console.error("Failed to load reports", error);
+      setReports(cleanedData);
+      setError(null);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError("Failed to load reports.");
+      setReports([]);
     } finally {
       setLoading(false);
     }
@@ -141,32 +160,41 @@ const useReportLogic = () => {
     fetchReports();
   }, [currentOwner]);
 
-  // 2. Filter Reports
-  const filteredReports = useMemo(() => {
-    if (filter === "All") return reports;
-    // Simple status matching
-    return reports.filter(
-      (r) =>
-        r.status === filter || (filter === "New" && r.status === "PENDING"),
-    );
-  }, [reports, filter]);
+  // 2. Submit Logic
+  const submitNewReport = async (formData, files) => {
+    if (!currentOwner?.id)
+      return { success: false, message: "User not identified" };
 
-  // 3. Submit Logic (Wraps the API)
-  const submitNewReport = async (reportData, files) => {
+    setIsSubmitting(true);
     try {
-      // Ensure Owner ID is attached
-      const payload = { ...reportData, ownerId: currentOwner.id };
-      await createOwnerReport(payload, files);
-      await fetchReports(); // Refresh list after submit
+      const dataToSend = {
+        ...formData,
+        senderId: currentOwner.id,
+      };
+
+      await createReport(dataToSend, files);
+      await fetchReports();
       return { success: true };
     } catch (error) {
       return { success: false, message: error.message };
     }
   };
 
+  // 3. Filter Logic (Now compares Enum vs Enum)
+  const filteredReports = useMemo(() => {
+    if (filter === "All") return reports;
+
+    // Both sides are now guaranteed to be Enums (e.g., PENDING == PENDING)
+    return reports.filter((rep) => rep.status === filter);
+  }, [reports, filter]);
+
   return {
     reports,
     filteredReports,
+    loading,
+    error,
+    isSubmitting,
+    filter,
     setFilter,
     submitNewReport,
     loading,

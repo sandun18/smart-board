@@ -22,7 +22,7 @@ import com.sbms.sbms_monolith.service.AdminService;
 
 @RestController
 @RequestMapping("/api/admin")
-@PreAuthorize("hasRole('ADMIN')") // 🔒 ALL admin endpoints protected
+@PreAuthorize("hasRole('ADMIN')") 
 public class AdminController {
 
     @Autowired
@@ -44,6 +44,11 @@ public class AdminController {
             @RequestBody UserVerificationDTO dto
     ) {
         adminService.verifyOwner(userId, dto);
+    }
+
+    @PutMapping("/users/{userId}/promote-to-admin")
+    public AdminUserResponseDTO promoteToAdmin(@PathVariable Long userId) {
+        return adminService.promoteUserToAdmin(userId);
     }
 
     @GetMapping("/boardings")

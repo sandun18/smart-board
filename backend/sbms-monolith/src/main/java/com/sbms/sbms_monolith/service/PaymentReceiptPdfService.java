@@ -1,183 +1,186 @@
 package com.sbms.sbms_monolith.service;
 
-
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
 import com.sbms.sbms_monolith.model.PaymentTransaction;
-import com.sbms.sbms_monolith.model.Registration;
+import com.sbms.sbms_monolith.model.User;
+import com.sbms.sbms_monolith.model.Boarding;
+import com.sbms.sbms_monolith.repository.UserRepository;
+import com.sbms.sbms_monolith.repository.BoardingRepository;
+
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.*;
+import com.itextpdf.text.pdf.draw.LineSeparator;
+
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
-import java.net.URL;
+import java.io.InputStream;
 import java.time.format.DateTimeFormatter;
 
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.PdfWriter;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class PaymentReceiptPdfService {
 
-    public byte[] generateReceipt(PaymentTransaction tx) {
+    private final UserRepository userRepository;
+    private final BoardingRepository boardingRepository;
+
+    public byte[] generate(PaymentTransaction tx) {
 
         try {
-            Document document = new Document();
+            Document doc = new Document(PageSize.A4, 36, 36, 36, 36);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            PdfWriter.getInstance(document, out);
+            PdfWriter.getInstance(doc, out);
+            doc.open();
 
-            document.open();
+            /* ---------- FETCH REAL DATA ---------- */
 
-            document.add(new Paragraph("SMART BOARDING MANAGEMENT SYSTEM"));
-            document.add(new Paragraph("Payment Receipt"));
-            document.add(new Paragraph(" "));
+            Long studentId = tx.getIntent().getStudentId();
+            Long ownerId   = tx.getIntent().getOwnerId();
+            Long boardingId = tx.getIntent().getBoardingId();
 
-            document.add(new Paragraph("Transaction Ref: " + tx.getTransactionRef()));
-            document.add(new Paragraph("Amount: LKR " + tx.getAmount()));
-            document.add(new Paragraph("Payment Method: " + tx.getMethod()));
-            document.add(new Paragraph("Status: " + tx.getStatus()));
-            document.add(new Paragraph("Date: " + tx.getCreatedAt()));
+            User student = userRepository.findById(studentId).orElse(null);
+            User owner   = userRepository.findById(ownerId).orElse(null);
+            Boarding boarding = boardingRepository.findById(boardingId).orElse(null);
 
-            document.add(new Paragraph(" "));
-            document.add(new Paragraph("Thank you for your payment."));
+            String studentName = student != null ? student.getFullName() : "N/A";
+            String ownerName   = owner != null ? owner.getFullName() : "N/A";
+            String boardingTitle = boarding != null ? boarding.getTitle() : "N/A";
 
-            document.close();
-            return out.toByteArray();
+            /* ---------- COLORS ---------- */
+            BaseColor PRIMARY = new BaseColor(37, 99, 235);   // Blue
+            BaseColor DARK = new BaseColor(15, 23, 42);
+            BaseColor GRAY = new BaseColor(100, 116, 139);
+            BaseColor SUCCESS = new BaseColor(34, 197, 94);
 
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to generate receipt PDF", e);
-        }
-    }
+            /* ---------- FONTS ---------- */
+            Font brand = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 22, PRIMARY);
+            Font slogan = FontFactory.getFont(FontFactory.HELVETICA, 11, GRAY);
 
-    public byte[] generateRegistrationReceipt(Registration reg) {
-        try {
-            Document document = new Document();
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            PdfWriter.getInstance(document, out);
+            Font section = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14, DARK);
+            Font label = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, GRAY);
+            Font value = FontFactory.getFont(FontFactory.HELVETICA, 11, DARK);
+            Font success = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14, SUCCESS);
 
-            document.open();
+            /* ---------- HEADER ---------- */
+            doc.add(new Paragraph("SMART BOARD", brand));
+            doc.add(new Paragraph("Live Smarter. Manage Better.", slogan));
+            doc.add(Chunk.NEWLINE);
 
-            // 1. ADD LOGO
+            /* ---------- PAID SEAL ---------- */
             try {
-                // Looks for logo.png in src/main/resources/
-                URL logoUrl = getClass().getResource("/logo.png");
-                if (logoUrl != null) {
-                    Image logo = Image.getInstance(logoUrl);
-                    logo.scaleToFit(120, 60); // Resize width/height
-                    logo.setAlignment(Element.ALIGN_CENTER);
-                    document.add(logo);
-                    document.add(new Paragraph("\n")); // Space after logo
-                }
-            } catch (Exception e) {
-                System.err.println("Warning: Logo not found or could not be loaded.");
-            }
+                InputStream sealStream =
+                        new ClassPathResource("pdf/paid-seal.png").getInputStream();
+                Image seal = Image.getInstance(sealStream.readAllBytes());
+                seal.scaleAbsolute(120, 120);
+                seal.setAbsolutePosition(420, 700);
+                doc.add(seal);
+            } catch (Exception ignored) {}
 
-            // Fonts
-            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.BLACK);
-            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, BaseColor.BLACK);
-            Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.BLACK);
-            Font amountFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14, BaseColor.BLACK);
+            /* ---------- TITLE ---------- */
+            doc.add(new Paragraph("PAYMENT RECEIPT", section));
+            doc.add(new LineSeparator());
+            doc.add(Chunk.NEWLINE);
 
-            // 2. Header Text
-            Paragraph title = new Paragraph("OFFICIAL KEY MONEY RECEIPT", titleFont);
-            title.setAlignment(Element.ALIGN_CENTER);
-            document.add(title);
+            /* ---------- META TABLE ---------- */
+            PdfPTable meta = new PdfPTable(2);
+            meta.setWidthPercentage(100);
 
-            Paragraph subtitle = new Paragraph("Smart Boarding Management System", normalFont);
-            subtitle.setAlignment(Element.ALIGN_CENTER);
-            document.add(subtitle);
-            document.add(new Paragraph("\n"));
+            addRow(meta, "Receipt No", tx.getTransactionRef(), label, value);
+            addRow(meta, "Date",
+                    tx.getPaidAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+                    label, value);
+            addRow(meta, "Payment Method", tx.getMethod().name(), label, value);
+            addRow(meta, "Status", "PAID", label, success);
 
-            // 3. Transaction Details
-            PdfPTable txnTable = new PdfPTable(2);
-            txnTable.setWidthPercentage(100);
-            txnTable.setSpacingAfter(10f);
+            doc.add(meta);
+            doc.add(Chunk.NEWLINE);
 
-            addSimpleRow(txnTable, "Receipt No:", "REC-" + reg.getId(), headerFont, normalFont);
-            addSimpleRow(txnTable, "Date:", reg.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")), headerFont, normalFont);
-            addSimpleRow(txnTable, "Transaction Ref:", reg.getPaymentTransactionRef(), headerFont, normalFont);
-            addSimpleRow(txnTable, "Payment Method:", "Online Card Payment", headerFont, normalFont);
+            /* ---------- PARTIES ---------- */
+            PdfPTable parties = new PdfPTable(2);
+            parties.setWidthPercentage(100);
 
-            document.add(txnTable);
-            document.add(new Paragraph("---------------------------------------------------------------------------------------"));
+            addBlock(parties, "STUDENT", studentName);
+            addBlock(parties, "OWNER", ownerName);
 
-            // 4. Student & Boarding Info
-            document.add(new Paragraph("Property & Tenant Details\n", headerFont));
+            doc.add(parties);
+            doc.add(Chunk.NEWLINE);
 
-            PdfPTable infoTable = new PdfPTable(2);
-            infoTable.setWidthPercentage(100);
-            infoTable.setSpacingBefore(5f);
+            /* ---------- BOARDING ---------- */
+            doc.add(new Paragraph("Boarding: " + boardingTitle, value));
+            doc.add(Chunk.NEWLINE);
 
-            addSimpleRow(infoTable, "Property Name:", reg.getBoarding().getTitle(), headerFont, normalFont);
-            addSimpleRow(infoTable, "Owner Name:", reg.getBoarding().getOwner().getFullName(), headerFont, normalFont);
-            addSimpleRow(infoTable, "Student Name:", reg.getStudent().getFullName(), headerFont, normalFont);
-            addSimpleRow(infoTable, "Student Phone:", reg.getStudent().getPhone(), headerFont, normalFont);
+            /* ---------- AMOUNTS ---------- */
+            PdfPTable amounts = new PdfPTable(2);
+            amounts.setWidthPercentage(100);
 
-            document.add(infoTable);
-            document.add(new Paragraph("\n"));
+            addMoney(amounts, "Gross Amount", tx.getAmount());
+            addMoney(amounts, "Platform Fee (2%)", tx.getPlatformFee());
+            addMoney(amounts, "Gateway Fee (1%)", tx.getGatewayFee());
 
-            // 5. Agreement Details (From Form)
-            document.add(new Paragraph("Rental Agreement Details\n", headerFont));
+            PdfPCell netLabel = new PdfPCell(new Phrase("Net Amount to Owner", label));
+            netLabel.setPadding(8);
+            netLabel.setBorder(Rectangle.TOP);
+            amounts.addCell(netLabel);
 
-            PdfPTable agreeTable = new PdfPTable(2);
-            agreeTable.setWidthPercentage(100);
-            agreeTable.setSpacingBefore(5f);
+            PdfPCell netValue = new PdfPCell(
+                    new Phrase("LKR " + tx.getNetAmount(), success));
+            netValue.setPadding(8);
+            netValue.setBorder(Rectangle.TOP);
+            netValue.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            amounts.addCell(netValue);
 
-            addRows(agreeTable, "Move-in Date", reg.getMoveInDate() != null ? reg.getMoveInDate().toString() : "N/A");
-            addRows(agreeTable, "Agreement Period", reg.getContractDuration());
-            addRows(agreeTable, "Emergency Contact", reg.getEmergencyContactName() + "\n" + reg.getEmergencyContactPhone());
-            addRows(agreeTable, "Special Notes", reg.getSpecialRequirements() == null || reg.getSpecialRequirements().isEmpty() ? "None" : reg.getSpecialRequirements());
+            doc.add(amounts);
 
-            document.add(agreeTable);
+            /* ---------- FOOTER ---------- */
+            doc.add(Chunk.NEWLINE);
+            doc.add(new LineSeparator());
+            doc.add(new Paragraph(
+                    "This is a system-generated receipt.\n" +
+                    "Powered by Smart Boarding Management System",
+                    FontFactory.getFont(FontFactory.HELVETICA, 9, GRAY)
+            ));
 
-            // 6. Total Amount
-            document.add(new Paragraph("\n"));
-            PdfPTable amountTable = new PdfPTable(1);
-            amountTable.setWidthPercentage(100);
-
-            PdfPCell amountCell = new PdfPCell(new Phrase("TOTAL PAID: LKR " + reg.getBoarding().getKeyMoney(), amountFont));
-            amountCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            amountCell.setBorder(Rectangle.NO_BORDER);
-            amountCell.setPaddingTop(10f);
-            amountTable.addCell(amountCell);
-
-            document.add(amountTable);
-
-            // 7. Footer
-            document.add(new Paragraph("\n\n"));
-            Paragraph footer = new Paragraph("This is a computer-generated receipt and requires no physical signature.\nWelcome to your new home!", FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 8, BaseColor.GRAY));
-            footer.setAlignment(Element.ALIGN_CENTER);
-            document.add(footer);
-
-            document.close();
+            doc.close();
             return out.toByteArray();
 
         } catch (Exception e) {
-            throw new RuntimeException("Error creating Registration PDF", e);
+            throw new RuntimeException("PDF generation failed", e);
         }
     }
 
-    private void addRows(PdfPTable table, String header, String value) {
-        PdfPCell headerCell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
-        headerCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-        headerCell.setPadding(5f);
+    /* ---------- HELPERS ---------- */
 
-        PdfPCell valueCell = new PdfPCell(new Phrase(value, FontFactory.getFont(FontFactory.HELVETICA, 10)));
-        valueCell.setPadding(5f);
-
-        table.addCell(headerCell);
-        table.addCell(valueCell);
+    private void addRow(PdfPTable t, String l, String v, Font lf, Font vf) {
+        t.addCell(cell(l, lf));
+        t.addCell(cell(v, vf));
     }
 
-    private void addSimpleRow(PdfPTable table, String label, String value, Font labelFont, Font valueFont) {
-        PdfPCell labelCell = new PdfPCell(new Phrase(label, labelFont));
-        labelCell.setBorder(Rectangle.NO_BORDER);
-        labelCell.setPaddingBottom(5f);
-
-        PdfPCell valueCell = new PdfPCell(new Phrase(value, valueFont));
-        valueCell.setBorder(Rectangle.NO_BORDER);
-        valueCell.setPaddingBottom(5f);
-
-        table.addCell(labelCell);
-        table.addCell(valueCell);
+    private void addBlock(PdfPTable t, String title, String name) {
+        PdfPCell c = new PdfPCell();
+        c.setPadding(10);
+        c.setBorder(Rectangle.BOX);
+        c.addElement(new Paragraph(title,
+                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11)));
+        c.addElement(new Paragraph(name,
+                FontFactory.getFont(FontFactory.HELVETICA, 12)));
+        t.addCell(c);
     }
 
+    private void addMoney(PdfPTable t, String label, Object value) {
+        t.addCell(cell(label,
+                FontFactory.getFont(FontFactory.HELVETICA, 11)));
+        PdfPCell c = cell("LKR " + value,
+                FontFactory.getFont(FontFactory.HELVETICA, 11));
+        c.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        t.addCell(c);
+    }
+
+    private PdfPCell cell(String text, Font f) {
+        PdfPCell c = new PdfPCell(new Phrase(text, f));
+        c.setPadding(8);
+        c.setBorder(Rectangle.NO_BORDER);
+        return c;
+    }
 }

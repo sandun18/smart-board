@@ -100,7 +100,7 @@ public class AdminServiceImpl implements AdminService {
         Boarding boarding = boardingRepository.findById(boardingId)
                 .orElseThrow(() -> new RuntimeException("Boarding not found"));
 
-        boarding.setStatus(Status.ACTIVE);
+        boarding.setStatus(Status.APPROVED);
         boardingRepository.save(boarding);
     }
 

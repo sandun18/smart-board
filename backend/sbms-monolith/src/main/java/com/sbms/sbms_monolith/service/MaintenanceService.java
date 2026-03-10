@@ -1,5 +1,6 @@
 package com.sbms.sbms_monolith.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.sbms.sbms_monolith.model.enums.RegistrationStatus;
@@ -95,24 +96,33 @@ public class MaintenanceService {
     }
 
     public MaintenanceResponseDTO decide(Long ownerId,
-                                         Long maintenanceId,
-                                         MaintenanceDecisionDTO dto) {
+                                     Long maintenanceId,
+                                     MaintenanceDecisionDTO dto) {
 
-        Maintenance m = maintenanceRepo.findById(maintenanceId)
-                .orElseThrow(() -> new RuntimeException("Maintenance not found"));
+    Maintenance m = maintenanceRepo.findById(maintenanceId)
+            .orElseThrow(() -> new RuntimeException("Maintenance not found"));
 
-        if (!m.getBoarding().getOwner().getId().equals(ownerId)) {
-            throw new RuntimeException("Unauthorized");
+    if (!m.getBoarding().getOwner().getId().equals(ownerId)) {
+        throw new RuntimeException("Unauthorized");
+    }
+
+    m.setStatus(dto.getStatus());
+    m.setOwnerNote(dto.getOwnerNote());
+
+    // ✅ NEW CODE: Set the updated/finished date
+    // This takes the date sent from the frontend (created when you clicked the button)
+    if (dto.getUpdatedAt() != null) {
+        m.setUpdatedAt(dto.getUpdatedAt());
+    } else {
+        // Fallback: If for some reason the DTO date is null, use current server time
+        m.setUpdatedAt(LocalDateTime.now());
+    }
+
+    if (dto.getStatus() == MaintenanceStatus.REJECTED && m.getImageUrls() != null) {
+        for (String url : m.getImageUrls()) {
+            s3Service.deleteFile(url);
         }
-
-        m.setStatus(dto.getStatus());
-        m.setOwnerNote(dto.getOwnerNote());
-
-                if (dto.getStatus() == MaintenanceStatus.REJECTED && m.getImageUrls() != null) {
-            for (String url : m.getImageUrls()) {
-                s3Service.deleteFile(url);
-            }
-        }
+    }
 
         maintenanceRepo.save(m);
         return MaintenanceMapper.toDTO(m);

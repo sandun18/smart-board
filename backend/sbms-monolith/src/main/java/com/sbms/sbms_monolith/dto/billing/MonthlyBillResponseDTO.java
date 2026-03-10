@@ -19,6 +19,8 @@ public class MonthlyBillResponseDTO {
     private LocalDate dueDate;
     private int dueInDays;
     private BillDueStatus dueStatus;
+    
+    private long ownerId;
 
 
     private Long boardingId;

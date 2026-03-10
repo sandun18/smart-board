@@ -8,6 +8,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import lombok.Data;
 
@@ -44,9 +45,27 @@ public class Registration extends BaseEntity{
     private String emergencyContactName;
     private String emergencyContactPhone;
     private String specialRequirements;
+    
+    
+    
+    @Column(columnDefinition = "TEXT")
+    private String studentSignatureBase64;
 
     
+    @Column(columnDefinition = "TEXT")
+    private String ownerSignatureBase64;
+
+    //  AGREEMENT PDF
+    private String agreementPdfPath;
     
+    @Column(length = 64)
+    private String agreementHash;
+
+
+    
+    @Column(nullable = true, length = 20)
+    private String paymentMethod; // CARD | BANK_SLIP | CASH
+
     
 	
 }

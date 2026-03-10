@@ -144,8 +144,20 @@ public class AppointmentService {
             appointment.setOwnerNote(dto.getOwnerNote());
             appointment.setStatus(AppointmentStatus.ACCEPTED);
 
+        } else if (dto.getStatus() == AppointmentStatus.VISITED) {
+        
+            if (appointment.getStatus() != AppointmentStatus.ACCEPTED) {
+                throw new RuntimeException("Only previously ACCEPTED appointments can be marked as VISITED.");
+            }
+
+            appointment.setStatus(AppointmentStatus.VISITED);
+            
+            if (dto.getOwnerNote() != null && !dto.getOwnerNote().isEmpty()) {
+                appointment.setOwnerNote(dto.getOwnerNote());
+            } 
+            
         } else {
-            throw new RuntimeException("Invalid status. Only ACCEPTED or DECLINED allowed");
+            throw new RuntimeException("Invalid status. Supported: ACCEPTED, DECLINED, VISITED");
         }
 
         Appointment saved = appointmentRepository.save(appointment);

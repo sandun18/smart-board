@@ -188,17 +188,16 @@ export const getOwnerMaintenanceRequests = async () => {
 // 2. Update the status of a request (Decide)
 // Matches Java: @PutMapping("/owner/{maintenanceId}")
 // Expects MaintenanceDecisionDTO body
-export const updateMaintenanceStatus = async (requestId, newStatus, ownerNote = "") => {
-  try {
-    const response = await api.put(`/maintenance/owner/${requestId}`, {
-      status: newStatus,
-      ownerNote: ownerNote 
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error updating status:", error);
-    throw error;
-  }
+export const updateMaintenanceStatus = async (id, status, ownerNote, updatedAt) => {
+  // Ensure your payload matches MaintenanceDecisionDTO.java
+  const payload = {
+    status: status,
+    ownerNote: ownerNote,
+    updatedAt: updatedAt // 
+  };
+
+  const response = await api.put(`/maintenance/owner/${id}`, payload);
+  return response.data;
 };
 
 // =================================================================
@@ -253,4 +252,105 @@ export const reviewTechnician = async (maintenanceId, rating, comment) => {
         params: { rating, comment }
     });
     return response.data;
+};
+
+// =================================================================
+// 📝 REGISTRATION SERVICES
+// =================================================================
+
+// 1. Get all registrations for the owner
+// Matches Java: @GetMapping("/api/registrations/owner/{ownerId}")
+export const getOwnerRegistrations = async (ownerId) => {
+  try {
+    const response = await api.get(`/registrations/owner/${ownerId}`);
+    return response.data; //
+  } catch (error) {
+    console.error("Error fetching registrations:", error);
+    throw error;
+  }
+};
+
+// 2. Decide on a registration (Accept/Reject)
+// Matches Java: @PutMapping("/api/registrations/owner/{ownerId}/{regId}")
+export const decideRegistration = async (ownerId, regId, decisionDTO) => {
+  try {
+    const response = await api.put(`/registrations/owner/${ownerId}/${regId}`, decisionDTO);
+    return response.data; //
+  } catch (error) {
+    console.error("Error updating registration status:", error);
+    throw error;
+  }
+};
+
+// =================================================================
+// 👤 PROFILE SERVICES (NEW)
+// =================================================================
+
+// 1. Get Owner Profile
+// Matches Java: @GetMapping("/api/owner/profile")
+export const getOwnerProfile = async () => {
+  try {
+    const response = await api.get("/owner/profile");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching owner profile:", error);
+    throw error;
+  }
+};
+
+// 2. Update Owner Profile
+// Matches Java: @PutMapping("/api/owner/profile")
+export const updateOwnerProfile = async (profileData) => {
+  try {
+    const response = await api.put("/owner/profile", profileData);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating owner profile:", error);
+    throw error;
+  }
+};
+
+// =================================================================
+//  AUTH SERVICES (Password Change)
+// =================================================================
+
+export const changePassword = async (currentPassword, newPassword) => {
+  try {
+    const response = await api.post("/auth/change-password", {
+      currentPassword,
+      newPassword
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error changing password:", error);
+    throw error;
+  }
+};
+
+// =================================================================
+// 💡 UTILITY SERVICES
+// =================================================================
+
+// 1. Save or Update a Utility Bill
+// Matches Java: @PostMapping("/api/owner/utilities")
+export const updateUtilityBill = async (utilityData) => {
+  try {
+    const response = await api.post("/owner/utilities", utilityData);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating utility bill:", error);
+    throw error;
+  }
+};
+
+// 2. Get Utility History for a specific Boarding House
+// Matches Java: @GetMapping("/api/owner/utilities/history/{boardingId}")
+export const getUtilityHistory = async (boardingId) => {
+  try {
+    const response = await api.get(`/owner/utilities/history/${boardingId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching utility history:", error);
+    throw error;
+  }
 };
