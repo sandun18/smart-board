@@ -91,7 +91,7 @@ export const AdminAuthProvider = ({ children }) => {
         },
       };
 
-      // ✅ Using the endpoint: /auth/register/request
+      //  Using the endpoint: /auth/register/request
       const response = await api.post(
         "/auth/register/request",
         payload,
