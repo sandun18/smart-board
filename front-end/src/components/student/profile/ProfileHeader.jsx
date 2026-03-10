@@ -58,10 +58,10 @@ const ProfileHeader = ({ userData, onChangeAvatar }) => {
                 <FaCheckCircle />
                 Email Verified
               </span>
-              <span className="flex items-center gap-2 px-3 py-1 text-xs font-semibold rounded-full bg-warning/20 text-warning">
+              {/* <span className="flex items-center gap-2 px-3 py-1 rounded-full bg-warning/20 text-warning text-xs font-semibold">
                 <FaStar />
                 Member since 2023
-              </span>
+              </span> */}
             </div>
           </div>
         </div>

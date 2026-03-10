@@ -2,7 +2,10 @@ package com.sbms.sbms_monolith.controller;
 
 import java.util.List;
 
+import com.sbms.sbms_monolith.model.Maintenance;
+import com.sbms.sbms_monolith.repository.MaintenanceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +30,7 @@ public class MaintenanceController {
 
     @Autowired
     private ObjectMapper objectMapper;
+
 
     @PostMapping(consumes = "application/json")
     @PreAuthorize("hasRole('STUDENT')")
@@ -77,5 +81,40 @@ public class MaintenanceController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return maintenanceService.decide(owner.getId(), maintenanceId, dto);
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('OWNER', 'STUDENT', 'TECHNICIAN')")
+    public ResponseEntity<MaintenanceResponseDTO> getMaintenanceById(@PathVariable Long id) {
+
+        // 1. Get the heavy Entity
+        Maintenance m = maintenanceService.getMaintenanceById(id);
+
+        // 2. Convert to light DTO
+        MaintenanceResponseDTO dto = new MaintenanceResponseDTO();
+        dto.setId(m.getId());
+        dto.setTitle(m.getTitle());
+        dto.setDescription(m.getDescription());
+        dto.setStatus(m.getStatus());
+        dto.setTechnicianFee(m.getTechnicianFee()); //
+        dto.setCreatedAt(m.getCreatedAt());
+
+        // Null checks to prevent crashes if no technician is assigned yet
+        if (m.getAssignedTechnician() != null) {
+            dto.setTechnicianName(m.getAssignedTechnician().getFullName());
+            dto.setTechnicianId(m.getAssignedTechnician().getId());
+        }
+
+        if (m.getBoarding() != null) {
+            dto.setBoardingAddress(m.getBoarding().getAddress());
+            if (m.getBoarding().getOwner() != null) {
+                dto.setOwnerName(m.getBoarding().getOwner().getFullName());
+            }
+        }
+
+        dto.setRating(m.getOwnerRating());
+        dto.setReviewComment(m.getOwnerComment());
+
+        return ResponseEntity.ok(dto);
     }
 }

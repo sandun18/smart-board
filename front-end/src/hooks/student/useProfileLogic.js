@@ -28,8 +28,14 @@ const useProfileLogic = () => {
       firstName: firstName,
       lastName: lastName,
       university: currentUser.studentUniversity, // Map Backend 'studentUniversity' -> Frontend 'university'
+      studentId: currentUser.studentIdNumber,
       avatar: currentUser.profileImageUrl || 'https://randomuser.me/api/portraits/women/50.jpg', // Map 'profileImageUrl' -> 'avatar'
   
+      dob: currentUser.dob || '',
+      emergencyContact: currentUser.emergencyContact || '',
+
+      joinDate: currentUser.createdAt,
+
       preferences: currentUser.preferences || {
         emailNotifications: true,
         smsNotifications: false,
@@ -49,9 +55,9 @@ const useProfileLogic = () => {
        address: data.address,
        gender: data.gender ? data.gender.toUpperCase() : null,
        studentUniversity: data.university, // Send as 'studentUniversity'
-       studentId: data.studentId,
-       dob: data.dob,
-       emergencyContact: data.emergencyContact
+       studentIdNumber: data.studentId, 
+       dob: data.dob || null, 
+       emergencyContact: data.emergencyContact || null 
     };
 
     await updateProfile(payload);
@@ -61,9 +67,20 @@ const useProfileLogic = () => {
   const updateProfileHandler = async (data) => {
      let payload = { ...data };
      
-     // If user edited names separately, combine them
      if (data.firstName || data.lastName) {
         payload.fullName = `${data.firstName || firstName} ${data.lastName || lastName}`.trim();
+        delete payload.firstName;
+        delete payload.lastName;
+     }
+     
+     if (data.university) {
+        payload.studentUniversity = data.university;
+        delete payload.university;
+     }
+     
+     if (data.studentId) {
+        payload.studentIdNumber = data.studentId;
+        delete payload.studentId;
      }
      
      await updateProfile(payload);

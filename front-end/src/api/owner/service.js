@@ -14,7 +14,7 @@ export const getOwnerReports = async (ownerId) => {
   }
 };
 
-export const createReport = async (reportData, files) => {
+export const createOwnerReport = async (reportData, files) => {
   try {
     const formData = new FormData();
 
@@ -25,15 +25,17 @@ export const createReport = async (reportData, files) => {
     formData.append("severity", reportData.severity); // e.g., "HIGH", "LOW"
 
     // Backend wants Boarding NAME, not ID
-    formData.append("boarding", reportData.boardingName);
+    if (reportData.boardingName) {
+        formData.append("boarding", reportData.boardingName);
+    }
 
     // ID Mapping
     formData.append("senderId", reportData.ownerId);
     formData.append("reportedUserId", reportData.studentId);
 
     // Date & Boolean
-    formData.append("incidentDate", reportData.incidentDate); // YYYY-MM-DD
-    formData.append("allowContact", reportData.allowContact); // true/false
+    formData.append("incidentDate", reportData.incidentDate || new Date().toISOString().split('T')[0]);
+    formData.append("allowContact", reportData.allowContact || true);
 
     // Files
     if (files && files.length > 0) {
@@ -42,7 +44,9 @@ export const createReport = async (reportData, files) => {
       });
     }
 
-    const response = await api.post("/reports", formData);
+    const response = await api.post("/reports", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return response.data;
   } catch (error) {
     console.error("Error creating report:", error);
@@ -223,6 +227,31 @@ export const updateAppointmentStatus = async (ownerId, appointmentId, decisionDa
     console.error("Error updating appointment status:", error);
     throw error;
   }
+};
+
+// --- TECHNICIAN DISCOVERY & WORKFLOW ---
+
+// 1. Search Technicians
+export const searchTechnicians = async (skill, city = "") => {
+  const response = await api.get("/technician-workflow/search", {
+    params: { skill: skill.toUpperCase(), city }
+  });
+  return response.data;
+};
+
+// 2. Assign Technician
+export const assignTechnician = async (maintenanceId, technicianId) => {
+  const response = await api.put(`/technician-workflow/${maintenanceId}/assign/${technicianId}`);
+  return response.data;
+};
+
+// 3. Review Technician (Job Complete)
+export const reviewTechnician = async (maintenanceId, rating, comment) => {
+    // Note: The controller now takes params directly, no ownerId needed in path
+    const response = await api.post(`/technician-workflow/${maintenanceId}/review`, null, {
+        params: { rating, comment }
+    });
+    return response.data;
 };
 
 // =================================================================

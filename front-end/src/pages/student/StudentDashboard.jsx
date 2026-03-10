@@ -39,20 +39,22 @@ const StudentDashboard = () => {
           >
             <StatWidget
               icon={<FaCalendarCheck />}
-              title={
-                stats.upcomingVisit?.isPast ? "Last Visit" : "Upcoming Visit"
-              }
+              title="Upcoming Visit"
               mainDetail={
                 stats.upcomingVisit
-                  ? new Date(
-                      stats.upcomingVisit.normalizedDate
-                    ).toLocaleDateString()
-                  : "No visits found"
+                  ? stats.upcomingVisit.normalizedDate.toLocaleDateString(
+                      "en-US",
+                      {
+                        month: "short",
+                        day: "numeric",
+                      },
+                    )
+                  : "No approved visits"
               }
               subDetail={
                 stats.upcomingVisit
-                  ? stats.upcomingVisit.displayName
-                  : "Book your first visit"
+                  ? `${stats.upcomingVisit.normalizedDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} - ${stats.upcomingVisit.widgetDetail}`
+                  : "Check your activity for updates"
               }
             />
           </motion.div>
@@ -99,7 +101,7 @@ const StudentDashboard = () => {
               subDetail={
                 stats.currentBoarding
                   ? `Since ${new Date(
-                      stats.currentBoarding.startDate
+                      stats.currentBoarding.startDate,
                     ).toLocaleDateString()}`
                   : "Find a place"
               }

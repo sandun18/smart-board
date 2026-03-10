@@ -1,6 +1,8 @@
 package com.sbms.sbms_monolith.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -36,6 +38,14 @@ public class SecurityConfig {
     private CustomUserDetailsService customUserDetailsService;
 
     @Bean
+    public WebServerFactoryCustomizer<TomcatServletWebServerFactory> tomcatCustomizer() {
+        return factory -> factory.addConnectorCustomizers(connector -> {
+            connector.setMaxParameterCount(50);
+            connector.setMaxPartCount(20);
+        });
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
@@ -46,22 +56,66 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
             		// .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-            		.requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // -----------------------------------------------------------
+                        // -----------------------------------------------------------
+                        .requestMatchers("/api/boardings/owner/**").hasRole("OWNER")
+                        .requestMatchers("/api/owner/**").hasRole("OWNER")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                .requestMatchers(
-                        "/api/auth/**",
-                        "/api/boardings",
-                        "/api/boardings/**" ,
-                        
-                        "/ws/**",
+                        // -----------------------------------------------------------
+                        //  PUBLIC RULES (AFTER SPECIFIC RULES)
+                        // -----------------------------------------------------------
+                        // 1. Allow Login/Register
+                        .requestMatchers("/api/auth/**").permitAll()
 
-                        "/api/users/public/**",
-                        
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html"
-                ).permitAll()
+                        // 2. Allow Students to VIEW boardings (GET Only)
+                        // We use HttpMethod.GET to ensure they can't POST/DELETE
+                        .requestMatchers(HttpMethod.GET, "/api/boardings/**").permitAll()
 
+                        // 3. Other Public endpoints
+                        .requestMatchers(
+                                "/api/users/public/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
+
+                        // -----------------------------------------------------------
+                        // 🔒 RESTRICTED AREAS
+                        // -----------------------------------------------------------
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/reports/admin/**").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/api/reports").hasAnyAuthority(
+                                "ROLE_TECHNICIAN", "TECHNICIAN",
+                                "ROLE_OWNER", "OWNER",
+                                "ROLE_STUDENT", "STUDENT",
+                                "ROLE_ADMIN", "ADMIN"
+                        )
+
+                        .requestMatchers("/api/reports/**").hasAnyAuthority(
+                                "ROLE_TECHNICIAN", "TECHNICIAN",
+                                           "ROLE_OWNER", "OWNER",
+                                           "ROLE_STUDENT", "STUDENT",
+                                           "ROLE_ADMIN", "ADMIN"
+                        )
+//
+//                        .requestMatchers(HttpMethod.POST, "/api/reports").authenticated()
+//                        .requestMatchers("/api/reports/**").authenticated()
+
+                        .requestMatchers("/api/student/**").hasRole("STUDENT")
+                        .requestMatchers("/api/registrations/**").authenticated()
+                        .requestMatchers("/api/payment/**").authenticated()
+
+                        .requestMatchers("/api/technician-workflow/search").hasRole("OWNER")
+                        .requestMatchers("/api/technician-workflow/*/assign/*").hasRole("OWNER")
+                        .requestMatchers("/api/technician-workflow/*/review").hasRole("OWNER")
+                        .requestMatchers("/api/payments/intent/technician").hasRole("OWNER")
+
+                        .requestMatchers("/api/technician-workflow/my-jobs").hasAnyAuthority("ROLE_TECHNICIAN", "TECHNICIAN")
+                        .requestMatchers("/api/technician-workflow/*/decision").hasAnyAuthority("ROLE_TECHNICIAN", "TECHNICIAN")
+                        .requestMatchers("/api/technician-workflow/*/complete").hasAnyAuthority("ROLE_TECHNICIAN", "TECHNICIAN")
+                        .requestMatchers("/api/technician-workflow/profile").hasAnyAuthority("ROLE_TECHNICIAN", "TECHNICIAN")
              //   .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 
                 .requestMatchers("/api/payments/**").hasRole("STUDENT")

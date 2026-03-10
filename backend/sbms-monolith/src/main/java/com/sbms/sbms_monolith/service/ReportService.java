@@ -6,6 +6,8 @@ import com.sbms.sbms_monolith.mapper.ReportMapper;
 import com.sbms.sbms_monolith.model.Report;
 import com.sbms.sbms_monolith.model.User;
 import com.sbms.sbms_monolith.model.enums.ReportStatus;
+import com.sbms.sbms_monolith.model.enums.UserRole;
+import com.sbms.sbms_monolith.repository.MaintenanceRepository;
 import com.sbms.sbms_monolith.repository.ReportRepository;
 import com.sbms.sbms_monolith.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,9 @@ public class ReportService {
     @Autowired
     private S3Service s3Service;
 
+    @Autowired
+    private MaintenanceRepository maintenanceRepo;
+
     // 1. Create Report (Unified)
     public ReportResponseDTO create(ReportCreateDTO dto, List<MultipartFile> files) throws IOException {
         User sender = userRepo.findById(dto.getSenderId())
@@ -36,7 +41,25 @@ public class ReportService {
 
         User reportedTarget = null;
         if (dto.getReportedUserId() != null) {
-            reportedTarget = userRepo.findById(dto.getReportedUserId()).orElse(null);
+            reportedTarget = userRepo.findById(dto.getReportedUserId())
+                    .orElseThrow(() -> new RuntimeException("Reported user not found"));
+        }
+
+        // -----------------------------------------------------------------
+        // VALIDATE TECHNICIAN <-> OWNER CONNECTION
+        // -----------------------------------------------------------------
+        if (reportedTarget != null) {
+            boolean isTechReportingOwner = (sender.getRole() == UserRole.TECHNICIAN && reportedTarget.getRole() == UserRole.OWNER);
+            boolean isOwnerReportingTech = (sender.getRole() == UserRole.OWNER && reportedTarget.getRole() == UserRole.TECHNICIAN);
+
+            if (isTechReportingOwner || isOwnerReportingTech) {
+                // Check database for any job linking them
+                boolean hasConnection = maintenanceRepo.existsByConnection(sender.getId(), reportedTarget.getId());
+
+                if (!hasConnection) {
+                    throw new RuntimeException("Access Denied: You cannot report this user because you have no history of working together.");
+                }
+            }
         }
 
         // Pass both users to Mapper

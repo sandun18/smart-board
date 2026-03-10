@@ -1,7 +1,6 @@
-import api from '../api'; 
+import api from "../api";
 
 const StudentService = {
-
   // ==========================================
   // 1. AUTHENTICATION (Called by Context)
   // ==========================================
@@ -19,8 +18,8 @@ const StudentService = {
   },
 
   createReport: async (formData) => {
-    const response = await api.post('/reports', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    const response = await api.post("/reports", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data;
   },
@@ -31,25 +30,29 @@ const StudentService = {
   searchBoardings: async (filters) => {
     let backendBoardingType = null;
     if (filters.roomTypes && filters.roomTypes.length > 0) {
-        const selected = filters.roomTypes[0].toLowerCase();
-        if (selected === 'apartment') backendBoardingType = 'ANEX'; 
-        else if (selected === 'single' || selected === 'shared') backendBoardingType = 'ROOM'; 
+      const selected = filters.roomTypes[0].toLowerCase();
+      if (selected === "apartment") backendBoardingType = "ANEX";
+      else if (selected === "single" || selected === "shared")
+        backendBoardingType = "ROOM";
     }
 
     const params = {
       addressKeyword: filters.searchQuery || null,
       minPrice: filters.minPrice > 0 ? filters.minPrice : null,
       maxPrice: filters.maxPrice < 50000 ? filters.maxPrice : null,
-      genderType: filters.gender !== 'any' ? filters.gender?.toUpperCase() : null,
-      boardingType: backendBoardingType, 
+      genderType:
+        filters.gender !== "any" ? filters.gender?.toUpperCase() : null,
+      boardingType: backendBoardingType,
       page: 0,
-      size: 50
+      size: 50,
     };
 
-    Object.keys(params).forEach(key => params[key] == null && delete params[key]);
+    Object.keys(params).forEach(
+      (key) => params[key] == null && delete params[key],
+    );
 
-    const response = await api.get('/boardings/search', { params });
-    return response.data; 
+    const response = await api.get("/boardings/search", { params });
+    return response.data;
   },
 
   getBoardingDetails: async (id) => {
@@ -67,28 +70,33 @@ const StudentService = {
   // 4. APPOINTMENTS (Visits)
   // ==========================================
   createAppointment: async (studentId, appointmentData) => {
-    const start = new Date(`${appointmentData.visitDate}T${appointmentData.visitTime}`);
-    const end = new Date(start.getTime() + 60 * 60 * 1000); 
+    const start = new Date(
+      `${appointmentData.visitDate}T${appointmentData.visitTime}`,
+    );
+    const end = new Date(start.getTime() + 60 * 60 * 1000);
 
     const toIsoString = (date) => {
-        const pad = (num) => String(num).padStart(2, '0');
-        const year = date.getFullYear();
-        const month = pad(date.getMonth() + 1);
-        const day = pad(date.getDate());
-        const hours = pad(date.getHours());
-        const minutes = pad(date.getMinutes());
-        return `${year}-${month}-${day}T${hours}:${minutes}:00`;
+      const pad = (num) => String(num).padStart(2, "0");
+      const year = date.getFullYear();
+      const month = pad(date.getMonth() + 1);
+      const day = pad(date.getDate());
+      const hours = pad(date.getHours());
+      const minutes = pad(date.getMinutes());
+      return `${year}-${month}-${day}T${hours}:${minutes}:00`;
     };
 
     const payload = {
       boardingId: appointmentData.boardingId,
-      numberOfStudents: 1, 
-      requestedStartTime: toIsoString(start), 
-      requestedEndTime: toIsoString(end),     
-      studentNote: appointmentData.visitNotes
+      numberOfStudents: 1,
+      requestedStartTime: toIsoString(start),
+      requestedEndTime: toIsoString(end),
+      studentNote: appointmentData.visitNotes,
     };
 
-    const response = await api.post(`/appointments/student/${studentId}`, payload);
+    const response = await api.post(
+      `/appointments/student/${studentId}`,
+      payload,
+    );
     return response.data;
   },
 
@@ -99,24 +107,30 @@ const StudentService = {
 
   cancelAppointment: async (studentId, appointmentId, reason) => {
     const response = await api.put(
-        `/appointments/student/${studentId}/${appointmentId}/cancel`, 
-        { reason: reason } 
+      `/appointments/student/${studentId}/${appointmentId}/cancel`,
+      { reason: reason },
     );
     return response.data;
   },
 
   markAsVisited: async (studentId, appointmentId) => {
-    const response = await api.put(`/appointments/student/${studentId}/${appointmentId}/visit`);
+    const response = await api.put(
+      `/appointments/student/${studentId}/${appointmentId}/visit`,
+    );
     return response.data;
   },
 
   selectBoarding: async (studentId, appointmentId) => {
-    const response = await api.put(`/appointments/student/${studentId}/${appointmentId}/select`);
+    const response = await api.put(
+      `/appointments/student/${studentId}/${appointmentId}/select`,
+    );
     return response.data;
   },
-  
+
   rejectBoarding: async (studentId, appointmentId) => {
-    const response = await api.put(`/appointments/student/${studentId}/${appointmentId}/reject`);
+    const response = await api.put(
+      `/appointments/student/${studentId}/${appointmentId}/reject`,
+    );
     return response.data;
   },
 
@@ -125,7 +139,10 @@ const StudentService = {
   // ==========================================
 
   registerBoarding: async (studentId, data) => {
-    const response = await api.post(`/registrations/student/${studentId}`, data);
+    const response = await api.post(
+      `/registrations/student/${studentId}`,
+      data,
+    );
     return response.data;
   },
 
@@ -143,19 +160,21 @@ const StudentService = {
 
   downloadReceipt: async (regId) => {
     const response = await api.get(`/registrations/${regId}/receipt`, {
-        responseType: 'blob'
+      responseType: "blob",
     });
     const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
-    link.setAttribute('download', `Receipt_${regId}.pdf`);
+    link.setAttribute("download", `Receipt_${regId}.pdf`);
     document.body.appendChild(link);
     link.click();
     link.remove();
   },
 
   requestLeave: async (studentId, regId) => {
-    const response = await api.post(`/registrations/student/${studentId}/leave/${regId}`);
+    const response = await api.post(
+      `/registrations/student/${studentId}/leave/${regId}`,
+    );
     return response.data;
   },
 
@@ -168,9 +187,13 @@ const StudentService = {
       files.forEach((file) => formData.append("files", file));
 
       // Endpoint: POST /api/files/upload-multiple/{folder}
-      const response = await api.post("/files/upload-multiple/reviews", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const response = await api.post(
+        "/files/upload-multiple/reviews",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
       return response.data; // List of S3 URLs
     } catch (error) {
       console.error("Error uploading images:", error);
@@ -184,9 +207,9 @@ const StudentService = {
       boardingId: reviewData.boardingId,
       rating: reviewData.rating,
       comment: reviewData.review,
-      imageUrls: reviewData.imageUrls || []
+      imageUrls: reviewData.imageUrls || [],
     };
-    const response = await api.post('/reviews', payload);
+    const response = await api.post("/reviews", payload);
     return response.data;
   },
 
@@ -194,12 +217,12 @@ const StudentService = {
     const payload = {
       rating: reviewData.rating,
       comment: reviewData.review,
-      imageUrls: reviewData.imageUrls || []
+      imageUrls: reviewData.imageUrls || [],
     };
     // Match backend: PUT /api/reviews/student/{sid}/boarding/{bid}
     const response = await api.put(
-        `/reviews/student/${reviewData.userId}/boarding/${reviewData.boardingId}`, 
-        payload
+      `/reviews/student/${reviewData.userId}/boarding/${reviewData.boardingId}`,
+      payload,
     );
     return response.data;
   },
@@ -217,9 +240,9 @@ const StudentService = {
   // ==========================================
   // 7. MAINTENANCE (New Section)
   // ==========================================
-  
+
   getMaintenanceRequests: async () => {
-    const response = await api.get('/maintenance/student');
+    const response = await api.get("/maintenance/student");
     return response.data;
   },
 
@@ -229,9 +252,13 @@ const StudentService = {
       files.forEach((file) => formData.append("files", file));
 
       // Uses your existing file upload endpoint, saving to 'maintenance' folder
-      const response = await api.post("/files/upload-multiple/maintenance", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const response = await api.post(
+        "/files/upload-multiple/maintenance",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
       return response.data; // Returns List<String> (URLs)
     } catch (error) {
       console.error("Error uploading images:", error);
@@ -241,49 +268,58 @@ const StudentService = {
 
   createMaintenanceRequest: async (data) => {
     // data must match MaintenanceCreateDTO: { boardingId, title, description, issueType, maintenanceUrgency, imageUrls }
-    const response = await api.post('/maintenance', data); 
+    const response = await api.post("/maintenance", data);
     return response.data;
   },
 
   // ==========================================
   // 8. PROFILE & SETTINGS
   // ==========================================
-  
+
   // 1. Get Profile (Fresh Data)
   getProfile: async () => {
-    const response = await api.get('/student/profile');
+    const userData = JSON.parse(localStorage.getItem("user_data"));
+    if (!userData?.id) throw new Error("No user logged in");
+
+    const response = await api.get(`/users/${userData.id}`);
     return response.data;
   },
 
-  // 2. Update Profile Data (Name, Phone, Uni, etc.)
-  updateProfile: async (updateData) => {
-    // Expects: { fullName, phone, studentUniversity, profileImageUrl, ... }
-    const response = await api.put('/student/profile', updateData);
-    return response.data;
-  },
-
-  // 3. Upload Avatar (File -> URL)
-  uploadAvatar: async (file) => {
-    try {
-      const formData = new FormData();
-      formData.append("file", file); // Standard key for single file upload
-
-      // Adjust endpoint if your backend uses a different path for single uploads
-      // Assuming you have a generic upload or reusing the multiple one
-      const response = await api.post("/files/upload/profiles", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      
-      // If backend returns a simple string URL, return it.
-      // If it returns { url: "..." }, adjust accordingly.
-      return response.data; 
-    } catch (error) {
-      console.error("Avatar upload failed:", error);
-      throw error;
-    }
-  },
-
+  // Update profile (text fields)
+  updateProfile: async (userId, updateData) => {
   
+  const cleanData = Object.fromEntries(
+    Object.entries(updateData).filter(([_, v]) => v != null && v !== '')
+  );
+  
+  const response = await api.put(`/users/${userId}`, cleanData);
+  return response.data;
+},
+
+  // Upload profile picture (Base64)
+  uploadAvatar: async (userId, file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const base64String = e.target.result;
+
+          // Send base64 to backend
+          const response = await api.put(`/users/${userId}`, {
+            profileImageBase64: base64String,
+          });
+
+          resolve(response.data);
+        } catch (error) {
+          console.error('Avatar upload error:', error);
+          reject(error);
+        }
+      };
+      reader.onerror = () => reject(new Error("File read failed"));
+      reader.readAsDataURL(file);
+    });
+  },
+
   // ==========================================
   // 9. DASHBOARD API CALLS
   // ==========================================
@@ -308,7 +344,7 @@ const StudentService = {
 
   // 4. Get Payment History (for Recent Activity)
   getPaymentHistory: async () => {
-    const response = await api.get('/payments/history');
+    const response = await api.get("/payments/history");
     return response.data;
   },
 
@@ -316,14 +352,13 @@ const StudentService = {
   getMyReviews: async (studentId) => {
     // Falls back to empty array if endpoint doesn't exist yet
     try {
-        const response = await api.get(`/reviews/student/${studentId}`);
-        return response.data;
+      const response = await api.get(`/reviews/student/${studentId}`);
+      return response.data;
     } catch (e) {
-        console.warn("Review endpoint not ready", e);
-        return [];
+      console.warn("Review endpoint not ready", e);
+      return [];
     }
-  }
-  
+  },
 };
 
 export default StudentService;
