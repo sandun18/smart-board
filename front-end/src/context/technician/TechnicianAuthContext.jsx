@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import api from "../../api/api";
-import { updateTechnicianProfile, getTechnicianProfile } from "../../api/technician/technicianService"; // ✅ Fixed Import
+import {
+  updateTechnicianProfile,
+  getTechnicianProfile,
+} from "../../api/technician/technicianService"; // ✅ Fixed Import
 
 const TechnicianAuthContext = createContext(null);
 
@@ -20,12 +23,12 @@ export const TechnicianAuthProvider = ({ children }) => {
           const user = JSON.parse(savedUser);
 
           //  Security Check: Ensure the saved user is a TECHNICIAN
-        
-            setCurrentTech(user);
-            setIsAuthenticated(true);
-          
+
+          setCurrentTech(user);
+          setIsAuthenticated(true);
         } catch (e) {
-          localStorage.clear();
+          console.error("Failed to parse technician data", e);
+          setIsAuthenticated(false);
         }
       }
       setIsLoading(false);
@@ -127,8 +130,6 @@ export const TechnicianAuthProvider = ({ children }) => {
     }
   };
 
-  
-
   // 5. Update Profile (Uses the Service Function)
   const updateProfile = async (updatedData) => {
     try {
@@ -149,14 +150,13 @@ export const TechnicianAuthProvider = ({ children }) => {
     }
   };
 
-
   const refreshUser = async () => {
     try {
       const updatedData = await getTechnicianProfile(); // Fetch fresh data from DB
-      
+
       setCurrentTech(updatedData);
       localStorage.setItem("user_data", JSON.stringify(updatedData)); // Sync local storage
-      
+
       return updatedData;
     } catch (error) {
       console.error("Failed to refresh user context", error);
@@ -179,7 +179,7 @@ export const TechnicianAuthProvider = ({ children }) => {
     signup,
     verifyRegistration,
     updateProfile,
-    refreshUser
+    refreshUser,
   };
 
   return (

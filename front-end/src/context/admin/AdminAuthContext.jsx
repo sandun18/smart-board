@@ -24,11 +24,12 @@ export const AdminAuthProvider = ({ children }) => {
             setCurrentUser(user);
             setIsAuthenticated(true);
           } else {
-            localStorage.clear();
+            // localStorage.clear();
           }
         } catch (e) {
           console.error("Failed to parse user data", e);
-          localStorage.clear();
+          // localStorage.clear();
+          setIsAuthenticated(false);
         }
       }
       setIsLoading(false);
