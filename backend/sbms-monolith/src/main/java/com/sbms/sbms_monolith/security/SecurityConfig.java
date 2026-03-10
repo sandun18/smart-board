@@ -48,31 +48,17 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .sessionManagement(sm ->
-                    sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .authorizeHttpRequests(auth -> auth
-            		// .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(sm ->
+                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .authorizeHttpRequests(auth -> auth
                         // -----------------------------------------------------------
+                        // PUBLIC ENDPOINTS (MUST BE FIRST)
                         // -----------------------------------------------------------
-                        .requestMatchers("/api/boardings/owner/**").hasRole("OWNER")
-                        .requestMatchers("/api/owner/**").hasRole("OWNER")
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
-                        // -----------------------------------------------------------
-                        //  PUBLIC RULES (AFTER SPECIFIC RULES)
-                        // -----------------------------------------------------------
-                        // 1. Allow Login/Register
                         .requestMatchers("/api/auth/**").permitAll()
-
-                        // 2. Allow Students to VIEW boardings (GET Only)
-                        // We use HttpMethod.GET to ensure they can't POST/DELETE
                         .requestMatchers(HttpMethod.GET, "/api/boardings/**").permitAll()
-
-                        // 3. Other Public endpoints
                         .requestMatchers(
                                 "/api/users/public/**",
                                 "/v3/api-docs/**",
@@ -81,59 +67,74 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // -----------------------------------------------------------
-                        // 🔒 RESTRICTED AREAS
+                        // ADMIN ENDPOINTS
                         // -----------------------------------------------------------
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/reports/admin/**").hasRole("ADMIN")
 
+                        // -----------------------------------------------------------
+                        // OWNER ENDPOINTS
+                        // -----------------------------------------------------------
+                        .requestMatchers("/api/owner/**").hasRole("OWNER")
+                        .requestMatchers("/api/boardings/owner/**").hasRole("OWNER")
+                        .requestMatchers("/api/technician-workflow/search").hasRole("OWNER")
+                        .requestMatchers("/api/technician-workflow/*/assign/*").hasRole("OWNER")
+                        .requestMatchers("/api/technician-workflow/*/review").hasRole("OWNER")
+                        .requestMatchers("/api/payments/intent/technician").hasRole("OWNER")
+
+                        // -----------------------------------------------------------
+                        // TECHNICIAN ENDPOINTS
+                        // -----------------------------------------------------------
+                        .requestMatchers("/api/technician-workflow/my-jobs").hasAnyAuthority("ROLE_TECHNICIAN", "TECHNICIAN")
+                        .requestMatchers("/api/technician-workflow/*/decision").hasAnyAuthority("ROLE_TECHNICIAN", "TECHNICIAN")
+                        .requestMatchers("/api/technician-workflow/*/complete").hasAnyAuthority("ROLE_TECHNICIAN", "TECHNICIAN")
+                        .requestMatchers("/api/technician-workflow/profile").hasAnyAuthority("ROLE_TECHNICIAN", "TECHNICIAN")
+
+                        // -----------------------------------------------------------
+                        // STUDENT ENDPOINTS (BILLING & PAYMENTS) 💰
+                        // -----------------------------------------------------------
+                        .requestMatchers("/api/student/**").hasRole("STUDENT")
+                        .requestMatchers("/api/bills/student/**").hasRole("STUDENT")
+                        .requestMatchers("/api/bills/student").hasRole("STUDENT")  // ✅ Added this
+                        .requestMatchers("/api/payments/**").hasRole("STUDENT")
+                        .requestMatchers("/api/payment/**").hasRole("STUDENT")      // ✅ Fixed this
+                        .requestMatchers("/api/payments/history").hasRole("STUDENT") // ✅ Added this
+
+                        // -----------------------------------------------------------
+                        // REPORTS - SHARED ACCESS (STUDENT, OWNER, TECHNICIAN)
+                        // -----------------------------------------------------------
                         .requestMatchers(HttpMethod.POST, "/api/reports").hasAnyAuthority(
                                 "ROLE_TECHNICIAN", "TECHNICIAN",
                                 "ROLE_OWNER", "OWNER",
                                 "ROLE_STUDENT", "STUDENT",
                                 "ROLE_ADMIN", "ADMIN"
                         )
-
                         .requestMatchers("/api/reports/**").hasAnyAuthority(
                                 "ROLE_TECHNICIAN", "TECHNICIAN",
-                                           "ROLE_OWNER", "OWNER",
-                                           "ROLE_STUDENT", "STUDENT",
-                                           "ROLE_ADMIN", "ADMIN"
+                                "ROLE_OWNER", "OWNER",
+                                "ROLE_STUDENT", "STUDENT",
+                                "ROLE_ADMIN", "ADMIN"
                         )
-//
-//                        .requestMatchers(HttpMethod.POST, "/api/reports").authenticated()
-//                        .requestMatchers("/api/reports/**").authenticated()
 
-                        .requestMatchers("/api/student/**").hasRole("STUDENT")
+                        // File uploads for reports
+                        .requestMatchers("/api/files/upload/**").hasAnyAuthority(
+                                "ROLE_TECHNICIAN", "TECHNICIAN",
+                                "ROLE_OWNER", "OWNER",
+                                "ROLE_STUDENT", "STUDENT"
+                        )
+
+                        // -----------------------------------------------------------
+                        // REGISTRATIONS - ANY AUTHENTICATED USER
+                        // -----------------------------------------------------------
                         .requestMatchers("/api/registrations/**").authenticated()
-                        .requestMatchers("/api/payment/**").authenticated()
 
-                        .requestMatchers("/api/technician-workflow/search").hasRole("OWNER")
-                        .requestMatchers("/api/technician-workflow/*/assign/*").hasRole("OWNER")
-                        .requestMatchers("/api/technician-workflow/*/review").hasRole("OWNER")
-                        .requestMatchers("/api/payments/intent/technician").hasRole("OWNER")
-
-                        .requestMatchers("/api/technician-workflow/my-jobs").hasAnyAuthority("ROLE_TECHNICIAN", "TECHNICIAN")
-                        .requestMatchers("/api/technician-workflow/*/decision").hasAnyAuthority("ROLE_TECHNICIAN", "TECHNICIAN")
-                        .requestMatchers("/api/technician-workflow/*/complete").hasAnyAuthority("ROLE_TECHNICIAN", "TECHNICIAN")
-                        .requestMatchers("/api/technician-workflow/profile").hasAnyAuthority("ROLE_TECHNICIAN", "TECHNICIAN")
-             //   .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                
-                .requestMatchers("/api/payments/**").hasRole("STUDENT")
-
-                .requestMatchers("/api/owner/**").hasRole("OWNER")
-                .requestMatchers("/api/boardings/owner/**").hasRole("OWNER")
-
-                .requestMatchers("/api/reports/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/reports/**").hasAnyRole("STUDENT", "OWNER")
-
-                .requestMatchers("/api/student/**").hasRole("STUDENT")
-                .requestMatchers("/api/bills/student/**").hasRole("STUDENT")
-                
-
-                .anyRequest().authenticated()
-            )
-            .authenticationProvider(authenticationProvider())
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                        // -----------------------------------------------------------
+                        // ALL OTHER REQUESTS MUST BE AUTHENTICATED
+                        // -----------------------------------------------------------
+                        .anyRequest().authenticated()
+                )
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

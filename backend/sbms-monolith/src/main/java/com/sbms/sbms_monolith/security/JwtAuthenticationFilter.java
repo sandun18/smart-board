@@ -36,26 +36,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 1. Check if Header is present
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            // System.out.println("⚠️ JWT Filter: No Token found in request to " + request.getRequestURI());
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
-            jwt = authHeader.substring(7);
-            username = jwtService.extractUsername(jwt);
+            // ✅ DECLARE VARIABLES HERE
+            final String jwt = authHeader.substring(7);
+            final String username = jwtService.extractUsername(jwt);
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
                 // 2. Load User from DB
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
                 // 3. Validate Token
                 if (jwtService.isTokenValid(jwt, userDetails)) {
-
                     // 🔍 DEBUG LOG: Print the roles the backend SEES
-//                    System.out.println("✅ JWT Filter: Authenticated User -> " + username);
-//                    System.out.println("🛡️ Roles Loaded from DB -> " + userDetails.getAuthorities());
+                    // System.out.println("✅ JWT Filter: Authenticated User -> " + username);
+                    // System.out.println("🛡️ Roles Loaded from DB -> " + userDetails.getAuthorities());
 
                     UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(
@@ -75,9 +73,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (Exception e) {
             System.err.println("❌ JWT Filter Error: " + e.getMessage());
+            e.printStackTrace();
         }
 
         filterChain.doFilter(request, response);
     }
-
 }
