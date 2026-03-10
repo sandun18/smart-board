@@ -14,6 +14,7 @@ public interface AdminService {
     // Users
     List<AdminUserResponseDTO> getAllUsers();
     void verifyOwner(Long userId, UserVerificationDTO dto);
+    AdminUserResponseDTO promoteUserToAdmin(Long userId);
 
     // Boardings
     List<AdminBoardingResponseDTO> getAllBoardings();

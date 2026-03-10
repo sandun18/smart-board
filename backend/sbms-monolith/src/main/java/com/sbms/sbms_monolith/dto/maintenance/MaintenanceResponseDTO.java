@@ -43,7 +43,9 @@ public class MaintenanceResponseDTO {
     private Long technicianId;
     private String ownerName;
     private String boardingAddress;
+
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     private Integer rating;
     private String reviewComment;
