@@ -30,7 +30,8 @@ export const StudentAuthProvider = ({ children }) => {
           }
         } catch (e) {
           console.error("Failed to parse user data", e);
-          localStorage.clear();
+          localStorage.removeItem("user_data");
+          setIsAuthenticated(false);
         }
       }
       setIsLoading(false);
@@ -141,11 +142,13 @@ export const StudentAuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.clear();
+    localStorage.removeItem("token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user_data");
     setCurrentUser(null);
     setIsAuthenticated(false);
-    window.location.href = "/login";
-  };
+    window.location.href = "/login"; 
+};
 
   // --- 3. PROFILE UPDATE ACTIONS (Connects Sidebar/Header/Profile) ---
 

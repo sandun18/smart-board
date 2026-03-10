@@ -96,8 +96,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/student/**").hasRole("STUDENT")
                         .requestMatchers("/api/bills/student/**").hasRole("STUDENT")
                         .requestMatchers("/api/bills/student").hasRole("STUDENT")  // ✅ Added this
-                        .requestMatchers("/api/payments/**").hasRole("STUDENT")
-                        .requestMatchers("/api/payment/**").hasRole("STUDENT")      // ✅ Fixed this
+                        .requestMatchers("/api/payments/**").hasRole("STUDENT")    // ✅ Fixed this
                         .requestMatchers("/api/payments/history").hasRole("STUDENT") // ✅ Added this
 
                         // -----------------------------------------------------------
