@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseURL = import.meta.env.VITE_API_BASE;
+const baseURL = "https://smartboard.thareesha.software/api";
 
 const api = axios.create({
 
