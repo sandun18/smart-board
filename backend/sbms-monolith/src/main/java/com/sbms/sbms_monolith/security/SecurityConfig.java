@@ -1,9 +1,9 @@
-package com.sbms.sbms_backend.security;
+package com.sbms.sbms_monolith.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -22,66 +23,35 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import org.springframework.web.cors.*;
 
-import lombok.RequiredArgsConstructor;
-
 import java.util.List;
 
 @Configuration
 @EnableMethodSecurity(prePostEnabled = true)
-@RequiredArgsConstructor
 public class SecurityConfig {
 
-	private final GatewayHeaderAuthenticationFilter gatewayHeaderAuthenticationFilter;
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthFilter;
 
-    // ---------------------------------------------------------
-    // Security Filter Chain
-    // ---------------------------------------------------------
+    @Autowired
+    private CustomUserDetailsService customUserDetailsService;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
-    	http
-        // No JWT / No sessions
-        .csrf(csrf -> csrf.disable())
-        .httpBasic(basic -> basic.disable())
-        .formLogin(form -> form.disable())
-        .logout(logout -> logout.disable())
-
-        .sessionManagement(sm ->
-            sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        )
-
-        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-        // 🔥 REGISTER GATEWAY HEADER FILTER
-        .addFilterBefore(
-            gatewayHeaderAuthenticationFilter,
-            UsernamePasswordAuthenticationFilter.class
-        )
-            
-            
-            
+        http
+            .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .sessionManagement(sm ->
+                    sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
             .authorizeHttpRequests(auth -> auth
-            		
-            		
-            		.requestMatchers("/actuator/health/**").permitAll()
-                    .requestMatchers("/actuator/info").permitAll()
-                    .requestMatchers("/actuator/prometheus").permitAll()
-                    .requestMatchers("/actuator/**").permitAll()
-            		
-            		 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+            		// .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+            		.requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                 .requestMatchers(
                         "/api/auth/**",
-                        "/internal/**",
-                      //  "/api/appointments/**" ,
                         "/api/boardings",
-                        "/api/boardings/**",
-                        
-                        "/api/maintenance/**" ,
-                        
-                        "/api/registrations/**" ,
-                        
-                        "/api/files/**", 
+                        "/api/boardings/**" ,
                         
                         "/ws/**",
 
@@ -91,6 +61,8 @@ public class SecurityConfig {
                         "/swagger-ui/**",
                         "/swagger-ui.html"
                 ).permitAll()
+
+             //   .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 
                 .requestMatchers("/api/payments/**").hasRole("STUDENT")
 
@@ -104,34 +76,78 @@ public class SecurityConfig {
                 .requestMatchers("/api/bills/student/**").hasRole("STUDENT")
                 
 
-
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
-                .requestMatchers("/api/owner/**").hasRole("OWNER")
-                .requestMatchers("/api/boardings/owner/**").hasRole("OWNER")
-
-                .requestMatchers("/api/student/**").hasRole("STUDENT")
-
                 .anyRequest().authenticated()
-            );
+            )
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-     
-    
+
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public AuthenticationProvider authenticationProvider() {
 
-        CorsConfiguration config = new CorsConfiguration();
+        // NEW constructor (Spring Security 6.3)
+        DaoAuthenticationProvider provider =
+                new DaoAuthenticationProvider(customUserDetailsService);
 
-        config.setAllowedOriginPatterns(List.of("*"));
-        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
+        provider.setPasswordEncoder(passwordEncoder());
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-
-        return source;
+        return provider;
     }
+    
+   
+
+  
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
+            throws Exception {
+
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+    
+    
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+	
+	    CorsConfiguration config = new CorsConfiguration();
+	
+	    // Allow frontend domains
+	    config.setAllowedOriginPatterns(List.of(
+	            "https://smartboard.thareesha.software",
+	            "http://localhost:5173"
+	    ));
+	
+	    // Allow HTTP methods
+	    config.setAllowedMethods(List.of(
+	            "GET",
+	            "POST",
+	            "PUT",
+	            "DELETE",
+	            "PATCH",
+	            "OPTIONS"
+	    ));
+	
+	    // Allow all headers
+	    config.setAllowedHeaders(List.of("*"));
+	
+	    // Allow credentials (JWT cookies / auth headers)
+	    config.setAllowCredentials(true);
+	
+	    // Cache preflight response (performance)
+	    config.setMaxAge(3600L);
+	
+	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+	    source.registerCorsConfiguration("/**", config);
+	
+	    return source;
+	}
+
+
+	
 }
