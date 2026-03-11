@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { userService } from '../../api/common/userService';
-// IMPORT the technician service to fetch reviews
 import { getTechnicianReviews } from '../../api/technician/technicianService'; 
 import { motion } from 'framer-motion';
 import { 
@@ -23,7 +22,7 @@ const PublicProfileView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
-  const [reviews, setReviews] = useState([]); // State for tech reviews
+  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -34,25 +33,20 @@ const PublicProfileView = () => {
         const data = await userService.getPublicProfile(id);
         setProfile(data);
 
-        // If the profile is a Technician, fetch their work reviews
         if (data.role === 'TECHNICIAN' || data.role === 'TECH') {
             try {
-                // Note: Ensure your API supports fetching by ID if viewing someone else
                 const reviewData = await getTechnicianReviews(id); 
                 setReviews(reviewData || []);
             } catch (revErr) {
                 console.error("Error fetching tech reviews:", revErr);
             }
         }
-        
         setLoading(false);
       } catch (err) {
-        console.error("Error fetching profile:", err);
         setError("User not found or connection failed.");
         setLoading(false);
       }
     };
-
     fetchProfileAndReviews();
   }, [id]);
 
@@ -74,6 +68,9 @@ const PublicProfileView = () => {
   const isTech = profile.role === 'TECHNICIAN' || profile.role === 'TECH';
   const hasListings = isOwner && profile.activeListings && profile.activeListings.length > 0;
 
+  // UPDATED: Rating Fix - Formatting to ensure 0.0 display
+  const displayRating = Number(profile?.averageRating || profile?.technicianAverageRating || 0).toFixed(1);
+  const displayJobs = profile?.technicianTotalJobs || profile?.totalJobsCompleted || 0;
   return (
     <div className="min-h-screen relative flex flex-col font-sans text-gray-800">
       <div className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat z-0" style={{ backgroundImage: `url(${bgImage})` }} />
@@ -89,7 +86,6 @@ const PublicProfileView = () => {
         <div className="max-w-7xl mx-auto px-4 pb-12">
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            {/* LEFT SIDEBAR */}
             <div className="lg:col-span-4 xl:col-span-3">
                <div className="sticky top-6">
                  <div className="shadow-xl rounded-2xl overflow-hidden bg-white">
@@ -98,10 +94,7 @@ const PublicProfileView = () => {
                </div>
             </div>
 
-            {/* RIGHT CONTENT */}
             <div className="lg:col-span-8 xl:col-span-9 space-y-6">
-              
-              {/* Stats Row */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                  <StatCard 
                    label="Report History" 
@@ -113,7 +106,8 @@ const PublicProfileView = () => {
                  />
                  <StatCard 
                    label={isTech ? "Rating" : (isOwner ? "Active Listings" : "Status")}
-                   value={isTech ? (profile.averageRating || "0.0") : (isOwner ? (profile.activeListings?.length || 0) : "Active")}
+                   // UPDATED: Using displayRating
+                   value={isTech ? displayRating : (isOwner ? (profile.activeListings?.length || 0) : "Active")}
                    color="text-accent"
                    subtext={isTech ? "Avg. Work Quality" : "Current Standing"}
                    icon={isTech ? FaStar : (isOwner ? FaBuilding : FaCheckCircle)}
@@ -121,7 +115,6 @@ const PublicProfileView = () => {
                  />
               </div>
 
-              {/* Technician Work Reviews - ONLY FOR TECHS */}
               {isTech && (
                 <div className="bg-white rounded-2xl shadow-xl border-transparent p-6">
                    <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-100">
@@ -136,10 +129,15 @@ const PublicProfileView = () => {
                           <div key={idx} className="p-4 rounded-xl bg-gray-50 border border-gray-100">
                             <div className="flex justify-between items-start mb-2">
                                <div className="flex items-center gap-3">
+                                  {/* UPDATED: Reviewer Profile Pic with ownerProfileImageUrl */}
                                   <img 
-                                    src={`https://ui-avatars.com/api/?name=${rev.ownerName}&background=random`} 
-                                    className="w-8 h-8 rounded-full" 
-                                    alt="Owner" 
+                                    src={rev.ownerProfileImageUrl ? 
+                                        (rev.ownerProfileImageUrl.startsWith("http") ? rev.ownerProfileImageUrl : `http://localhost:8086/uploads/${rev.ownerProfileImageUrl}`) 
+                                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(rev.ownerName)}&background=random`
+                                    } 
+                                    className="w-10 h-10 rounded-full object-cover border border-gray-200" 
+                                    alt={rev.ownerName} 
+                                    onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${rev.ownerName}`; }}
                                   />
                                   <div>
                                     <p className="text-sm font-bold text-gray-800">{rev.ownerName}</p>
@@ -147,9 +145,9 @@ const PublicProfileView = () => {
                                   </div>
                                </div>
                                <div className="flex text-yellow-400 text-xs">
-                                  {[...Array(5)].map((_, i) => (
-                                    <FaStar key={i} className={i < rev.rating ? "fill-current" : "text-gray-200"} />
-                                  ))}
+                                 {[...Array(5)].map((_, i) => (
+                                   <FaStar key={i} className={i < rev.rating ? "fill-current" : "text-gray-200"} />
+                                 ))}
                                </div>
                             </div>
                             <p className="text-sm text-gray-600 italic leading-relaxed">"{rev.comment}"</p>
@@ -162,7 +160,6 @@ const PublicProfileView = () => {
                 </div>
               )}
 
-              {/* Active Listings (For Owners) */}
               {hasListings && (
                 <div className="bg-white rounded-2xl shadow-xl border-transparent p-6">
                     <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-100">
@@ -179,14 +176,12 @@ const PublicProfileView = () => {
                 </div>
               )}
 
-              {/* Incident History (Global) */}
               <div className="bg-white rounded-2xl shadow-xl border-transparent p-6">
                  <div className="mb-4">
                     <h3 className="text-xl font-bold text-gray-900">Incident History</h3>
                  </div>
                  <IncidentHistory history={profile.incidentHistory} />
               </div>
-              
             </div>
           </motion.div>
         </div>

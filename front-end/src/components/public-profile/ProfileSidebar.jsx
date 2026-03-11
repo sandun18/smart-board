@@ -8,6 +8,7 @@ import InfoRow from './InfoRow';
 
 const ProfileSidebar = ({ profile }) => {
   const isOwner = profile.role === 'OWNER';
+  const isTech = profile.role === 'TECHNICIAN' || profile.role === 'TECH';
 
   return (
     <div className="lg:col-span-1 space-y-6">
@@ -57,6 +58,7 @@ const ProfileSidebar = ({ profile }) => {
            ) : (
              <InfoRow icon={FaUniversity} label="University" value={profile.university || "Not Provided"} />
            )}
+
         </div>
       </motion.div>
     </div>
