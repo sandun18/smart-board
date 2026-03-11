@@ -2,13 +2,20 @@ package com.sbms.sbms_monolith.controller;
 
 import com.sbms.sbms_monolith.dto.ads.AdCreateDTO;
 import com.sbms.sbms_monolith.dto.ads.AdResponseDTO;
-import com.sbms.sbms_monolith.model.enums.AdStatus;
-import com.sbms.sbms_monolith.service.ThirdPartyAdService;
-import com.sbms.sbms_monolith.service.AdPlanService;
 import com.sbms.sbms_monolith.dto.ads.PlanDTO;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.sbms.sbms_monolith.model.enums.AdStatus;
+import com.sbms.sbms_monolith.service.AdPlanService;
+import com.sbms.sbms_monolith.service.ThirdPartyAdService;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -16,11 +23,13 @@ import java.util.List;
 @RequestMapping("/api/admin/third-party-ads")
 public class ThirdPartyAdController {
 
-    @Autowired
-    private ThirdPartyAdService adService;
+    private final ThirdPartyAdService adService;
+    private final AdPlanService planService;
 
-    @Autowired
-    private AdPlanService planService;
+    public ThirdPartyAdController(ThirdPartyAdService adService, AdPlanService planService) {
+        this.adService = adService;
+        this.planService = planService;
+    }
 
     @GetMapping("/submissions")
     @PreAuthorize("hasRole('ADMIN')")
@@ -43,7 +52,6 @@ public class ThirdPartyAdController {
     @GetMapping("/campaigns")
     @PreAuthorize("hasRole('ADMIN')")
     public List<AdResponseDTO> getAllCampaigns() {
-        // Matches the renamed service method
         return adService.getActiveCampaigns();
     }
 
@@ -70,7 +78,7 @@ public class ThirdPartyAdController {
         adService.deleteAd(id);
     }
 
-    // --------------------- Plans CRUD ---------------------
+    // Plan CRUD endpoints.
     @GetMapping("/plans")
     @PreAuthorize("hasRole('ADMIN')")
     public List<PlanDTO> getPlans() {
@@ -101,10 +109,9 @@ public class ThirdPartyAdController {
         planService.deletePlan(id);
     }
 
-    // --------------------- Public API ---------------------
+    // Public endpoint used by the home page ad sidebar.
     @GetMapping("/public-ads")
     public List<AdResponseDTO> getPublicActiveAds() {
-        // Public endpoint to fetch ACTIVE ads marked as public for home page display
         return adService.getPublicActiveAds();
     }
 }
