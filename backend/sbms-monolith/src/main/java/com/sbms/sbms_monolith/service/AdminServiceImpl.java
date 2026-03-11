@@ -82,6 +82,28 @@ public class AdminServiceImpl implements AdminService {
         userRepository.save(user);
     }
 
+    @Override
+    public AdminUserResponseDTO promoteUserToAdmin(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+        // Check if already admin
+        if (user.getRole() == UserRole.ADMIN) {
+            throw new RuntimeException("User is already an admin");
+        }
+
+        // Promote to admin
+        UserRole oldRole = user.getRole();
+        user.setRole(UserRole.ADMIN);
+        User savedUser = userRepository.save(user);
+
+        // Log the promotion
+        System.out.println("✅ User " + user.getEmail() + " promoted from " + oldRole + " to ADMIN");
+
+        // Return DTO
+        return AdminUserResponseDTO.fromEntity(savedUser);
+    }
+
     // =========================================================
     // BOARDINGS
     // =========================================================

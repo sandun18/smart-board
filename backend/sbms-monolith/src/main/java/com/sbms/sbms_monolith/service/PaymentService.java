@@ -36,6 +36,8 @@ public class PaymentService {
     private final MonthlyBillRepository billRepo;
     
     private final PaymentReceiptPdfService receiptPdfService;
+    private final OwnerWalletService ownerWalletService;
+    
     private final S3Service s3Service;
 
 
@@ -79,9 +81,20 @@ public class PaymentService {
             tx.setGatewayFee(gateWayFee);
           //  tx.setPlatformFee(platformFee);
             tx.setPlatformFee(platformFee);
-            tx.setNetAmount(intent.getAmount().add(platformFee).add(gateWayFee));
+            BigDecimal netAmount = intent.getAmount().add(platformFee).add(gateWayFee);
+            tx.setNetAmount(netAmount);
 
             txRepo.save(tx);
+            
+            
+            
+            ownerWalletService.credit(
+                    intent.getOwnerId(),
+                    netAmount,
+                    tx.getTransactionRef()
+            );
+            
+            
             
             
             byte[] pdfBytes = receiptPdfService.generate(tx);
@@ -99,19 +112,21 @@ public class PaymentService {
             
             
             
-         // Instead of orElseThrow, use findById and check presence
-            billRepo.findById(intent.getMonthlyBillId()).ifPresentOrElse(
-                bill -> {
-                    bill.setStatus(MonthlyBillStatus.PAID);
-                    billRepo.save(bill);
-                },
-                () -> {
-                    // Log the error so you can fix it manually, 
-                    // but DON'T stop the payment flow
-                    log.error("CRITICAL: Payment succeeded but MonthlyBill {} was not found!", 
-                              intent.getMonthlyBillId());
-                }
-            );
+            if (intent.getMonthlyBillId() != null) {
+                billRepo.findById(intent.getMonthlyBillId()).ifPresentOrElse(
+                    bill -> {
+                        bill.setStatus(MonthlyBillStatus.PAID);
+                        billRepo.save(bill);
+                    },
+                    () -> {
+                        log.error(
+                            "CRITICAL: Payment succeeded but MonthlyBill {} was not found!",
+                            intent.getMonthlyBillId()
+                        );
+                    }
+                );
+            }
+
             
             
 

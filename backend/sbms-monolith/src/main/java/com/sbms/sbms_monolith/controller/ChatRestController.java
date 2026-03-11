@@ -37,11 +37,7 @@ public class ChatRestController {
     private final ChatSecurityUtil securityUtil;
     private final ChatMapper chatMapper;
 
-    /**
-     * 1️⃣ Chat Inbox (Chat List)
-     * - Unread count is per-user
-     * - Sorted by lastMessageAt DESC
-     */
+  
     @GetMapping
     public ResponseEntity<List<ChatListItemResponse>> getChatList() {
 
@@ -93,11 +89,7 @@ public class ChatRestController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * 2️⃣ Load Chat Messages (Paginated)
-     * - Does NOT mark as read automatically
-     */
-    @GetMapping("/{roomId}/messages")
+ @GetMapping("/{roomId}/messages")
     public ResponseEntity<Page<ChatMessageResponse>> getMessages(
             @PathVariable Long roomId,
             @RequestParam(defaultValue = "0") int page,

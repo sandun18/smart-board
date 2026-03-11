@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.sbms.sbms_monolith.dto.dashboard.OwnerEarningTransactionDTO;
 import com.sbms.sbms_monolith.dto.dashboard.OwnerEarningsSummaryDTO;
+import com.sbms.sbms_monolith.repository.UserRepository;
 import com.sbms.sbms_monolith.service.OwnerEarningsService;
 
 import lombok.RequiredArgsConstructor;
@@ -18,12 +19,18 @@ import lombok.RequiredArgsConstructor;
 public class OwnerEarningsController {
 
     private final OwnerEarningsService earningsService;
+    private final UserRepository userRepository;
 
     @GetMapping("/summary")
     @PreAuthorize("hasRole('OWNER')")
     public OwnerEarningsSummaryDTO summary(Authentication auth) {
 
-        Long ownerId = Long.parseLong(auth.getName());
+        String email = auth.getName(); // JWT subject
+        Long ownerId = userRepository
+                .findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"))
+                .getId();
+
         return earningsService.getSummary(ownerId);
     }
 
@@ -31,7 +38,13 @@ public class OwnerEarningsController {
     @PreAuthorize("hasRole('OWNER')")
     public List<OwnerEarningTransactionDTO> recentTransactions(Authentication auth) {
 
-        Long ownerId = Long.parseLong(auth.getName());
+        String email = auth.getName();
+        Long ownerId = userRepository
+                .findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"))
+                .getId();
+
         return earningsService.recentTransactions(ownerId);
     }
 }
+

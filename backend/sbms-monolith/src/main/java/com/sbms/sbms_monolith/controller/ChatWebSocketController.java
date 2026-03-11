@@ -13,10 +13,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
-
-
-
-
+import java.util.Optional;
 
 @Controller
 @RequiredArgsConstructor
@@ -36,13 +33,26 @@ public class ChatWebSocketController {
             throw new IllegalStateException("Unauthenticated WebSocket message");
         }
 
-        // ✅ Principal username = email
-        String email = principal.getName();
+        String principalName = principal.getName();
+        User sender;
 
-        User sender = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new IllegalStateException("WS user not found: " + email)
-                );
+        // 🔥 CASE 1: principalName is EMAIL (mobile app)
+        Optional<User> byEmail = userRepository.findByEmail(principalName);
+
+        if (byEmail.isPresent()) {
+            sender = byEmail.get();
+        } else {
+            // 🔥 CASE 2: principalName is USER ID (web app)
+            try {
+                Long userId = Long.valueOf(principalName);
+                sender = userRepository.findById(userId)
+                        .orElseThrow(() ->
+                                new IllegalStateException("WS user not found by id: " + userId)
+                        );
+            } catch (NumberFormatException e) {
+                throw new IllegalStateException("Invalid WS principal: " + principalName);
+            }
+        }
 
         ChatMessage saved =
                 chatService.sendMessage(request, sender);

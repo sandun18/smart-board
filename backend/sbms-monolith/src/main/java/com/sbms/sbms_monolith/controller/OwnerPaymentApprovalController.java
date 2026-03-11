@@ -77,18 +77,20 @@ public class OwnerPaymentApprovalController {
         intent.setCompletedAt(LocalDateTime.now());
         intentRepo.save(intent);
         
-        billRepo.findById(intent.getMonthlyBillId()).ifPresentOrElse(
+        if (intent.getMonthlyBillId() != null) {
+            billRepo.findById(intent.getMonthlyBillId()).ifPresentOrElse(
                 bill -> {
                     bill.setStatus(MonthlyBillStatus.PAID);
                     billRepo.save(bill);
                 },
                 () -> {
-                    // Log the error so you can fix it manually, 
-                    // but DON'T stop the payment flow
-                    log.error("CRITICAL: Payment succeeded but MonthlyBill {} was not found!", 
-                              intent.getMonthlyBillId());
+                    log.error(
+                        "CRITICAL: Payment succeeded but MonthlyBill {} was not found!",
+                        intent.getMonthlyBillId()
+                    );
                 }
             );
+        }
 
         // 2️ Create immutable transaction record
         PaymentTransaction tx = new PaymentTransaction();

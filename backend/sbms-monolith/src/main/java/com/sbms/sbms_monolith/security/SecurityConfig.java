@@ -1,6 +1,8 @@
 package com.sbms.sbms_monolith.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -36,50 +38,102 @@ public class SecurityConfig {
     private CustomUserDetailsService customUserDetailsService;
 
     @Bean
+    public WebServerFactoryCustomizer<TomcatServletWebServerFactory> tomcatCustomizer() {
+        return factory -> factory.addConnectorCustomizers(connector -> {
+            connector.setMaxParameterCount(50);
+            connector.setMaxPartCount(20);
+        });
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .sessionManagement(sm ->
-                    sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .authorizeHttpRequests(auth -> auth
-            		// .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(sm ->
+                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .authorizeHttpRequests(auth -> auth
+                        // -----------------------------------------------------------
+                        // PUBLIC ENDPOINTS (MUST BE FIRST)
+                        // -----------------------------------------------------------
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/boardings/**").permitAll()
+                        .requestMatchers(
+                                "/api/users/public/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
 
-            		.requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // -----------------------------------------------------------
+                        // ADMIN ENDPOINTS
+                        // -----------------------------------------------------------
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/reports/admin/**").hasRole("ADMIN")
 
-                .requestMatchers(
-                        "/api/auth/**",
-                        "/api/boardings",
-                        "/api/boardings/**" ,
-                        
-                        "/ws/**",
+                        // -----------------------------------------------------------
+                        // OWNER ENDPOINTS
+                        // -----------------------------------------------------------
+                        .requestMatchers("/api/owner/**").hasRole("OWNER")
+                        .requestMatchers("/api/boardings/owner/**").hasRole("OWNER")
+                        .requestMatchers("/api/technician-workflow/search").hasRole("OWNER")
+                        .requestMatchers("/api/technician-workflow/*/assign/*").hasRole("OWNER")
+                        .requestMatchers("/api/technician-workflow/*/review").hasRole("OWNER")
+                        .requestMatchers("/api/payments/intent/technician").hasRole("OWNER")
 
-                        "/api/users/public/**",
-                        
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html"
-                ).permitAll()
+                        // -----------------------------------------------------------
+                        // TECHNICIAN ENDPOINTS
+                        // -----------------------------------------------------------
+                        .requestMatchers("/api/technician-workflow/my-jobs").hasAnyAuthority("ROLE_TECHNICIAN", "TECHNICIAN")
+                        .requestMatchers("/api/technician-workflow/*/decision").hasAnyAuthority("ROLE_TECHNICIAN", "TECHNICIAN")
+                        .requestMatchers("/api/technician-workflow/*/complete").hasAnyAuthority("ROLE_TECHNICIAN", "TECHNICIAN")
+                        .requestMatchers("/api/technician-workflow/profile").hasAnyAuthority("ROLE_TECHNICIAN", "TECHNICIAN")
 
-             //   .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                
-                .requestMatchers("/api/payments/**").hasRole("STUDENT")
+                        // -----------------------------------------------------------
+                        // STUDENT ENDPOINTS (BILLING & PAYMENTS) 💰
+                        // -----------------------------------------------------------
+                        .requestMatchers("/api/student/**").hasRole("STUDENT")
+                        .requestMatchers("/api/bills/student/**").hasRole("STUDENT")
+                        .requestMatchers("/api/bills/student").hasRole("STUDENT")  // ✅ Added this
+                        .requestMatchers("/api/payments/**").hasRole("STUDENT")    // ✅ Fixed this
+                        .requestMatchers("/api/payments/history").hasRole("STUDENT") // ✅ Added this
 
-                .requestMatchers("/api/owner/**").hasRole("OWNER")
-                .requestMatchers("/api/boardings/owner/**").hasRole("OWNER")
+                        // -----------------------------------------------------------
+                        // REPORTS - SHARED ACCESS (STUDENT, OWNER, TECHNICIAN)
+                        // -----------------------------------------------------------
+                        .requestMatchers(HttpMethod.POST, "/api/reports").hasAnyAuthority(
+                                "ROLE_TECHNICIAN", "TECHNICIAN",
+                                "ROLE_OWNER", "OWNER",
+                                "ROLE_STUDENT", "STUDENT",
+                                "ROLE_ADMIN", "ADMIN"
+                        )
+                        .requestMatchers("/api/reports/**").hasAnyAuthority(
+                                "ROLE_TECHNICIAN", "TECHNICIAN",
+                                "ROLE_OWNER", "OWNER",
+                                "ROLE_STUDENT", "STUDENT",
+                                "ROLE_ADMIN", "ADMIN"
+                        )
 
-                .requestMatchers("/api/reports/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/reports/**").hasAnyRole("STUDENT", "OWNER")
+                        // File uploads for reports
+                        .requestMatchers("/api/files/upload/**").hasAnyAuthority(
+                                "ROLE_TECHNICIAN", "TECHNICIAN",
+                                "ROLE_OWNER", "OWNER",
+                                "ROLE_STUDENT", "STUDENT"
+                        )
 
-                .requestMatchers("/api/student/**").hasRole("STUDENT")
-                .requestMatchers("/api/bills/student/**").hasRole("STUDENT")
-                
+                        // -----------------------------------------------------------
+                        // REGISTRATIONS - ANY AUTHENTICATED USER
+                        // -----------------------------------------------------------
+                        .requestMatchers("/api/registrations/**").authenticated()
 
-                .anyRequest().authenticated()
-            )
-            .authenticationProvider(authenticationProvider())
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                        // -----------------------------------------------------------
+                        // ALL OTHER REQUESTS MUST BE AUTHENTICATED
+                        // -----------------------------------------------------------
+                        .anyRequest().authenticated()
+                )
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

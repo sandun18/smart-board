@@ -2,7 +2,10 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "../components/student/common/ProtectedRoute";
 
-// Student Pages (Auth pages removed)
+import ChatList from "../pages/chat/ChatList";
+import ChatRoom from "../pages/chat/ChatRoom";
+
+// Student Pages
 import StudentDashboard from "../pages/student/StudentDashboard";
 import AppointmentsPage from "../pages/student/AppointmentsPage";
 import SearchBoardingsPage from "../pages/student/SearchBoardingsPage";
@@ -13,94 +16,72 @@ import MaintenancePage from "../pages/student/MaintenancePage";
 import ReportsPage from "../pages/student/ReportsPage";
 import ProfilePage from "../pages/student/ProfilePage";
 
+// Payment Pages
+import SelectPaymentMethod from "../pages/student/payments/pay/select-method/SelectPaymentMethod";
+import BankSlipPayment from "../pages/student/payments/pay/bank-slip/BankSlipPayment";
+import CashPayment from "../pages/student/payments/pay/cash/CashPayment";
+import CardPayment from "../pages/student/payments/pay/card/CardPayment";
+import PaymentSuccess from "../pages/student/payments/pay/success/PaymentSuccess";
+
 const StudentAppRoutes = () => {
   return (
     <Routes>
+
       {/* ==================== PROTECTED ROUTES ==================== */}
+      <Route path="/" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
+
+      <Route path="appointmentpage" element={<ProtectedRoute><AppointmentsPage /></ProtectedRoute>} />
+      <Route path="search-boardings" element={<ProtectedRoute><SearchBoardingsPage /></ProtectedRoute>} />
+      <Route path="boarding-details/:id" element={<ProtectedRoute><BoardingDetailsPage /></ProtectedRoute>} />
+      <Route path="my-boardings" element={<ProtectedRoute><MyBoardingsPage /></ProtectedRoute>} />
+      <Route path="billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
+      <Route path="maintenance" element={<ProtectedRoute><MaintenancePage /></ProtectedRoute>} />
+      <Route path="reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+      <Route path="profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      <Route path="/chats" element={<ChatList />} />
+      <Route path="/chat/:roomId" element={<ChatRoom />} />
+      {/* ==================== PAYMENT ROUTES (PROTECTED) ==================== */}
       <Route
-        path="/"
+        path="payments/pay/select-method/:intentId"
         element={
           <ProtectedRoute>
-            <StudentDashboard />
+            <SelectPaymentMethod />
           </ProtectedRoute>
         }
       />
 
       <Route
-        path="/appointmentpage"
+        path="payments/pay/bank-slip/:intentId"
         element={
           <ProtectedRoute>
-            <AppointmentsPage />
+            <BankSlipPayment />
           </ProtectedRoute>
         }
       />
 
       <Route
-        path="/search-boardings"
-        element={
-          <ProtectedRoute>
-            <SearchBoardingsPage />
-          </ProtectedRoute>
-        }
+        path="payments/pay/card/:intentId"
+        element={<ProtectedRoute><CardPayment /></ProtectedRoute>}
       />
 
       <Route
-        path="/boarding-details/:id"
-        element={
-          <ProtectedRoute>
-            <BoardingDetailsPage />
-          </ProtectedRoute>
-        }
+        path="payments/success/payment-success"
+        element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>}
       />
 
       <Route
-        path="/my-boardings"
+        path="payments/pay/cash/:intentId"
         element={
           <ProtectedRoute>
-            <MyBoardingsPage />
+            <CashPayment />
           </ProtectedRoute>
         }
       />
+      
 
-      <Route
-        path="/billing"
-        element={
-          <ProtectedRoute>
-            <BillingPage />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/maintenance"
-        element={
-          <ProtectedRoute>
-            <MaintenancePage />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/reports"
-        element={
-          <ProtectedRoute>
-            <ReportsPage />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <ProfilePage />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* ==================== FALLBACK ROUTE ==================== */}
-      {/* Redirects to global login if user tries to access invalid student path */}
+      {/* ==================== FALLBACK ==================== */}
       <Route path="*" element={<Navigate to="/login" replace />} />
+
     </Routes>
   );
 };

@@ -18,8 +18,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Map;
 import org.springframework.security.authentication.*;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
@@ -72,8 +72,18 @@ public class AuthController {
         return generateAuthResponse(user);
     }
 
+    @GetMapping("/admin-check")
+    @Operation(
+        summary = "Check if admin exists",
+        description = "Check whether any admin account exists in the system"
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Check completed")
+    })
+    public Map<String, Boolean> checkAdminExists() {
+        return Map.of("adminExists", userService.hasAdmins());
+    }
 
-    
     @PostMapping("/refresh")
     @Operation(
         summary = "Refresh access token",
@@ -102,9 +112,6 @@ public class AuthController {
         return response;
     }
 
-  
-    
-
     @PostMapping("/register/request")
     @Operation(
         summary = "Request user registration",
@@ -117,17 +124,16 @@ public class AuthController {
     public String registerRequest(@RequestBody UserRegisterDTO dto) {
         return userService.registerRequest(dto);
     }
-    
-    
-    @Operation(
-            summary = "Verify registration OTP",
-            description = "Verify OTP and complete user registration. Returns JWT on success"
-        )
-        @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Registration completed"),
-            @ApiResponse(responseCode = "400", description = "Invalid or expired OTP")
-        })
+
     @PostMapping("/register/verify")
+    @Operation(
+        summary = "Verify registration OTP",
+        description = "Verify OTP and complete user registration. Returns JWT on success"
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Registration completed"),
+        @ApiResponse(responseCode = "400", description = "Invalid or expired OTP")
+    })
     public JwtAuthResponse verifyOtp(@RequestBody OtpVerifyRequest req) {
 
         UserResponseDTO userDto =
@@ -206,28 +212,6 @@ public class AuthController {
         );
 
         return token;
-    }
-
-    @PostMapping("/change-password")
-    @Operation(
-        summary = "Change password",
-        description = "Allows a logged-in user to change their password"
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Password updated successfully"),
-        @ApiResponse(responseCode = "401", description = "Invalid current password"),
-        @ApiResponse(responseCode = "403", description = "User not authenticated")
-    })
-    public String changePassword(
-            @RequestBody ChangePasswordDTO req,
-            Authentication auth // Injected automatically by Spring Security if token is present
-    ) {
-        // auth.getName() extracts the email from the JWT Token
-        return userService.changePassword(
-                auth.getName(),
-                req.getCurrentPassword(),
-                req.getNewPassword()
-        );
     }
 }
 

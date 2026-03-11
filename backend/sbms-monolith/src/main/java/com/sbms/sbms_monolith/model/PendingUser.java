@@ -1,9 +1,12 @@
 package com.sbms.sbms_monolith.model;
 
 import com.sbms.sbms_monolith.model.enums.Gender;
+import com.sbms.sbms_monolith.model.enums.MaintenanceIssueType;
 import com.sbms.sbms_monolith.model.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 @Entity
@@ -25,4 +28,14 @@ public class PendingUser {
     private String studentUniversity;
     @Enumerated(EnumType.STRING)
     private UserRole role;
+
+    private String province;
+    private String city;
+    private Double basePrice;
+
+    @ElementCollection(targetClass = MaintenanceIssueType.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "pending_technician_skills", joinColumns = @JoinColumn(name = "pending_user_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "skill")
+    private List<MaintenanceIssueType> skills;
 }

@@ -46,6 +46,11 @@ public class AdminController {
         adminService.verifyOwner(userId, dto);
     }
 
+    @PutMapping("/users/{userId}/promote-to-admin")
+    public AdminUserResponseDTO promoteToAdmin(@PathVariable Long userId) {
+        return adminService.promoteUserToAdmin(userId);
+    }
+
     @GetMapping("/boardings")
     public List<AdminBoardingResponseDTO> getAllBoardings() {
         return adminService.getAllBoardings();

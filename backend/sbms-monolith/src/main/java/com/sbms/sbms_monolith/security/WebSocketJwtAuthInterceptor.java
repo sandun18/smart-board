@@ -115,13 +115,18 @@ public class WebSocketJwtAuthInterceptor implements ChannelInterceptor {
             String username = jwtService.extractUsername(token);
             UserDetails userDetails =
                     userDetailsService.loadUserByUsername(username);
+            
+            Long userId = jwtService.extractUserId(token); 
 
+            
             UsernamePasswordAuthenticationToken auth =
                     new UsernamePasswordAuthenticationToken(
-                            userDetails,
+                    		 userId.toString(),   
                             null,
                             userDetails.getAuthorities()
                     );
+            System.out.println("WS CONNECT USER = " + auth.getName());
+
 
             // ✅ THIS IS THE ONLY REQUIRED STEP
             accessor.setUser(auth);

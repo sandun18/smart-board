@@ -32,27 +32,30 @@ const CARD_CONFIGS = [
     subLabel: 'description',
   },
 ];
-
-const OverviewCards = ({ overview }) => {
+const OverviewCards = ({ overview = {} }) => {
   return (
     <section className="mb-8">
-      {/* Grid: 1 col (Mobile), 2 cols (Tablet < 1400px), 4 cols (Desktop >= 1400px) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 min-[1400px]:grid-cols-4 gap-6">
-        {CARD_CONFIGS.map((config, index) => (
-          <OverviewCard
-            key={config.key}
-            icon={config.icon}
-            title={config.title}
-            amount={overview[config.key].amount}
-            subtitle={overview[config.key][config.subLabel]}
-            colorClass={config.colorClass}
-            index={index}
-          />
-        ))}
+        {CARD_CONFIGS.map((config, index) => {
+          const data = overview[config.key] || {};
+
+          return (
+            <OverviewCard
+              key={config.key}
+              icon={config.icon}
+              title={config.title}
+              amount={data.amount ?? 0}
+              subtitle={data[config.subLabel] ?? '-'}
+              colorClass={config.colorClass}
+              index={index}
+            />
+          );
+        })}
       </div>
     </section>
   );
 };
+
 
 const OverviewCard = ({ icon: Icon, title, amount, subtitle, colorClass, index }) => (
   <motion.div

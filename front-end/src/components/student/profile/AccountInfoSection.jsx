@@ -21,8 +21,8 @@ const AccountInfoSection = ({ userData, onSecurity }) => {
 
   const accountItems = [
     { label: 'Email Address', value: userData.email },
-    { label: 'Username', value: userData.username },
-    { label: 'Account Created', value: formatDate(userData.joinDate) },
+    { label: 'Username', value: userData.firstName },
+    { label: 'Account Created', value: formatDate(userData.createdAt) },
     { label: 'Last Login', value: formatLastLogin() },
   ];
 
