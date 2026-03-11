@@ -48,6 +48,9 @@ public class AppointmentMapper {
         dto.setStudentNote(a.getStudentNote());
         dto.setOwnerNote(a.getOwnerNote());
 
+        dto.setCreatedAt(a.getCreatedAt());
+        dto.setUpdatedAt(a.getUpdatedAt());
+
         return dto;
     }
 }
