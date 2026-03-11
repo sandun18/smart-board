@@ -1,250 +1,321 @@
-import React, { useState, useEffect } from "react";
-import PaymentGatewayModal from "./PaymentGatewayModal";
-import { useAuth } from "../../../context/student/StudentAuthContext";
-
+import React, { useEffect, useRef, useState } from "react";
 import StudentService from "../../../api/student/StudentService";
+import { useAuth } from "../../../context/student/StudentAuthContext";
+import api from "../../../api/api";
+import SignatureCanvas from "react-signature-canvas";
+import { useNavigate } from "react-router-dom";
 
-const RegistrationModal = ({ isOpen, onClose, onSubmit, appointment }) => {
-  const { currentUser } = useAuth(); // Get logged-in user details
-  const [step, setStep] = useState(1);
+const RegistrationModal = ({ isOpen, onClose, appointment }) => {
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
 
-  const [autoKeyMoney, setAutoKeyMoney] = useState(0);
+  const signatureRef = useRef(null);
 
-  // Logic: When modal opens, ensure we have the correct Key Money amount
-  useEffect(() => {
-    if (isOpen && appointment) {
-        // Option A: Use data passed in props (if backend updated)
-        if (appointment.keyMoney) {
-            setAutoKeyMoney(appointment.keyMoney);
-        } 
-        // Option B: Safety Net - Fetch fresh data from backend
-        else if (appointment.boardingId) {
-            StudentService.getBoarding(appointment.boardingId)
-                .then(data => {
-                    // Handle potential response variations
-                    const amount = data.keyMoney || (data.data && data.data.keyMoney) || 0;
-                    setAutoKeyMoney(amount);
-                })
-                .catch(err => console.error("Error fetching price", err));
-        }
-    }
-  }, [isOpen, appointment]);
+  const [boarding, setBoarding] = useState(null);
+  const [keyMoneyEligible, setKeyMoneyEligible] = useState(false);
+  const [checkingPayment, setCheckingPayment] = useState(false);
+
+  const [paymentMethod, setPaymentMethod] = useState("CARD");
+
   const [formData, setFormData] = useState({
-    studentName: "",
-    studentPhone: "",
+    numberOfStudents: 1,
+    studentNote: "",
     moveInDate: "",
     contractDuration: "",
     emergencyContact: "",
-    emergencyPhone: "",
     specialRequirements: "",
-    agreeTerms: false,
   });
 
+  const [signature, setSignature] = useState(null);
+
+  /* ================= LOAD BOARDING ================= */
+
   useEffect(() => {
-    if (isOpen && currentUser) {
-      setFormData((prev) => ({
-        ...prev,
-        studentName: currentUser.name || currentUser.fullName || "",
-        studentPhone: currentUser.phone || currentUser.phoneNumber || ""
-      }));
-    }
-  }, [isOpen, currentUser]);
+    if (!appointment) return;
+
+    StudentService.getBoarding(appointment.boardingId)
+      .then((res) => {
+        const data = res?.data || res;
+        setBoarding(data);
+      })
+      .catch(() => alert("Failed to load boarding"));
+  }, [appointment]);
+
+  /* ================= CHECK PAYMENT STATUS ================= */
+
+  useEffect(() => {
+    if (!appointment) return;
+
+    const checkPayment = async () => {
+      try {
+        setCheckingPayment(true);
+
+        const res = await api.get("/payments/key-money-status", {
+          params: { boardingId: appointment.boardingId },
+        });
+
+        setKeyMoneyEligible(res.data === true);
+      } catch {
+        setKeyMoneyEligible(false);
+      } finally {
+        setCheckingPayment(false);
+      }
+    };
+
+    checkPayment();
+  }, [appointment]);
+
+  /* ================= HANDLE INPUT ================= */
 
   const handleChange = (e) => {
-    const value =
-      e.target.type === "checkbox" ? e.target.checked : e.target.value;
-    setFormData({ ...formData, [e.target.id]: value });
+    setFormData({
+      ...formData,
+      [e.target.id]: e.target.value,
+    });
   };
 
-  const handleNext = () => {
-    if (
-      !formData.studentName ||
-      !formData.studentPhone ||
-      !formData.moveInDate ||
-      !formData.contractDuration ||
-      !formData.emergencyContact ||
-      !formData.agreeTerms
-    ) {
-      alert("Please fill in all required fields and agree to the terms.");
+  /* ================= START PAYMENT ================= */
+
+  const startKeyMoneyPayment = async () => {
+    try {
+      const res = await api.post("/payments/intent", {
+        studentId: currentUser.id,
+        ownerId: boarding.ownerId,
+        boardingId: boarding.id,
+        type: "KEY_MONEY",
+        amount: boarding.keyMoney,
+        description: "Key Money Payment",
+      });
+
+      navigate(
+        `/student/payments/pay/select-method/${res.data.id}?boardingId=${boarding.id}`
+      );
+    } catch {
+      alert("Unable to start payment");
+    }
+  };
+
+  /* ================= SIGNATURE ================= */
+
+  const saveSignature = () => {
+    if (!signatureRef.current) return;
+
+    const base64 = signatureRef.current
+      .getCanvas()
+      .toDataURL("image/png");
+
+    setSignature(base64);
+  };
+
+  const clearSignature = () => {
+    if (!signatureRef.current) return;
+
+    signatureRef.current.clear();
+    setSignature(null);
+  };
+
+  /* ================= SUBMIT ================= */
+
+  const submitRegistration = async () => {
+    if (!keyMoneyEligible) {
+      alert("Please complete key money payment first.");
       return;
     }
-    setStep(2); // Open Payment Gateway
+
+    if (!signature) {
+      alert("Signature required");
+      return;
+    }
+
+    if (!formData.moveInDate) {
+      alert("Move-in date required");
+      return;
+    }
+
+    try {
+      await api.post(`/registrations/student/${currentUser.id}`, {
+        boardingId: boarding.id,
+        numberOfStudents: Number(formData.numberOfStudents),
+        studentNote: formData.studentNote,
+        moveInDate: formData.moveInDate,
+        contractDuration: formData.contractDuration,
+        emergencyContact: formData.emergencyContact,
+        specialRequirements: formData.specialRequirements,
+        studentSignatureBase64: signature,
+        paymentMethod: paymentMethod
+      });
+
+      alert("Registration submitted successfully");
+
+      onClose();
+    } catch (e) {
+      alert(e?.response?.data?.message || "Registration failed");
+    }
   };
 
-  const handlePaymentSuccess = (transactionId, paidAmount) => {
-    const finalData = {
-        ...formData,
-        paymentMethod: "CARD",
-        transactionId: transactionId,
-        keyMoneyPaidAmount: paidAmount
-    };
-    onSubmit(finalData); 
-  };
-
-  if (!isOpen || !appointment) return null;
+  if (!isOpen || !boarding) return null;
 
   return (
-    <>
-      {/* STEP 1: REGISTRATION FORM */}
-      {step === 1 && (
-        <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white p-8 rounded-2xl w-11/12 max-w-2xl relative animate-modalSlideIn max-h-[90vh] overflow-y-auto">
-            <span 
-              className="absolute top-4 right-4 text-2xl cursor-pointer text-gray-400 hover:text-gray-600 transition-colors" 
-              onClick={onClose}
-            >&times;</span>
-            
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">Register for {appointment.boardingName}</h3>
-            <p className="text-gray-500 mb-6 text-sm">Fill in your details to generate your rental agreement.</p>
+    <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-xl p-8 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
 
+        <h2 className="text-2xl font-bold mb-6">
+          Register for {boarding.title}
+        </h2>
 
-            {/* ✅ DISPLAY KEY MONEY INFO HERE */}
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-lg flex justify-between items-center">
-                <div>
-                    <p className="text-blue-800 font-semibold text-sm">Required Key Money</p>
-                    <p className="text-xs text-blue-600">This amount will be locked in the payment step.</p>
-                </div>
-                <span className="text-blue-900 font-bold text-xl">
-                    LKR {autoKeyMoney ? autoKeyMoney.toLocaleString() : "0.00"}
-                </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              
-              {/* ✅ NEW: Student Name */}
-              <div className="form-group">
-                <label className="block font-semibold mb-1 text-gray-700 text-sm">Full Name (for Contract) *</label>
-                <input 
-                  type="text" 
-                  id="studentName" 
-                  value={formData.studentName} 
-                  onChange={handleChange} 
-                  placeholder="e.g. John Doe"
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" 
-                />
-              </div>
-
-              {/* ✅ NEW: Student Phone */}
-              <div className="form-group">
-                <label className="block font-semibold mb-1 text-gray-700 text-sm">Your Phone Number *</label>
-                <input 
-                  type="tel" 
-                  id="studentPhone" 
-                  value={formData.studentPhone} 
-                  onChange={handleChange} 
-                  placeholder="e.g. 077 123 4567"
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" 
-                />
-              </div>
-
-              {/* Move-in Date */}
-              <div className="form-group">
-                <label className="block font-semibold mb-1 text-gray-700 text-sm">Move-in Date *</label>
-                <input 
-                  type="date" 
-                  id="moveInDate" 
-                  value={formData.moveInDate} 
-                  onChange={handleChange} 
-                  min={new Date().toISOString().split("T")[0]} 
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" 
-                />
-              </div>
-
-              {/* ✅ UPDATED: Contract Duration */}
-              <div className="form-group">
-                <label className="block font-semibold mb-1 text-gray-700 text-sm">Agreement Period (Contract) *</label>
-                <select 
-                  id="contractDuration" 
-                  value={formData.contractDuration} 
-                  onChange={handleChange} 
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                >
-                  <option value="" disabled>Select period</option>
-                  <option value="6 Months">6 Months</option>
-                  <option value="1 Year">1 Year</option>
-                  <option value="2 Years">2 Years</option>
-                </select>
-              </div>
-
-              {/* Emergency Contact */}
-              <div className="form-group">
-                <label className="block font-semibold mb-1 text-gray-700 text-sm">Emergency Contact Name *</label>
-                <input 
-                  type="text" 
-                  id="emergencyContact" 
-                  value={formData.emergencyContact} 
-                  onChange={handleChange} 
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" 
-                />
-              </div>
-
-              {/* Emergency Phone */}
-              <div className="form-group">
-                <label className="block font-semibold mb-1 text-gray-700 text-sm">Emergency Phone *</label>
-                <input 
-                  type="tel" 
-                  id="emergencyPhone" 
-                  value={formData.emergencyPhone} 
-                  onChange={handleChange} 
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" 
-                />
-              </div>
-            </div>
-
-            {/* Special Requirements */}
-            <div className="form-group mt-4">
-              <label className="block font-semibold mb-1 text-gray-700 text-sm">Special Requirements</label>
-              <textarea 
-                id="specialRequirements" 
-                value={formData.specialRequirements} 
-                onChange={handleChange} 
-                rows="2" 
-                placeholder="Any dietary restrictions or allergies?"
-                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-              ></textarea>
-            </div>
-
-            {/* Terms Checkbox */}
-            <div className="form-group mt-4">
-              <label className="flex items-center gap-3 cursor-pointer text-sm text-gray-600 select-none">
-                <input 
-                  type="checkbox" 
-                  id="agreeTerms" 
-                  checked={formData.agreeTerms} 
-                  onChange={handleChange} 
-                  className="w-4 h-4 text-green-600 rounded focus:ring-green-500" 
-                />
-                I agree to the boarding house rules and terms of service
-              </label>
-            </div>
-
-            {/* Buttons */}
-            <div className="flex justify-end gap-3 mt-6">
-              <button 
-                onClick={onClose} 
-                className="px-6 py-2 rounded-lg border text-gray-600 hover:bg-gray-100 font-semibold transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={handleNext} 
-                className="px-6 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 font-semibold shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
-              >
-                 Proceed to Payment
-              </button>
-            </div>
-          </div>
+        {/* SUMMARY */}
+        <div className="bg-gray-100 rounded-lg p-4 mb-6">
+          <p className="font-semibold">{boarding.title}</p>
+          <p className="text-gray-500">{boarding.address}</p>
+          <p className="text-green-600 font-bold">
+            Monthly: Rs {boarding.pricePerMonth}
+          </p>
+          <p className="text-blue-600 font-bold">
+            Key Money: Rs {boarding.keyMoney}
+          </p>
         </div>
-      )}
 
-      {/* STEP 2: PAYMENT GATEWAY */}
-      <PaymentGatewayModal 
-        isOpen={step === 2}
-        onClose={() => setStep(1)} // Go back to form
-        defaultAmount={autoKeyMoney}
-        onPaymentComplete={handlePaymentSuccess}
-      />
-    </>
+        {/* STUDENTS */}
+        <label className="block text-sm font-semibold">Number of Students</label>
+        <input
+          id="numberOfStudents"
+          type="number"
+          value={formData.numberOfStudents}
+          onChange={handleChange}
+          className="w-full border p-2 rounded mb-4"
+        />
+
+        {/* NOTE */}
+        <label className="block text-sm font-semibold">Note</label>
+        <textarea
+          id="studentNote"
+          value={formData.studentNote}
+          onChange={handleChange}
+          className="w-full border p-2 rounded mb-4"
+        />
+
+        {/* MOVE IN */}
+        <label className="block text-sm font-semibold">Move-in Date</label>
+        <input
+          id="moveInDate"
+          type="date"
+          value={formData.moveInDate}
+          onChange={handleChange}
+          className="w-full border p-2 rounded mb-4"
+        />
+
+        {/* CONTRACT */}
+        <label className="block text-sm font-semibold">Contract Duration</label>
+        <input
+          id="contractDuration"
+          value={formData.contractDuration}
+          onChange={handleChange}
+          placeholder="6 Months"
+          className="w-full border p-2 rounded mb-4"
+        />
+
+        {/* EMERGENCY */}
+        <label className="block text-sm font-semibold">Emergency Contact</label>
+        <input
+          id="emergencyContact"
+          value={formData.emergencyContact}
+          onChange={handleChange}
+          className="w-full border p-2 rounded mb-4"
+        />
+
+        {/* SPECIAL */}
+        <label className="block text-sm font-semibold">Special Requirements</label>
+        <textarea
+          id="specialRequirements"
+          value={formData.specialRequirements}
+          onChange={handleChange}
+          className="w-full border p-2 rounded mb-4"
+        />
+
+        {/* PAYMENT METHOD */}
+        <label className="block text-sm font-semibold">Payment Method</label>
+
+        <select
+          value={paymentMethod}
+          onChange={(e) => setPaymentMethod(e.target.value)}
+          className="w-full border p-2 rounded mb-4"
+        >
+          <option value="CARD">Card</option>
+          <option value="BANK_TRANSFER">Bank Transfer</option>
+          <option value="MOBILE_WALLET">Mobile Wallet</option>
+          <option value="BANK_SLIP">Bank Slip</option>
+          <option value="CASH">Cash</option>
+        </select>
+
+        {/* SIGNATURE */}
+        <label className="block text-sm font-semibold mb-2">Signature</label>
+
+        <div className="border rounded bg-gray-100">
+          <SignatureCanvas
+            ref={signatureRef}
+            penColor="black"
+            canvasProps={{
+              width: 600,
+              height: 200,
+              className: "w-full",
+            }}
+          />
+        </div>
+
+        <div className="flex justify-between mt-2">
+          <button onClick={clearSignature} className="text-red-600 text-sm">
+            Clear
+          </button>
+
+          <button onClick={saveSignature} className="text-blue-600 text-sm">
+            Save Signature
+          </button>
+        </div>
+
+        {signature && (
+          <p className="text-green-600 text-sm mt-2">
+            ✔ Signature captured
+          </p>
+        )}
+
+        {/* PAYMENT */}
+        <div className="mt-6 bg-gray-100 p-4 rounded-lg">
+          <p className="font-semibold">Key Money Payment</p>
+
+          {keyMoneyEligible ? (
+            <p className="text-green-600 font-bold mt-2">
+              ✔ Key Money Submitted
+            </p>
+          ) : (
+            <button
+              onClick={startKeyMoneyPayment}
+              className="mt-3 bg-blue-600 text-white px-4 py-2 rounded"
+              disabled={checkingPayment}
+            >
+              Pay Key Money
+            </button>
+          )}
+        </div>
+
+        {/* SUBMIT */}
+        <div className="flex justify-end gap-4 mt-6">
+          <button
+            onClick={onClose}
+            className="px-5 py-2 border rounded"
+          >
+            Cancel
+          </button>
+
+          <button
+            onClick={submitRegistration}
+            disabled={!keyMoneyEligible || !signature}
+            className="px-6 py-2 bg-green-600 text-white rounded disabled:opacity-40"
+          >
+            Submit Registration
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 
