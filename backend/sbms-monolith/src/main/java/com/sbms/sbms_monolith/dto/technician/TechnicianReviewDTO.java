@@ -8,6 +8,7 @@ import java.time.LocalDate;
 public class TechnicianReviewDTO {
     private Long id;
     private String ownerName;
+    private String ownerProfileImageUrl;
     private int rating;
     private String comment;
     private LocalDate date;
