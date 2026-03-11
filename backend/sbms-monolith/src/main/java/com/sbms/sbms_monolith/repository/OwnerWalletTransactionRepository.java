@@ -12,6 +12,8 @@ import com.sbms.sbms_monolith.model.OwnerWalletTransaction;
 
 public interface OwnerWalletTransactionRepository
         extends JpaRepository<OwnerWalletTransaction, Long> {
+
+	long deleteByOwnerId(Long ownerId);
 	
 	 List<OwnerWalletTransaction> findTop10ByOwnerIdOrderByCreatedAtDesc(Long ownerId);
 

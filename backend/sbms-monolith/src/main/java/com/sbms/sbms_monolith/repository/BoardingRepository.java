@@ -10,4 +10,6 @@ public interface BoardingRepository extends JpaRepository<Boarding, Long> {
 
     // Finds all boardings belonging to a specific Owner
     List<Boarding> findByOwner_Id(Long ownerId);
+
+    long deleteByOwner_Id(Long ownerId);
 }
