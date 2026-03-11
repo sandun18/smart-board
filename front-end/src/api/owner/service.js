@@ -4,10 +4,6 @@ import api from "../api";
 // 🚩 REPORT SERVICES
 // =================================================================
 
-// =================================================================
-// 🚩 REPORT SERVICES
-// =================================================================
-
 export const getOwnerReports = async (ownerId) => {
   try {
     const response = await api.get(`/reports/sent/${ownerId}`);
