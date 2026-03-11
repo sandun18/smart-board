@@ -10,6 +10,7 @@ import {
   FaTools,
   FaFlag,
   FaSignOutAlt,
+  FaComment,
 } from "react-icons/fa";
 import { useAuth } from '../../../context/student/StudentAuthContext.jsx';
 
@@ -21,6 +22,8 @@ const navItems = [
   { path: "/student/billing", icon: FaCreditCard, label: "Billing & Payments", key: "Billing" },
   { path: "/student/maintenance", icon: FaTools, label: "Maintenance", key: "Maintenance" },
   { path: "/student/reports", icon: FaFlag, label: "Report Issues", key: "Reports" },
+  { path: "/student/chats", icon: FaComment, label: "Chats", key: "Chats" },
+
 ];
 
 const SidebarItem = ({ path, Icon, label, currentPath }) => {
