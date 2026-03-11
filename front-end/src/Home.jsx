@@ -311,34 +311,163 @@ const Home = () => {
         </main>
 
         {/* Footer */}
-        <footer className="w-full bg-[#05080f]/90 backdrop-blur-md text-white/90 pt-20 pb-10 border-t border-white/5">
-          <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
-            <div className="space-y-4">
-              <h4 className="text-2xl font-black text-white">SmartBoAD</h4>
-              <p className="text-white/50 text-sm leading-relaxed">The island's most trusted platform for student housing. Connecting dreams with locations.</p>
-            </div>
-            <div>
-              <h5 className="font-bold mb-6 text-white uppercase tracking-widest text-xs">Navigation</h5>
-              <ul className="text-sm text-white/50 space-y-3">
-                <li className="hover:text-accent transition-colors cursor-pointer">Search Listings</li>
-                <li className="hover:text-accent transition-colors cursor-pointer">My Appointments</li>
-                <li className="hover:text-accent transition-colors cursor-pointer">Help Center</li>
-              </ul>
-            </div>
-            <div>
-              <h5 className="font-bold mb-6 text-white uppercase tracking-widest text-xs">For Partners</h5>
-              <ul className="text-sm text-white/50 space-y-3">
-                <li className="hover:text-accent transition-colors cursor-pointer">Add Property</li>
-                <li className="hover:text-accent transition-colors cursor-pointer">Business Solutions</li>
-                <li className="hover:text-accent transition-colors cursor-pointer">API Docs</li>
-              </ul>
-            </div>
-            <div>
-              <h5 className="font-bold mb-6 text-white uppercase tracking-widest text-xs">Connect</h5>
-              <div className="flex gap-4 mb-6">
-                {[1,2,3].map(i => <div key={i} className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center border border-white/10 hover:bg-accent transition-all cursor-pointer"></div>)}
+        <footer className="w-full bg-[#05080f] text-white border-t border-white/10 mt-4">
+          {/* Top gradient accent line */}
+          <div className="h-1 w-full bg-gradient-to-r from-primary via-accent to-primary" />
+
+          <div className="max-w-7xl mx-auto px-6 pt-16 pb-10">
+            {/* Main grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-white/10">
+
+              {/* Brand column */}
+              <div className="space-y-5">
+                <div className="flex items-center gap-3">
+                  <img src={logo} alt="SmartBoAD" className="h-10 w-10 rounded-xl" />
+                  <span className="text-2xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    SmartBoAD
+                  </span>
+                </div>
+                <p className="text-white/55 text-sm leading-relaxed">
+                  Smart Boarding Management System — a full-featured platform connecting students with trusted boarding homes across Sri Lanka.
+                </p>
+                <div className="space-y-2 text-sm text-white/50">
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-university text-accent text-xs w-4" />
+                    <span>University of Ruhuna</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-envelope text-accent text-xs w-4" />
+                    <span>support@smartboad.lk</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-map-marker-alt text-accent text-xs w-4" />
+                    <span>Matara, Sri Lanka</span>
+                  </div>
+                </div>
+                <div className="flex gap-3 pt-1">
+                  {[
+                    { icon: 'fab fa-facebook-f', label: 'Facebook' },
+                    { icon: 'fab fa-instagram',  label: 'Instagram' },
+                    { icon: 'fab fa-linkedin-in', label: 'LinkedIn' },
+                  ].map(({ icon, label }) => (
+                    <button
+                      key={label}
+                      aria-label={label}
+                      className="w-9 h-9 rounded-full bg-white/8 border border-white/15 flex items-center justify-center text-white/60 hover:bg-gradient-to-br hover:from-primary hover:to-accent hover:text-white hover:border-transparent transition-all"
+                    >
+                      <i className={`${icon} text-xs`} />
+                    </button>
+                  ))}
+                </div>
               </div>
-              <p className="text-white/40 text-xs tracking-tight">© 2026 SmartBoAD Digital. All Rights Reserved.</p>
+
+              {/* For Students */}
+              <div>
+                <div className="flex items-center gap-2 mb-6">
+                  <i className="fas fa-graduation-cap text-accent text-sm" />
+                  <h5 className="font-bold text-white uppercase tracking-widest text-xs">For Students</h5>
+                </div>
+                <ul className="space-y-3 text-sm">
+                  {[
+                    { label: 'Search Boardings',    action: () => window.scrollTo({ top: 0, behavior: 'smooth' }) },
+                    { label: 'Create Account',      action: () => navigate('/signup') },
+                    { label: 'Login',               action: () => navigate('/login') },
+                    { label: 'My Appointments',     action: () => navigate('/student/appointments') },
+                    { label: 'Payment History',     action: () => navigate('/student/payments') },
+                    { label: 'Maintenance Requests', action: () => navigate('/student/maintenance') },
+                    { label: 'Leave a Review',      action: () => navigate('/student/reviews') },
+                  ].map(({ label, action }) => (
+                    <li key={label}>
+                      <button
+                        onClick={action}
+                        className="text-white/55 hover:text-accent transition-colors flex items-center gap-2 group text-left"
+                      >
+                        <i className="fas fa-chevron-right text-[9px] text-white/20 group-hover:text-accent transition-colors" />
+                        {label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* For Owners */}
+              <div>
+                <div className="flex items-center gap-2 mb-6">
+                  <i className="fas fa-home text-accent text-sm" />
+                  <h5 className="font-bold text-white uppercase tracking-widest text-xs">For Owners</h5>
+                </div>
+                <ul className="space-y-3 text-sm">
+                  {[
+                    { label: 'List Your Property',   action: () => navigate('/signup') },
+                    { label: 'Manage Listings',      action: () => navigate('/owner/boardings') },
+                    { label: 'Subscription Plans',   action: () => navigate('/owner/subscription') },
+                    { label: 'Boost Your Ads',       action: () => navigate('/owner/boost') },
+                    { label: 'Manage Appointments',  action: () => navigate('/owner/appointments') },
+                    { label: 'Utility Billing',      action: () => navigate('/owner/utilities') },
+                    { label: 'Owner Dashboard',      action: () => navigate('/owner/dashboard') },
+                  ].map(({ label, action }) => (
+                    <li key={label}>
+                      <button
+                        onClick={action}
+                        className="text-white/55 hover:text-accent transition-colors flex items-center gap-2 group text-left"
+                      >
+                        <i className="fas fa-chevron-right text-[9px] text-white/20 group-hover:text-accent transition-colors" />
+                        {label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Platform */}
+              <div>
+                <div className="flex items-center gap-2 mb-6">
+                  <i className="fas fa-cog text-accent text-sm" />
+                  <h5 className="font-bold text-white uppercase tracking-widest text-xs">Platform</h5>
+                </div>
+                <ul className="space-y-3 text-sm mb-8">
+                  {[
+                    { label: 'Admin Console',        action: () => navigate('/admin/dashboard') },
+                    { label: 'Approve Ads',          action: () => navigate('/admin/ads') },
+                    { label: 'Manage Users',         action: () => navigate('/admin/users') },
+                    { label: 'Analytics Dashboard',  action: () => navigate('/admin/analytics') },
+                    { label: 'Report an Issue',      action: () => navigate('/student/reports') },
+                    { label: 'Help Center',          action: () => {} },
+                  ].map(({ label, action }) => (
+                    <li key={label}>
+                      <button
+                        onClick={action}
+                        className="text-white/55 hover:text-accent transition-colors flex items-center gap-2 group text-left"
+                      >
+                        <i className="fas fa-chevron-right text-[9px] text-white/20 group-hover:text-accent transition-colors" />
+                        {label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Tech badge */}
+                <div className="rounded-xl bg-white/5 border border-white/10 p-4 space-y-1">
+                  <p className="text-xs text-white/40 uppercase tracking-widest font-bold">Built With</p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {['React', 'Spring Boot', 'PostgreSQL', 'AWS'].map(tech => (
+                      <span key={tech} className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/10 text-white/70">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom bar */}
+            <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/35">
+              <p>© 2026 SmartBoAD — Smart Boarding Management System. All Rights Reserved.</p>
+              <div className="flex items-center gap-5">
+                <button className="hover:text-white/70 transition-colors">Privacy Policy</button>
+                <button className="hover:text-white/70 transition-colors">Terms of Use</button>
+                <button className="hover:text-white/70 transition-colors">Cookie Policy</button>
+              </div>
             </div>
           </div>
         </footer>
