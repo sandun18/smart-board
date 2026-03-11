@@ -52,6 +52,7 @@ public class RegistrationService {
         User student = userRepo.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
+        // 1️ Get latest key money intent
         PaymentIntent intent = paymentIntentRepo
                 .findTopByStudentIdAndBoardingIdAndTypeOrderByCreatedAtDesc(
                         studentId,
@@ -60,17 +61,29 @@ public class RegistrationService {
                 )
                 .orElseThrow(() -> new RuntimeException("Key money payment required"));
 
+        // 2️ Validate payment status
         boolean keyMoneyPaid =
                 intent.getStatus() == PaymentIntentStatus.SUCCESS
              || intent.getStatus() == PaymentIntentStatus.AWAITING_MANUAL_APPROVAL;
 
         if (!keyMoneyPaid) {
-            throw new RuntimeException("Key money not paid");
+            throw new RuntimeException("Key money payment not completed");
+        }
+
+        // 3️ SAFE payment method detection
+        String paymentMethod;
+
+        if (intent.getMethod() != null) {
+            paymentMethod = intent.getMethod().name();
+        } else {
+            // fallback for manual payments
+            paymentMethod = "CARD";
         }
 
         Registration r = new Registration();
         r.setBoarding(boarding);
         r.setStudent(student);
+
         r.setNumberOfStudents(dto.getNumberOfStudents());
         r.setStudentNote(dto.getStudentNote());
         r.setMoveInDate(dto.getMoveInDate());
@@ -80,15 +93,11 @@ public class RegistrationService {
         r.setStudentSignatureBase64(dto.getStudentSignatureBase64());
 
         r.setKeyMoneyPaid(true);
-     // payment method
-        r.setPaymentMethod(intent.getMethod().name());
+
+        // 4️ payment info
+        r.setPaymentMethod(paymentMethod);
         r.setPaymentTransactionRef(intent.getReferenceId());
 
-
-        // transaction / slip reference
-        r.setPaymentTransactionRef(intent.getReferenceId());
- // CARD / BANK_SLIP / CASH
-        r.setPaymentTransactionRef(intent.getReferenceId());
         r.setStatus(RegistrationStatus.PENDING);
 
         registrationRepo.save(r);
