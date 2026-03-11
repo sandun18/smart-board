@@ -34,12 +34,12 @@ const PublicProfileView = () => {
         setProfile(data);
 
         if (data.role === 'TECHNICIAN' || data.role === 'TECH') {
-            try {
-                const reviewData = await getTechnicianReviews(id); 
-                setReviews(reviewData || []);
-            } catch (revErr) {
-                console.error("Error fetching tech reviews:", revErr);
-            }
+          try {
+            const reviewData = await getTechnicianReviews(id); 
+            setReviews(reviewData || []);
+          } catch (revErr) {
+            console.error("Error fetching tech reviews:", revErr);
+          }
         }
         setLoading(false);
       } catch (err) {
@@ -68,9 +68,9 @@ const PublicProfileView = () => {
   const isTech = profile.role === 'TECHNICIAN' || profile.role === 'TECH';
   const hasListings = isOwner && profile.activeListings && profile.activeListings.length > 0;
 
-  // UPDATED: Rating Fix - Formatting to ensure 0.0 display
-  const displayRating = Number(profile?.averageRating || profile?.technicianAverageRating || 0).toFixed(1);
-  const displayJobs = profile?.technicianTotalJobs || profile?.totalJobsCompleted || 0;
+  // ✅ Use averageRating from DTO (now correctly populated from backend)
+  const displayRating = Number(profile.averageRating || 0).toFixed(1);
+
   return (
     <div className="min-h-screen relative flex flex-col font-sans text-gray-800">
       <div className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat z-0" style={{ backgroundImage: `url(${bgImage})` }} />
@@ -89,6 +89,7 @@ const PublicProfileView = () => {
             <div className="lg:col-span-4 xl:col-span-3">
                <div className="sticky top-6">
                  <div className="shadow-xl rounded-2xl overflow-hidden bg-white">
+                    {/* ✅ Profile now receives skills + averageRating via profile prop */}
                     <ProfileSidebar profile={profile} />
                  </div>
                </div>
@@ -104,12 +105,12 @@ const PublicProfileView = () => {
                    icon={FaExclamationTriangle}
                    className="bg-white shadow-xl rounded-2xl border-transparent"
                  />
+                 {/* ✅ StatCard now correctly shows displayRating for technicians */}
                  <StatCard 
                    label={isTech ? "Rating" : (isOwner ? "Active Listings" : "Status")}
-                   // UPDATED: Using displayRating
                    value={isTech ? displayRating : (isOwner ? (profile.activeListings?.length || 0) : "Active")}
                    color="text-accent"
-                   subtext={isTech ? "Avg. Work Quality" : "Current Standing"}
+                   subtext={isTech ? "Avg. Work Quality" : (isOwner ? "Current Standing" : "Account Status")}
                    icon={isTech ? FaStar : (isOwner ? FaBuilding : FaCheckCircle)}
                    className="bg-white shadow-xl rounded-2xl border-transparent"
                  />
@@ -129,7 +130,6 @@ const PublicProfileView = () => {
                           <div key={idx} className="p-4 rounded-xl bg-gray-50 border border-gray-100">
                             <div className="flex justify-between items-start mb-2">
                                <div className="flex items-center gap-3">
-                                  {/* UPDATED: Reviewer Profile Pic with ownerProfileImageUrl */}
                                   <img 
                                     src={rev.ownerProfileImageUrl ? 
                                         (rev.ownerProfileImageUrl.startsWith("http") ? rev.ownerProfileImageUrl : `http://localhost:8086/uploads/${rev.ownerProfileImageUrl}`) 
