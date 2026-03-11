@@ -1,156 +1,67 @@
-// import React from "react";
-// import { motion } from "framer-motion";
-// import {
-//   FaUserTimes,
-//   FaMoneyBillWave,
-//   FaHouseDamage,
-//   FaVolumeUp,
-//   FaExclamationCircle,
-//   FaShieldAlt,
-// } from "react-icons/fa";
-
-// const OWNER_REPORT_TYPES = [
-//   {
-//     type: "misconduct",
-//     icon: FaUserTimes,
-//     title: "Student Misconduct",
-//     description:
-//       "Report rule violations, inappropriate behavior, or conflicts with other tenants.",
-//   },
-//   {
-//     type: "payment",
-//     icon: FaMoneyBillWave,
-//     title: "Payment Issue",
-//     description: "Report late payments, missed rent, or billing disputes.",
-//   },
-//   {
-//     type: "damage",
-//     icon: FaHouseDamage,
-//     title: "Property Damage",
-//     description:
-//       "Report damage to furniture, facilities, or the boarding property.",
-//   },
-//   {
-//     type: "noise",
-//     icon: FaVolumeUp,
-//     title: "Noise Complaint",
-//     description: "Report excessive noise or disturbance of peace.",
-//   },
-//   {
-//     type: "safety",
-//     icon: FaShieldAlt,
-//     title: "Safety Threat",
-//     description: "Report threats, dangerous activities, or security concerns.",
-//   },
-//   {
-//     type: "other",
-//     icon: FaExclamationCircle,
-//     title: "Other Issue",
-//     description: "Any other concerns regarding tenancy or students.",
-//   },
-// ];
-
-// const ReportTypesGrid = ({ onSelectType }) => {
-//   return (
-//     <div className="grid grid-cols-1 md:grid-cols-2 min-[1400px]:grid-cols-3 gap-6">
-//       {OWNER_REPORT_TYPES.map((reportType, index) => (
-//         <motion.div
-//           key={reportType.type}
-//           initial={{ opacity: 0, y: 20 }}
-//           animate={{ opacity: 1, y: 0 }}
-//           transition={{ delay: index * 0.1 }}
-//           whileHover={{ y: -5, borderColor: "var(--accent)" }}
-//           onClick={() => onSelectType(reportType.type, reportType.title)}
-//           className="bg-card-bg p-8 rounded-large shadow-custom text-center cursor-pointer transition-all duration-300 border-2 border-transparent hover:shadow-xl h-full flex flex-col items-center group"
-//         >
-//           <motion.div
-//             whileHover={{
-//               scale: 1.1,
-//               backgroundColor: "var(--accent)",
-//               color: "white",
-//             }}
-//             className="w-20 h-20 bg-background-light rounded-full flex items-center justify-center mx-auto mb-4 text-3xl text-accent transition-all duration-300"
-//           >
-//             <reportType.icon />
-//           </motion.div>
-//           <h3 className="text-xl font-bold text-text-dark mb-2">
-//             {reportType.title}
-//           </h3>
-//           <p className="text-text-muted text-sm leading-relaxed">
-//             {reportType.description}
-//           </p>
-//         </motion.div>
-//       ))}
-//     </div>
-//   );
-// };
-
-// export default ReportTypesGrid;
-
 import React from "react";
 import { motion } from "framer-motion";
 import {
   FaUserTimes,
   FaMoneyBillWave,
   FaHouseDamage,
-  FaTools,
-  FaClock,
+  FaVolumeUp,
+  FaExclamationCircle,
+  FaShieldAlt,
 } from "react-icons/fa";
 
-const STUDENT_TYPES = [
+const OWNER_REPORT_TYPES = [
   {
-    type: "MISCONDUCT",
+    type: "misconduct",
     icon: FaUserTimes,
     title: "Student Misconduct",
-    description: "Rule violations.",
+    description:
+      "Report rule violations, inappropriate behavior, or conflicts with other tenants.",
   },
   {
-    type: "PAYMENT",
+    type: "payment",
     icon: FaMoneyBillWave,
     title: "Payment Issue",
-    description: "Late rent.",
+    description: "Report late payments, missed rent, or billing disputes.",
   },
   {
-    type: "DAMAGE",
+    type: "damage",
     icon: FaHouseDamage,
-    title: "Damage",
-    description: "Property damage.",
-  },
-];
-const TECHNICIAN_TYPES = [
-  {
-    type: "POOR_WORK_QUALITY",
-    icon: FaTools,
-    title: "Poor Work",
-    description: "Repair failed.",
+    title: "Property Damage",
+    description:
+      "Report damage to furniture, facilities, or the boarding property.",
   },
   {
-    type: "PAYMENT_ISSUE",
-    icon: FaMoneyBillWave,
-    title: "Overcharging",
-    description: "Demanded extra money.",
+    type: "noise",
+    icon: FaVolumeUp,
+    title: "Noise Complaint",
+    description: "Report excessive noise or disturbance of peace.",
   },
   {
-    type: "DELAY",
-    icon: FaClock,
-    title: "No Show",
-    description: "Did not arrive.",
+    type: "safety",
+    icon: FaShieldAlt,
+    title: "Safety Threat",
+    description: "Report threats, dangerous activities, or security concerns.",
+  },
+  {
+    type: "other",
+    icon: FaExclamationCircle,
+    title: "Other Issue",
+    description: "Any other concerns regarding tenancy or students.",
   },
 ];
 
-const ReportTypesGrid = ({ onSelectType, targetMode }) => {
-  const types = targetMode === "TECHNICIAN" ? TECHNICIAN_TYPES : STUDENT_TYPES;
+const ReportTypesGrid = ({ onSelectType }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {types.map((t, i) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 min-[1400px]:grid-cols-3 gap-6">
+      {OWNER_REPORT_TYPES.map((reportType, index) => (
         <motion.div
-          key={t.type}
+          key={reportType.type}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.1 }}
+          transition={{ delay: index * 0.1 }}
           whileHover={{ y: -5, borderColor: "var(--accent)" }}
-          onClick={() => onSelectType(t.type, t.title)}
-          className="bg-card-bg p-8 rounded-large shadow-custom text-center cursor-pointer border-2 border-transparent hover:shadow-xl group"
+          onClick={() => onSelectType(reportType.type, reportType.title)}
+          className="flex flex-col items-center h-full p-8 text-center transition-all duration-300 border-2 border-transparent cursor-pointer bg-card-bg rounded-large shadow-custom hover:shadow-xl group"
         >
           <motion.div
             whileHover={{
@@ -158,15 +69,20 @@ const ReportTypesGrid = ({ onSelectType, targetMode }) => {
               backgroundColor: "var(--accent)",
               color: "white",
             }}
-            className="w-20 h-20 bg-background-light rounded-full flex items-center justify-center mx-auto mb-4 text-3xl text-accent"
+            className="flex items-center justify-center w-20 h-20 mx-auto mb-4 text-3xl transition-all duration-300 rounded-full bg-background-light text-accent"
           >
-            <t.icon />
+            <reportType.icon />
           </motion.div>
-          <h3 className="text-xl font-bold text-text-dark mb-2">{t.title}</h3>
-          <p className="text-text-muted text-sm">{t.description}</p>
+          <h3 className="mb-2 text-xl font-bold text-text-dark">
+            {reportType.title}
+          </h3>
+          <p className="text-sm leading-relaxed text-text-muted">
+            {reportType.description}
+          </p>
         </motion.div>
       ))}
     </div>
   );
 };
+
 export default ReportTypesGrid;

@@ -35,15 +35,15 @@ const ReportRow = ({ report, config, onViewDetails }) => {
       animate="visible"
       exit={{ opacity: 0, scale: 0.95 }}
       whileHover={{ y: -4, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
-      className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 p-5 md:p-6 rounded-report shadow-custom bg-card-bg border border-light transition-colors duration-300 group relative"
+      className="relative flex flex-col gap-4 p-5 transition-colors duration-300 border md:flex-row md:items-center md:gap-6 md:p-6 rounded-report shadow-custom bg-card-bg border-light group"
     >
       {/* 1. Header Area */}
-      <div className="flex justify-between items-start md:items-center md:flex-1">
+      <div className="flex items-start justify-between md:items-center md:flex-1">
         <div className="flex flex-col gap-1">
           {/* --- CLICKABLE STUDENT NAME --- */}
           <h4
             onClick={handleStudentClick}
-            className="font-black text-base md:text-lg text-text tracking-tight uppercase cursor-pointer hover:text-accent hover:underline decoration-2 underline-offset-2 transition-all"
+            className="text-base font-black tracking-tight uppercase transition-all cursor-pointer md:text-lg text-text hover:text-accent hover:underline decoration-2 underline-offset-2"
             title="View Student Profile"
           >
             {report.student}
@@ -59,7 +59,7 @@ const ReportRow = ({ report, config, onViewDetails }) => {
         </div>
 
         {/* Mobile-only ID Badge */}
-        <div className="md:hidden text-right">
+        <div className="text-right md:hidden">
           <div className="text-[8px] font-black uppercase tracking-widest text-muted">
             ID: #{report.id}
           </div>
@@ -69,7 +69,7 @@ const ReportRow = ({ report, config, onViewDetails }) => {
 
       {/* 2. Incident Summary */}
       <div className="flex flex-col md:flex-[1.5] gap-1 md:border-l md:pl-6 border-light py-3 md:py-0 border-y md:border-y-0 border-light/50">
-        <div className="font-bold text-sm md:text-base text-text">
+        <div className="text-sm font-bold md:text-base text-text">
           {report.type}
         </div>
         <p className="text-xs italic text-muted line-clamp-2 md:line-clamp-1">
@@ -78,11 +78,11 @@ const ReportRow = ({ report, config, onViewDetails }) => {
       </div>
 
       {/* 3. MetaData (Desktop) */}
-      <div className="hidden md:block text-center shrink-0 w-28 border-x border-light px-4">
+      <div className="hidden px-4 text-center md:block shrink-0 w-28 border-x border-light">
         <div className="text-[9px] font-black uppercase tracking-[0.2em] text-muted mb-1">
           Report ID
         </div>
-        <div className="text-base font-black text-primary leading-none">
+        <div className="text-base font-black leading-none text-primary">
           #{report.id}
         </div>
         <div className="text-[11px] font-bold text-muted mt-1">
@@ -91,7 +91,7 @@ const ReportRow = ({ report, config, onViewDetails }) => {
       </div>
 
       {/* 4. Actions & Status Badge */}
-      <div className="flex items-center justify-between md:justify-end gap-3 md:gap-4 mt-2 md:mt-0">
+      <div className="flex items-center justify-between gap-3 mt-2 md:justify-end md:gap-4 md:mt-0">
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}

@@ -4,6 +4,10 @@ import api from "../api";
 // 🚩 REPORT SERVICES
 // =================================================================
 
+// =================================================================
+// 🚩 REPORT SERVICES
+// =================================================================
+
 export const getOwnerReports = async (ownerId) => {
   try {
     const response = await api.get(`/reports/sent/${ownerId}`);
@@ -14,7 +18,7 @@ export const getOwnerReports = async (ownerId) => {
   }
 };
 
-export const createOwnerReport = async (reportData, files) => {
+export const createReport = async (reportData, files) => {
   try {
     const formData = new FormData();
 
@@ -25,17 +29,15 @@ export const createOwnerReport = async (reportData, files) => {
     formData.append("severity", reportData.severity); // e.g., "HIGH", "LOW"
 
     // Backend wants Boarding NAME, not ID
-    if (reportData.boardingName) {
-        formData.append("boarding", reportData.boardingName);
-    }
+    formData.append("boarding", reportData.boardingName);
 
     // ID Mapping
     formData.append("senderId", reportData.ownerId);
     formData.append("reportedUserId", reportData.studentId);
 
     // Date & Boolean
-    formData.append("incidentDate", reportData.incidentDate || new Date().toISOString().split('T')[0]);
-    formData.append("allowContact", reportData.allowContact || true);
+    formData.append("incidentDate", reportData.incidentDate); // YYYY-MM-DD
+    formData.append("allowContact", reportData.allowContact); // true/false
 
     // Files
     if (files && files.length > 0) {
@@ -44,15 +46,14 @@ export const createOwnerReport = async (reportData, files) => {
       });
     }
 
-    const response = await api.post("/reports", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const response = await api.post("/reports", formData);
     return response.data;
   } catch (error) {
     console.error("Error creating report:", error);
     throw error;
   }
 };
+
 
 // =================================================================
 // 🛠️ BOARDING SERVICES (Updated)
