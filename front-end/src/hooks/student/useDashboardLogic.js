@@ -3,9 +3,6 @@ import StudentService from "../../api/student/StudentService";
 import { useAuth } from "../../context/student/StudentAuthContext";
 import {
   FaCalendarCheck,
-  FaCreditCard,
-  FaStar,
-  FaHome,
   FaBan,
   FaHourglassHalf,
 } from "react-icons/fa";
@@ -29,19 +26,14 @@ const useDashboardLogic = () => {
     const now = new Date();
     const past = new Date(date);
     const diffInSeconds = Math.floor((now - past) / 1000);
-
     if (diffInSeconds < 60) return "Just now";
-    
     const diffInMinutes = Math.floor(diffInSeconds / 60);
     if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-    
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours < 24) return `${diffInHours}h ago`;
-    
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays === 1) return "Yesterday";
     if (diffInDays < 7) return `${diffInDays}d ago`;
-    
     return past.toLocaleDateString(); 
   };
 
@@ -50,88 +42,61 @@ const useDashboardLogic = () => {
 
     setLoading(true);
     try {
-      const [appointments, registrations, payments, reviews] =
+      // 1. Fetch all data in parallel
+      const [appointments, registrations, bills, reviews] =
         await Promise.all([
           StudentService.getAllAppointments(currentUser.id).catch(() => []),
-          StudentService.getAllRegistrations(currentUser.id).catch(() => []),
-          StudentService.getPaymentHistory().catch(() => []),
+          StudentService.getRegistrations(currentUser.id).catch(() => []),
+          StudentService.getStudentBills().catch(() => []), // ✅ Now calls MonthlyBillController
           StudentService.getMyReviews(currentUser.id).catch(() => []),
         ]);
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      // --- 1. PROCESS APPOINTMENTS FOR WIDGET & NOTIFICATIONS ---
+      // --- PROCESS APPOINTMENTS ---
       const processedAppointments = appointments.map((appt) => {
-        const rawDate = appt.requestedStartTime || appt.appointmentDate || appt.visitDate || appt.date || appt.createdDate;
-        const status = (appt.status || appt.appointmentStatus || "PENDING").toUpperCase();
-
-        const ownerName = appt.ownerName || "Owner";
-        const boardingTitle = appt.boardingTitle || appt.boardingName || "Boarding";
-
-        let notificationMessage = `You requested a visit for ${boardingTitle}`;
-        let activityIcon = FaHourglassHalf;
-
-        if (status === "APPROVED" || status === "ACCEPTED") {
-          notificationMessage = `${ownerName} accepted your visit for ${boardingTitle}`;
-          activityIcon = FaCalendarCheck;
-        } else if (status === "REJECTED" || status === "DECLINED") {
-          notificationMessage = `${ownerName} declined your visit for ${boardingTitle}`;
-          activityIcon = FaBan;
-        }
-
+        const rawDate = appt.requestedStartTime || appt.appointmentDate || appt.visitDate;
+        const status = (appt.status || "PENDING").toUpperCase();
         return {
           ...appt,
-          rawDate: rawDate, 
+          rawDate,
           normalizedDate: new Date(rawDate),
-          status: status,
-          notificationContent: notificationMessage,
-          icon: activityIcon,
-          widgetDetail: `${ownerName} @ ${boardingTitle}`,
+          status,
+          notificationContent: status === "APPROVED" ? `Accepted visit for ${appt.boardingTitle}` : `Requested visit for ${appt.boardingTitle}`,
+          icon: status === "APPROVED" ? FaCalendarCheck : FaHourglassHalf,
+          widgetDetail: `${appt.ownerName || 'Owner'} @ ${appt.boardingTitle}`,
         };
       });
 
-      // --- WIDGET 1: Next Approved Visit ---
       const nextVisit = processedAppointments
-        .filter((a) => {
-          // 1. Validation: Date must be valid
-          if (isNaN(a.normalizedDate.getTime())) return false;
-          
-          
-          const isConfirmed = a.status === "APPROVED" || a.status === "ACCEPTED";
-          
-          // 3. DATE FILTER: Must be today or in the future
-          const startOfToday = new Date().setHours(0, 0, 0, 0);
-          const isUpcoming = a.normalizedDate.getTime() >= startOfToday;
+        .filter(a => (a.status === "APPROVED" || a.status === "ACCEPTED") && new Date(a.rawDate) >= new Date().setHours(0,0,0,0))
+        .sort((a, b) => new Date(a.rawDate) - new Date(b.rawDate))[0];
 
-          return isConfirmed && isUpcoming;
-        })
-        // 4. SORT: Put the earliest date at index 0
-        .sort((a, b) => a.normalizedDate - b.normalizedDate)[0]; 
-
-      // Update state
-      setStats(prev => ({
-        ...prev,
-        upcomingVisit: nextVisit 
-      }));
-
-      // --- Widgets 2, 3, 4 (No changes) ---
+      // --- PROCESS RENT & BILLS ---
       const activeReg = registrations.find((r) => r.status === "APPROVED");
+      
+      // Look for any unpaid bill from the MonthlyBillController data
+      const unpaidBill = bills.find(b => b.status === "UNPAID");
+      
       let paymentInfo = null;
-      if (activeReg) {
+      if (unpaidBill) {
+        // Option A: There is a real generated bill
+        paymentInfo = {
+          amount: unpaidBill.totalAmount,
+          dueDate: unpaidBill.month, // e.g., "MARCH 2026"
+        };
+      } else if (activeReg) {
+        // Option B: Fallback to the default rent from the approved boarding
         paymentInfo = {
           amount: activeReg.monthlyRent || 0,
-          location: activeReg.boardingTitle || "Your Boarding",
-          dueDate: "5th of Month",
+          dueDate: "Current Month",
         };
       }
-      const reviewAvg =
-        reviews.length > 0
-          ? (
-              reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length
-            ).toFixed(1)
+
+      // --- PROCESS REVIEWS ---
+      const reviewAvg = reviews.length > 0
+          ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
           : 0;
 
+      // --- UPDATE STATS ---
       setStats({
         upcomingVisit: nextVisit,
         pendingPayment: paymentInfo,
@@ -140,28 +105,19 @@ const useDashboardLogic = () => {
         reviewAvg: reviewAvg,
       });
 
-      // --- 2. CONSTRUCT RECENT ACTIVITY FEED (STRICT FILTER APPLIED) ---
-      const fourteenDaysAgo = new Date();
-      fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
-
-      // Filter only for Appointments within the last 14 days
-      const appointmentOnlyActivity = processedAppointments
-        .filter((a) => {
-          const activityDate = new Date(a.rawDate);
-          return activityDate >= fourteenDaysAgo;
-        })
-        .map((a) => ({
-          id: `apt-${a.id}`,
-          type: "appointment",
-          rawDate: a.rawDate,
-          content: a.notificationContent,
-          icon: a.icon,
-          status: a.status,
-          timeAgo: getTimeAgo(a.rawDate),
-        }));
-
-      // Sort and update activity feed using only appointment-based notifications
-      setRecentActivity(appointmentOnlyActivity.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate)));
+      // --- ACTIVITY FEED ---
+      setRecentActivity(
+        processedAppointments
+          .filter(a => new Date(a.rawDate) >= new Date().setDate(new Date().getDate() - 14))
+          .map(a => ({
+            id: `apt-${a.id}`,
+            content: a.notificationContent,
+            icon: a.icon,
+            timeAgo: getTimeAgo(a.rawDate),
+            rawDate: a.rawDate
+          }))
+          .sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate))
+      );
       
     } catch (error) {
       console.error("Dashboard Load Error:", error);

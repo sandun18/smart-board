@@ -19,7 +19,7 @@ const StudentDashboard = () => {
   const navigate = useNavigate();
 
   const handlePayNow = () => {
-    window.location.href = "/student/billing";
+    navigate("/student/billing");
   };
 
   const goToChats = () => {
@@ -69,7 +69,7 @@ const StudentDashboard = () => {
               title="Monthly Rent"
               mainDetail={
                 stats.pendingPayment
-                  ? `LKR ${stats.pendingPayment.amount}`
+                  ? `LKR ${stats.pendingPayment.amount.toLocaleString()}`
                   : "No Active Rent"
               }
               subDetail={
