@@ -40,12 +40,13 @@ const MyBoardingsPage = () => {
 
   const handlePayRent = async () => {
     setIsPayingRent(true);
-    // Simulate payment processing
+    showNotification("Redirecting to billing...", "info");
+
+    // Small delay to show the "Processing..." spinner before navigating
     setTimeout(() => {
-      payRent();
       setIsPayingRent(false);
-      showNotification("Payment processed successfully!", "success");
-    }, 2000);
+      navigate("/student/billing");
+    }, 800);
   };
 
   const handleRequestMaintenance = () => {

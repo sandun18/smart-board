@@ -1,6 +1,7 @@
 package com.sbms.sbms_monolith.dto.registration;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import com.sbms.sbms_monolith.model.enums.RegistrationStatus;
 import lombok.Data;
@@ -20,6 +21,10 @@ public class RegistrationResponseDTO {
     private int numberOfStudents;
 
     private RegistrationStatus status;
+    
+    private LocalDate moveInDate;
+    
+    private String emergencyContactPhone;
 
     private String studentNote;
     private String ownerNote;

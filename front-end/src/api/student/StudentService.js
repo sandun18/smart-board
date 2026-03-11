@@ -359,6 +359,12 @@ const StudentService = {
       return [];
     }
   },
+
+  getStudentBills: async () => {
+    const response = await api.get("/bills/student");
+    return response.data;
+  },
+  
 };
 
 export default StudentService;

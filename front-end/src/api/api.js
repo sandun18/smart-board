@@ -14,9 +14,21 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
+    const userData = localStorage.getItem("user_data");
     
     if (token && token !== "null" && token !== "undefined") {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        if (user?.id) {
+          config.headers["X-User-Id"] = user.id;
+        }
+      } catch (e) {
+        console.error("Failed to parse user_data");
+      }
     }
 
     if (!(config.data instanceof FormData)) {
