@@ -16,15 +16,15 @@ public class OwnerInfoDTO {
         if (user == null) {
             return null;
         }
-        
+
         OwnerInfoDTO dto = new OwnerInfoDTO();
         dto.setId(user.getId());
         dto.setName(user.getFullName());
         dto.setEmail(user.getEmail());
         dto.setPhone(user.getPhone());
         dto.setAvatar(user.getProfileImageUrl());
-        dto.setRating(0.0); // Can be updated later with actual rating logic
-        
+        dto.setRating(0.0);
+
         return dto;
     }
 }
