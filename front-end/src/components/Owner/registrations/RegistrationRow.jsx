@@ -54,10 +54,7 @@ const RegistrationRow = ({ registration, config, onViewProof }) => {
                 {registration.numberOfStudents} People
               </span>
               <span className="text-gray-300">|</span>
-              <span className="flex items-center gap-1">
-                <FaCalendarAlt className="text-gray-400" /> Move-in:{" "}
-                {formatDate(registration.moveInDate)}
-              </span>
+              
             </p>
 
             {/* Badges */}

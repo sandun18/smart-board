@@ -149,6 +149,23 @@ public class OwnerBoardingController {
     }
 
     // ----------------------------------------------------
+    // GET SINGLE BOARDING (OWNER VIEW)
+    // ----------------------------------------------------
+    @GetMapping("/{boardingId}")
+    @PreAuthorize("hasRole('OWNER')")
+    public OwnerBoardingResponseDTO getOne(
+            Authentication authentication,
+            @PathVariable Long boardingId
+    ) {
+        // 1. Get the logged-in owner
+        User owner = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // 2. Call the service (Ensure this method exists in OwnerBoardingService!)
+        return ownerBoardingService.getOne(owner.getId(), boardingId);
+    }
+
+    // ----------------------------------------------------
     // BOOST BOARDING
     // ----------------------------------------------------
     @PostMapping("/{boardingId}/boost")

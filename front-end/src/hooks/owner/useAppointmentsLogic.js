@@ -69,13 +69,7 @@ const useAppointmentsLogic = () => {
     const currentApp = appointments.find((app) => app.id === id);
     if (!currentApp) return;
 
-    if (actionType === "visited") {
-      toast("This feature is coming soon!", {
-        icon: "🚧",
-        style: { borderRadius: "10px", background: "#333", color: "#fff" },
-      });
-      return;
-    }
+    
 
     // Prepare DTO based on the decisionData passed from Modal
     let decisionDTO = {
@@ -93,6 +87,9 @@ const useAppointmentsLogic = () => {
       decisionDTO.ownerEndTime =
         decisionData?.endTime || currentApp.originalEnd;
       decisionDTO.ownerNote = decisionData?.note || "Request accepted.";
+    } else if (actionType === "visited") {
+      decisionDTO.status = "VISITED";
+      decisionDTO.ownerNote = "Student has visited the property.";
     } else if (actionType === "rejected") {
       decisionDTO.status = "DECLINED";
       decisionDTO.ownerNote = decisionData?.note || "Slot unavailable.";
@@ -101,7 +98,7 @@ const useAppointmentsLogic = () => {
     // Optimistic Update
     const previousState = [...appointments];
     setAppointments((prev) =>
-      prev.map((app) => (app.id === id ? { ...app, status: actionType } : app))
+      prev.map((app) => (app.id === id ? { ...app, status: actionType } : app)),
     );
 
     const toastId = toast.loading("Updating status...");
@@ -126,7 +123,7 @@ const useAppointmentsLogic = () => {
       result = result.filter(
         (app) =>
           app.student.toLowerCase().includes(lowerQuery) ||
-          app.boardingName.toLowerCase().includes(lowerQuery)
+          app.boardingName.toLowerCase().includes(lowerQuery),
       );
     }
 
@@ -172,7 +169,7 @@ const useAppointmentsLogic = () => {
         acc[app.status] = (acc[app.status] || 0) + 1;
         return acc;
       },
-      { pending: 0, confirmed: 0, visited: 0, cancelled: 0, rejected: 0 }
+      { pending: 0, confirmed: 0, visited: 0, cancelled: 0, rejected: 0 },
     );
   }, [appointments]);
 

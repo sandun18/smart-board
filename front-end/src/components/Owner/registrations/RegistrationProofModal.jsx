@@ -91,17 +91,17 @@ const RegistrationProofModal = ({
           initial={{ opacity: 0, scale: .9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
-          className="w-full max-w-xl bg-white rounded-2xl shadow-2xl overflow-hidden"
+          className="w-full max-w-xl overflow-hidden bg-white shadow-2xl rounded-2xl"
         >
 
           {/* HEADER */}
 
-          <div className="flex items-center gap-4 p-6 bg-primary text-white">
+          <div className="flex items-center gap-4 p-6 text-white bg-primary">
 
             <FaReceipt size={24} />
 
             <div>
-              <h3 className="font-black text-lg">
+              <h3 className="text-lg font-black">
                 Registration Review
               </h3>
               <p className="text-xs opacity-80">
@@ -116,7 +116,7 @@ const RegistrationProofModal = ({
 
             {/* STUDENT INFO */}
 
-            <div className="text-sm space-y-1">
+            <div className="space-y-1 text-sm">
 
               <p>
                 <b>Student:</b> {registration.studentName}
@@ -140,7 +140,7 @@ const RegistrationProofModal = ({
 
             {/* PAYMENT */}
 
-            <div className="bg-gray-50 p-4 rounded-lg border">
+            <div className="p-4 border rounded-lg bg-gray-50">
 
               <p className="font-semibold">
                 Key Money: Rs {registration.keyMoney}
@@ -159,13 +159,13 @@ const RegistrationProofModal = ({
 
                 <div>
 
-                  <p className="text-xs font-bold uppercase text-muted mb-2">
+                  <p className="mb-2 text-xs font-bold uppercase text-muted">
                     Bank Slip
                   </p>
 
                   <img
                     src={registration.paymentSlipUrl}
-                    className="rounded-lg border"
+                    className="border rounded-lg"
                   />
 
                 </div>
@@ -175,13 +175,13 @@ const RegistrationProofModal = ({
 
             {registration.studentNote && (
 
-              <div className="flex gap-3 bg-blue-50 border border-blue-200 p-3 rounded-lg">
+              <div className="flex gap-3 p-3 border border-blue-200 rounded-lg bg-blue-50">
 
-                <FaInfoCircle className="text-blue-500 mt-1" />
+                <FaInfoCircle className="mt-1 text-blue-500" />
 
                 <div>
 
-                  <p className="text-xs font-bold uppercase text-blue-500">
+                  <p className="text-xs font-bold text-blue-500 uppercase">
                     Student Note
                   </p>
 
@@ -208,7 +208,7 @@ const RegistrationProofModal = ({
                 onChange={(e) =>
                   setOwnerNote(e.target.value)
                 }
-                className="w-full border rounded-lg p-3 mt-1"
+                className="w-full p-3 mt-1 border rounded-lg"
                 placeholder="Write a note for the student"
               />
 
@@ -222,7 +222,7 @@ const RegistrationProofModal = ({
                 Owner Signature *
               </label>
 
-              <div className="border rounded-lg bg-gray-100 mt-2">
+              <div className="mt-2 bg-gray-100 border rounded-lg">
 
                 <SignatureCanvas
                   ref={signatureRef}
@@ -240,14 +240,14 @@ const RegistrationProofModal = ({
 
                 <button
                   onClick={clearSignature}
-                  className="text-red-600 text-sm"
+                  className="text-sm text-red-600"
                 >
                   Clear
                 </button>
 
                 <button
                   onClick={saveSignature}
-                  className="text-blue-600 text-sm"
+                  className="text-sm text-blue-600"
                 >
                   Save Signature
                 </button>
@@ -255,7 +255,7 @@ const RegistrationProofModal = ({
               </div>
 
               {ownerSignature && (
-                <p className="text-green-600 text-sm mt-1">
+                <p className="mt-1 text-sm text-green-600">
                   Signature captured
                 </p>
               )}
@@ -271,7 +271,7 @@ const RegistrationProofModal = ({
                 onClick={() =>
                   handleSubmit("DECLINED")
                 }
-                className="flex items-center justify-center gap-2 py-3 rounded-lg bg-red-500 text-white font-bold"
+                className="flex items-center justify-center gap-2 py-3 font-bold text-white bg-red-500 rounded-lg"
               >
                 <FaTimes /> Decline
               </button>
@@ -281,7 +281,7 @@ const RegistrationProofModal = ({
                 onClick={() =>
                   handleSubmit("APPROVED")
                 }
-                className="flex items-center justify-center gap-2 py-3 rounded-lg bg-green-600 text-white font-bold"
+                className="flex items-center justify-center gap-2 py-3 font-bold text-white bg-green-600 rounded-lg"
               >
                 {processing
                   ? "Processing..."
@@ -297,7 +297,7 @@ const RegistrationProofModal = ({
 
             <button
               onClick={onClose}
-              className="w-full text-sm text-gray-500 pt-2"
+              className="w-full pt-2 text-sm text-gray-500"
             >
               Cancel
             </button>
