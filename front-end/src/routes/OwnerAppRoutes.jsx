@@ -57,7 +57,7 @@ const OwnerAppRoutes = () => {
 
           {/* ==================== OTHER ==================== */}
           <Route path="maintenance" element={<MaintenancePage />} />
-          <Route path="/owner/maintenance/:id/assign" element={<TechnicianManagementPage />} />
+          <Route path="maintenance/:id/assign" element={<TechnicianManagementPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="payment" element={<PaymentPage />} />
 
