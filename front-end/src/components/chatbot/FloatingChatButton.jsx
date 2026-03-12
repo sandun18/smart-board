@@ -14,9 +14,9 @@ export default function FloatingChatButton({ onClick }) {
 
       setTimeout(() => {
         setShowRobot(false);
-      }, 8000);
+      }, 6000);
 
-    }, 15000);
+    }, 12000);
 
     return () => clearInterval(interval);
 
@@ -49,7 +49,7 @@ export default function FloatingChatButton({ onClick }) {
               drop-shadow-2xl
               "
               animate={{
-                y: [0, -10, 0],
+                y: [0, -90, 0],
                 rotate: [0, 8, -8, 5, -5, 0]
               }}
               transition={{
