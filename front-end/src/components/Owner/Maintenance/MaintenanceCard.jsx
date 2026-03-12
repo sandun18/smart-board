@@ -8,7 +8,7 @@ import {
   FaTools,
   FaStar,
   FaClock,
-  FaImage
+  FaImage,
 } from "react-icons/fa";
 import AssignTechnicianModal from "./AssignTechnicianModal";
 import ReviewTechnicianModal from "./ReviewTechnicianModal";
@@ -19,8 +19,14 @@ const BASE_IMAGE_URL = "http://localhost:8086/uploads/";
 const URGENCY_CONFIG = {
   low: { color: "bg-emerald-100 text-emerald-700", icon: null },
   medium: { color: "bg-blue-100 text-blue-700", icon: null },
-  high: { color: "bg-orange-100 text-orange-700", icon: <FaExclamationTriangle /> },
-  critical: { color: "bg-red-100 text-red-700", icon: <FaExclamationTriangle /> },
+  high: {
+    color: "bg-orange-100 text-orange-700",
+    icon: <FaExclamationTriangle />,
+  },
+  critical: {
+    color: "bg-red-100 text-red-700",
+    icon: <FaExclamationTriangle />,
+  },
 };
 
 const STATUS_CONFIG = {
@@ -74,7 +80,8 @@ const MaintenanceCard = ({ request, onUpdateStatus }) => {
           {/* Header Info */}
           <div className="flex items-center justify-between mb-3 text-xs text-gray-400">
             <span className="flex items-center gap-1">
-              <FaCalendar className="text-gray-300" /> {formatDate(request.date || request.createdDate)}
+              <FaCalendar className="text-gray-300" />{" "}
+              {formatDate(request.date || request.createdDate)}
             </span>
             <span className="font-mono text-[10px]">#{request.id}</span>
           </div>
@@ -94,10 +101,14 @@ const MaintenanceCard = ({ request, onUpdateStatus }) => {
 
           {/* Badge Section */}
           <div className="flex flex-wrap gap-2 mb-4">
-            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase flex items-center gap-1 ${urgencyStyle.color}`}>
+            <span
+              className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase flex items-center gap-1 ${urgencyStyle.color}`}
+            >
               {urgencyStyle.icon} {urgencyKey} Priority
             </span>
-            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${statusStyle.color}`}>
+            <span
+              className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${statusStyle.color}`}
+            >
               {statusStyle.label}
             </span>
           </div>
@@ -119,9 +130,12 @@ const MaintenanceCard = ({ request, onUpdateStatus }) => {
                     key={index}
                     src={getImgSrc(imgName)}
                     alt={`Evidence ${index + 1}`}
-                    className="object-cover w-20 h-14 border border-gray-100 rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                    className="object-cover w-20 transition-opacity border border-gray-100 rounded-lg cursor-pointer h-14 hover:opacity-80"
                     onClick={() => window.open(getImgSrc(imgName), "_blank")}
-                    onError={(e) => { e.target.src = "https://via.placeholder.com/80?text=Error"; }}
+                    onError={(e) => {
+                      e.target.src =
+                        "https://via.placeholder.com/80?text=Error";
+                    }}
                   />
                 ))}
               </div>
@@ -133,20 +147,20 @@ const MaintenanceCard = ({ request, onUpdateStatus }) => {
             {/* 1. PENDING: Assign Technician */}
             {statusKey === "pending" && (
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowAssignModal(true);
-                }}
-                className="flex items-center justify-center w-full gap-2 py-2.5 text-sm font-bold text-white transition-all bg-slate-900 rounded-lg hover:bg-slate-800 active:scale-95"
+                onClick={() =>
+                  navigate(`/owner/maintenance/${request.id}/assign`)
+                }
+                className="..."
               >
-                <FaTools size={12} /> Find Technician
+                <FaTools size={12} /> Manage Professional
               </button>
             )}
 
             {/* 2. ASSIGNED / IN_PROGRESS: Working state */}
             {(statusKey === "assigned" || statusKey === "in_progress") && (
               <div className="flex items-center justify-center w-full gap-2 py-2 text-xs font-bold text-blue-600 rounded-lg bg-blue-50">
-                <FaClock className="animate-pulse" /> Technician is handling this...
+                <FaClock className="animate-pulse" /> Technician is handling
+                this...
               </div>
             )}
 
