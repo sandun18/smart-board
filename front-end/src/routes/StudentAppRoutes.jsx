@@ -38,8 +38,8 @@ const StudentAppRoutes = () => {
       <Route path="maintenance" element={<ProtectedRoute><MaintenancePage /></ProtectedRoute>} />
       <Route path="reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
       <Route path="profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-      <Route path="/chats" element={<ChatList />} />
-      <Route path="/chat/:roomId" element={<ChatRoom />} />
+      <Route path="chats" element={<ProtectedRoute><ChatList /></ProtectedRoute>} />
+      <Route path="chat/:roomId" element={<ProtectedRoute><ChatRoom /></ProtectedRoute>} />
       {/* ==================== PAYMENT ROUTES (PROTECTED) ==================== */}
       <Route
         path="payments/pay/select-method/:intentId"

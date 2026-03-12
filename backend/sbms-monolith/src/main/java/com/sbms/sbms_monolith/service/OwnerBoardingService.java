@@ -64,6 +64,10 @@ public class OwnerBoardingService {
         if(dto.getLatitude() != null) b.setLatitude(dto.getLatitude());
         if(dto.getLongitude() != null) b.setLongitude(dto.getLongitude());
 
+        if (dto.getStatus() != null) {
+        b.setStatus(dto.getStatus());
+    }
+
 
         Boarding saved = boardingRepository.save(b);
         return BoardingMapper.toOwnerResponse(saved);
@@ -86,6 +90,18 @@ public class OwnerBoardingService {
                 .filter(b -> b.getOwner().getId().equals(ownerId))
                 .map(BoardingMapper::toOwnerResponse)
                 .collect(Collectors.toList());
+    }
+
+    public OwnerBoardingResponseDTO getOne(Long ownerId, Long boardingId) {
+        Boarding b = boardingRepository.findById(boardingId)
+                .orElseThrow(() -> new RuntimeException("Boarding not found"));
+
+        // Security: Ensure the logged-in user owns this ad
+        if (!b.getOwner().getId().equals(ownerId)) {
+            throw new RuntimeException("You are not allowed to view this boarding");
+        }
+
+        return BoardingMapper.toOwnerResponse(b);
     }
 
     public OwnerBoardingResponseDTO boost(Long ownerId, Long boardingId, int days) {

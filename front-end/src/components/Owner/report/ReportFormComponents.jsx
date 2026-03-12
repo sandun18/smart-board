@@ -61,13 +61,10 @@ export const EvidenceUpload = ({ onFileChange, files, onRemoveFile }) => {
           borderColor: "#FF7A00",
         }}
         whileTap={{ scale: 0.99 }}
-        className="
-          border-2 border-dashed p-8 rounded-report text-center cursor-pointer transition-colors duration-300 
-          bg-card-bg border-light group
-        "
+        className="p-8 text-center transition-colors duration-300 border-2 border-dashed cursor-pointer  rounded-report bg-card-bg border-light group"
         onClick={() => document.getElementById("fileUpload").click()}
       >
-        <i className="fas fa-file-upload text-3xl mb-3 text-accent transition-transform group-hover:scale-110 group-hover:-translate-y-1"></i>
+        <i className="mb-3 text-3xl transition-transform fas fa-file-upload text-accent group-hover:scale-110 group-hover:-translate-y-1"></i>
         <p className="text-xs font-medium text-muted">
           Drag and drop evidence files here, or{" "}
           <span className="font-bold text-accent group-hover:underline">
@@ -85,7 +82,7 @@ export const EvidenceUpload = ({ onFileChange, files, onRemoveFile }) => {
       </motion.div>
 
       {/* 2. File Preview Grid */}
-      <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 mt-6 sm:grid-cols-3 md:grid-cols-4">
         <AnimatePresence>
           {files.map((file, index) => {
             const isImage = file.type.startsWith("image/");
@@ -98,17 +95,17 @@ export const EvidenceUpload = ({ onFileChange, files, onRemoveFile }) => {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.5 }}
-                className="relative group rounded-card border border-light bg-card-bg overflow-hidden shadow-custom h-32"
+                className="relative h-32 overflow-hidden border group rounded-card border-light bg-card-bg shadow-custom"
               >
                 {isImage ? (
                   <img
                     src={previewUrl}
                     alt="preview"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
                   />
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center p-2 bg-light/20">
-                    <i className="fas fa-file-pdf text-error text-2xl mb-2"></i>
+                  <div className="flex flex-col items-center justify-center w-full h-full p-2 bg-light/20">
+                    <i className="mb-2 text-2xl fas fa-file-pdf text-error"></i>
                     <span className="text-[9px] font-black text-text uppercase tracking-tighter text-center truncate w-full px-2">
                       {file.name}
                     </span>

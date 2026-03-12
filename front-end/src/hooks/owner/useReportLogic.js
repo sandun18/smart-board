@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useOwnerAuth } from "../../context/owner/OwnerAuthContext";
-// ✅ FIXED: Imported createOwnerReport to match your service.js name
-import { getOwnerReports, createOwnerReport } from "../../api/owner/service";
+import { getOwnerReports, createReport } from "../../api/owner/service";
 
 // 🛠️ HELPER: Fixes Backend vs Frontend mismatch
+// Converts "New" -> "PENDING", "In Progress" -> "UNDER_REVIEW"
 const normalizeStatus = (status) => {
   if (!status) return "PENDING";
 
@@ -22,6 +22,8 @@ const normalizeStatus = (status) => {
 
 const useReportLogic = () => {
   const { currentOwner } = useOwnerAuth();
+
+  // Data State
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -31,17 +33,19 @@ const useReportLogic = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 1. Fetch Reports
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     if (!currentOwner?.id) return;
-    setLoading(true);
+
     try {
+      setLoading(true);
       const data = await getOwnerReports(currentOwner.id);
 
       const safeData = Array.isArray(data) ? data : [];
 
-      // Normalize the data immediately
+      // 🛠️ FIX APPLIED HERE: Normalize the data immediately
       const cleanedData = safeData.map((report) => ({
         ...report,
+        // Overwrite the 'status' with the correct Enum Key
         status: normalizeStatus(report.status),
       }));
 
@@ -54,11 +58,12 @@ const useReportLogic = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentOwner]);
 
+  // Initial Load
   useEffect(() => {
     fetchReports();
-  }, [currentOwner]);
+  }, [fetchReports]);
 
   // 2. Submit Logic
   const submitNewReport = async (formData, files) => {
@@ -69,27 +74,28 @@ const useReportLogic = () => {
     try {
       const dataToSend = {
         ...formData,
-        ownerId: currentOwner.id, // Service.js expects 'ownerId' for mapping to 'senderId'
+        senderId: currentOwner.id,
       };
 
-      // ✅ FIXED: Changed call from createReport to createOwnerReport
-      await createOwnerReport(dataToSend, files);
+      await createReport(dataToSend, files);
       await fetchReports();
       return { success: true };
-    } catch (error) {
-      console.error("Submission error:", error);
-      return { 
-        success: false, 
-        message: error.response?.data?.message || error.message || "Failed to submit" 
+    } catch (err) {
+      console.error("Submit error:", err);
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to submit report",
       };
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // 3. Filter Logic
+  // 3. Filter Logic (Now compares Enum vs Enum)
   const filteredReports = useMemo(() => {
     if (filter === "All") return reports;
+
+    // Both sides are now guaranteed to be Enums (e.g., PENDING == PENDING)
     return reports.filter((rep) => rep.status === filter);
   }, [reports, filter]);
 

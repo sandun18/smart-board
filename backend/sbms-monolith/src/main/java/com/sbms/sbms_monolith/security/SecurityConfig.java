@@ -58,6 +58,7 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+                        .requestMatchers("/ws/**").permitAll()
 
                         // -------------------------------------------------------
                         // ADMIN ENDPOINTS

@@ -3,6 +3,8 @@ import { FaBell } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/student/StudentAuthContext.jsx';
 
+import NotificationBell from "../../../components/notifications/NotificationBell.jsx";
+
 const Header = ({ title, subtitle, rightContent }) => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
@@ -50,18 +52,10 @@ const Header = ({ title, subtitle, rightContent }) => {
         {rightContent && <div className="hidden sm:block">{rightContent}</div>}
 
         {/* Notification Bell */}
-        <div 
-          className="relative cursor-pointer p-3 rounded-full bg-background-light text-text-dark transition-all duration-300 hover:bg-accent hover:text-white group"
-          onClick={handleNotificationClick}
-        >
-          <FaBell className="text-xl group-hover:animate-pulse" />
-          <span className="
-            absolute -top-1.5 -right-1.5 bg-red-alert text-white 
-            rounded-full w-5 h-5 text-xs font-semibold flex items-center justify-center 
-            border-2 border-white
-          ">
-            3
-          </span>
+        
+
+        <div className="flex items-center gap-6">
+          <NotificationBell />
         </div>
         
         {/* User Menu */}
