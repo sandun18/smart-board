@@ -48,11 +48,36 @@ const TechnicianManagementPage = () => {
         return navigate("/owner/maintenance");
       }
 
-      setRequest(currentReq);
+      // Map Java Backend DTO to UI expected keys if needed
+      const normalizedReq = {
+        ...currentReq,
+        title: currentReq.title || "General Maintenance",
+        status: currentReq.status?.toLowerCase() || "pending"
+      };
 
-      // If pending, search for technicians automatically based on issue title
-      if (currentReq.status?.toLowerCase() === "pending") {
-        handleSearch(currentReq.title);
+      setRequest(normalizedReq);
+
+      // If pending, search for technicians automatically based on mapped Enum skill
+      if (normalizedReq.status === "pending") {
+        const issue = (normalizedReq.title || "").toUpperCase();
+        let mappedSkill = "OTHER";
+
+        // Logic to match titles to MaintenanceIssueType Enum values
+        if (issue.includes("PLUMB") || issue.includes("TAP") || issue.includes("LEAK") || issue.includes("WATER")) {
+          mappedSkill = "PLUMBING";
+        } else if (issue.includes("ELECT") || issue.includes("LIGHT") || issue.includes("POWER") || issue.includes("WIRE")) {
+          mappedSkill = "ELECTRICAL";
+        } else if (issue.includes("FURNIT") || issue.includes("BED") || issue.includes("CHAIR") || issue.includes("TABLE")) {
+          mappedSkill = "FURNITURE";
+        } else if (issue.includes("APPLIANCE") || issue.includes("FRIDGE") || issue.includes("AC") || issue.includes("FAN")) {
+          mappedSkill = "APPLIANCE";
+        } else if (issue.includes("CLEANING") || issue.includes("WASH")) {
+          mappedSkill = "CLEANING";
+        } else if (issue.includes("PEST") || issue.includes("BUG") || issue.includes("ANT")) {
+          mappedSkill = "PEST";
+        }
+
+        handleSearch(mappedSkill);
       }
     } catch (err) {
       toast.error("Error loading page data");
