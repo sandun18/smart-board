@@ -19,6 +19,7 @@ import {
   createReport,
 } from "../../api/owner/service";
 import toast from "react-hot-toast";
+import ReviewTechnicianModal from "../../components/Owner/Maintenance/ReviewTechnicianModal.jsx";
 
 const TechnicianManagementPage = () => {
   const { id } = useParams();
@@ -29,7 +30,7 @@ const TechnicianManagementPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchLoading, setSearchLoading] = useState(false);
 
-  // Report State
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportData, setReportData] = useState({ reason: "", description: "" });
 
@@ -52,7 +53,7 @@ const TechnicianManagementPage = () => {
       const normalizedReq = {
         ...currentReq,
         title: currentReq.title || "General Maintenance",
-        status: currentReq.status?.toLowerCase() || "pending"
+        status: currentReq.status?.toLowerCase() || "pending",
       };
 
       setRequest(normalizedReq);
@@ -63,17 +64,41 @@ const TechnicianManagementPage = () => {
         let mappedSkill = "OTHER";
 
         // Logic to match titles to MaintenanceIssueType Enum values
-        if (issue.includes("PLUMB") || issue.includes("TAP") || issue.includes("LEAK") || issue.includes("WATER")) {
+        if (
+          issue.includes("PLUMB") ||
+          issue.includes("TAP") ||
+          issue.includes("LEAK") ||
+          issue.includes("WATER")
+        ) {
           mappedSkill = "PLUMBING";
-        } else if (issue.includes("ELECT") || issue.includes("LIGHT") || issue.includes("POWER") || issue.includes("WIRE")) {
+        } else if (
+          issue.includes("ELECT") ||
+          issue.includes("LIGHT") ||
+          issue.includes("POWER") ||
+          issue.includes("WIRE")
+        ) {
           mappedSkill = "ELECTRICAL";
-        } else if (issue.includes("FURNIT") || issue.includes("BED") || issue.includes("CHAIR") || issue.includes("TABLE")) {
+        } else if (
+          issue.includes("FURNIT") ||
+          issue.includes("BED") ||
+          issue.includes("CHAIR") ||
+          issue.includes("TABLE")
+        ) {
           mappedSkill = "FURNITURE";
-        } else if (issue.includes("APPLIANCE") || issue.includes("FRIDGE") || issue.includes("AC") || issue.includes("FAN")) {
+        } else if (
+          issue.includes("APPLIANCE") ||
+          issue.includes("FRIDGE") ||
+          issue.includes("AC") ||
+          issue.includes("FAN")
+        ) {
           mappedSkill = "APPLIANCE";
         } else if (issue.includes("CLEANING") || issue.includes("WASH")) {
           mappedSkill = "CLEANING";
-        } else if (issue.includes("PEST") || issue.includes("BUG") || issue.includes("ANT")) {
+        } else if (
+          issue.includes("PEST") ||
+          issue.includes("BUG") ||
+          issue.includes("ANT")
+        ) {
           mappedSkill = "PEST";
         }
 
@@ -236,7 +261,8 @@ const TechnicianManagementPage = () => {
                 <span className="font-black uppercase">{request.status}</span>
               </p>
 
-              <div className="flex flex-wrap justify-center gap-4">
+              <div className="flex flex-wrap justify-center gap-4 mt-6">
+                {/* ✅ The Report button is now accessible even after work is done */}
                 <button
                   onClick={() => setShowReportModal(true)}
                   className="flex items-center gap-2 px-6 py-3 font-bold text-red-600 border border-red-200 rounded-xl hover:bg-red-50"
@@ -244,14 +270,15 @@ const TechnicianManagementPage = () => {
                   <FaExclamationTriangle /> Report Professional
                 </button>
 
+                {/* ✅ Add the Review button here so you can trigger the review modal on this page */}
                 {["work_done", "paid"].includes(
                   request.status?.toLowerCase(),
                 ) && (
                   <button
-                    onClick={() => navigate(`/owner/maintenance`)} // Opens the review modal on the main page
+                    onClick={() => setShowReviewModal(true)}
                     className="px-6 py-3 font-bold text-white bg-orange-500 rounded-xl hover:bg-orange-600"
                   >
-                    Complete Review
+                    Submit Review & Finalize
                   </button>
                 )}
               </div>
@@ -289,6 +316,17 @@ const TechnicianManagementPage = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {showReviewModal && (
+        <ReviewTechnicianModal
+          request={request}
+          onClose={() => setShowReviewModal(false)}
+          onSuccess={() => {
+            fetchInitialData(); // Refresh the page to show "Completed" status
+            setShowReviewModal(false);
+          }}
+        />
       )}
     </div>
   );

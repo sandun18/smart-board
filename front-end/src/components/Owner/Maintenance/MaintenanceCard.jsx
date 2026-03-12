@@ -171,11 +171,12 @@ const MaintenanceCard = ({ request, onUpdateStatus }) => {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setShowReviewModal(true);
+                  // ✅ Now it navigates to the management page so you can see the report option too
+                  navigate(`/owner/maintenance/${request.id}/assign`);
                 }}
-                className="flex items-center justify-center w-full gap-2 py-2.5 text-sm font-bold text-white transition-all bg-orange-500 rounded-lg hover:bg-orange-600 animate-pulse active:scale-95"
+                className="flex items-center justify-center w-full gap-2 py-2.5 text-sm font-bold text-white transition-all bg-orange-500 rounded-lg hover:bg-orange-600 animate-pulse active:scale-95 shadow-sm"
               >
-                <FaStar size={12} /> Review & Complete
+                <FaStar size={12} /> Review & Manage Job
               </button>
             )}
 
