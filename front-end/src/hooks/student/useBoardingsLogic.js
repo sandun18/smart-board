@@ -19,20 +19,18 @@ const useBoardingsLogic = () => {
       try {
           setLoading(true);
           
-          // 1. Get All Registrations to check status
           const registrations = await StudentService.getRegistrations(studentId);
           
-          // 2. Find the relevant registration (Approved takes priority, then Pending)
-          const activeReg = registrations.find(r => r.status === 'APPROVED') 
+          // ✅ Priority: LEAVE_REQUESTED > APPROVED > PENDING
+          // LEAVE_REQUESTED must be checked FIRST so it doesn't disappear after requesting leave
+          const activeReg = registrations.find(r => r.status === 'LEAVE_REQUESTED')
+                         || registrations.find(r => r.status === 'APPROVED') 
                          || registrations.find(r => r.status === 'PENDING');
 
           if (activeReg) {
-              // 3. Fetch Dashboard Data (Contains Boarding Info, Owner, Members)
-              // Note: The backend 'getDashboard' endpoint works for both Pending and Approved
-              // but returns limited info for Pending if you set it up that way.
               const dashboardData = await StudentService.getDashboard(activeReg.id);
 
-              // FIX: Deduplicate members to prevent "same key" error
+              // Deduplicate members to prevent "same key" React error
               const uniqueMemberIds = new Set();
               const uniqueMembers = (dashboardData.members || [])
                 .filter(m => {
@@ -51,21 +49,20 @@ const useBoardingsLogic = () => {
                   // --- Status & ID ---
                   id: activeReg.boardingId,
                   registrationId: activeReg.id,
-                  status: activeReg.status, // "PENDING" or "APPROVED"
+                  status: activeReg.status, // ✅ Now can be PENDING, APPROVED, or LEAVE_REQUESTED
                   joinedDate: activeReg.moveInDate,
 
-                  // --- Basic Info (Visible in both states) ---
+                  // --- Basic Info ---
                   name: dashboardData.boardingTitle,
                   address: dashboardData.boardingAddress,
-                  image: dashboardData.boardingImage ,
+                  image: dashboardData.boardingImage,
                   monthlyRent: dashboardData.monthlyPrice,
 
                   rating: dashboardData.averageRating || 0,
                   boardingSince: dashboardData.boardingCreatedDate || "2024",
-                  joinedDate: activeReg.moveInDate || new Date().toISOString().split('T')[0],
                   area: 1200, 
                   responseRate: 95,
-                  roommates: dashboardData.members ? dashboardData.members.length : 0,
+                  roommates: uniqueMembers.length,
 
                   // --- Owner Info ---
                   owner: {
@@ -78,14 +75,8 @@ const useBoardingsLogic = () => {
                       phone: dashboardData.ownerPhone
                   },
 
-                  // --- Members (Empty if pending usually) ---
-                  members: dashboardData.members?.map(m => ({
-                      id: m.id,
-                      name: m.name,
-                      joinedDate: m.joinedDate,
-                      // Use DB avatar, or fallback to generated one
-                      avatar: m.avatar || `https://ui-avatars.com/api/?name=${m.name}&background=random`
-                  })) || [],
+                  // --- Members ---
+                  members: uniqueMembers,
 
                   // --- Payment Info ---
                   nextPayment: { 
@@ -97,6 +88,7 @@ const useBoardingsLogic = () => {
               });
               setHasBoarding(true);
           } else {
+              // ✅ Only hide boarding if status is LEFT, CANCELLED, DECLINED, or no registration at all
               setHasBoarding(false);
               setCurrentBoarding(null);
           }
@@ -112,7 +104,6 @@ const useBoardingsLogic = () => {
     alert("Payment integration coming soon!");
   };
 
-  // ✅ NEW FUNCTION: Downloads the Key Money PDF
   const downloadReceipt = async () => {
     if (currentBoarding?.registrationId) {
         try {
