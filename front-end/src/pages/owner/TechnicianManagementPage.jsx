@@ -329,6 +329,24 @@ const TechnicianManagementPage = () => {
               </select>
             </div>
 
+            {/* --- SEVERITY SELECT --- */}
+            <div className="mb-4">
+              <label className="block mb-2 text-sm font-bold text-gray-700">
+                Severity Level
+              </label>
+              <select
+                className="w-full p-3 text-sm border outline-none rounded-xl focus:ring-2 focus:ring-red-500/20"
+                value={reportData.severity || "MEDIUM"}
+                onChange={(e) =>
+                  setReportData({ ...reportData, severity: e.target.value })
+                }
+              >
+                <option value="LOW">Low - Minor Issue</option>
+                <option value="MEDIUM">Medium - Significant Delay/Issue</option>
+                <option value="HIGH">High - Critical Failure/Safety</option>
+              </select>
+            </div>
+
             {/* --- DESCRIPTION --- */}
             <div className="mb-4">
               <label className="block mb-2 text-sm font-bold text-gray-700">
