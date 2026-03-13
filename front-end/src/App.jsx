@@ -15,15 +15,13 @@ import OwnerAppRoutes from "./routes/OwnerAppRoutes";
 import TechnicianAppRoutes from "./routes/TechnicianAppRoutes.jsx";
 import AdminAppRoutes from "./routes/AdminAppRoutes";
 
-// --- AUTH PAGES ---
+// --- NEW UNIFIED PAGES ---
+// Ensure these paths match where you saved the files above
 import LoginPage from "./pages/auth/LoginPage";
 import SignupPage from "./pages/auth/SignupPage";
 
-// --- PUBLIC PROFILE ---
+// Public Profile View
 import PublicProfileView from "./pages/common/PublicProfileView.jsx";
-
-// --- CHATBOT OVERLAY ---
-import ChatOverlay from "./components/chatbot/ChatOverlay";
 
 function App() {
   return (
@@ -32,9 +30,7 @@ function App() {
         <OwnerAuthProvider>
           <TechnicianAuthProvider>
             <AdminAuthProvider>
-
               <ScrollToTop />
-
               <Toaster
                 position="top-right"
                 toastOptions={{
@@ -46,42 +42,33 @@ function App() {
                   },
                 }}
               />
-
-              {/* ==================== ROUTES ==================== */}
-
               <Routes>
-
-                {/* GLOBAL AUTH */}
+                {/* ==================== GLOBAL AUTH ROUTES ==================== */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
 
-                {/* STUDENT */}
+                {/* ==================== ROLE SPECIFIC ROUTES ==================== */}
+                {/* Student routes (Dashboard, etc.) */}
                 <Route path="/student/*" element={<StudentAppRoutes />} />
 
-                {/* OWNER */}
+                {/* Owner routes (Dashboard, My Ads, etc.) */}
                 <Route path="/owner/*" element={<OwnerAppRoutes />} />
 
-                {/* TECHNICIAN */}
+                {/* Technician routes (Dashboard, Profile, Reports) */}
                 <Route path="/technician/*" element={<TechnicianAppRoutes />} />
 
-                {/* ADMIN */}
+                {/* Admin routes (Dashboard, Users, Ads, etc.) */}
                 <Route path="/admin/*" element={<AdminAppRoutes />} />
 
-                {/* PUBLIC PROFILE */}
+                {/* Public Profile view */}
                 <Route
                   path="/profile/view/:id"
                   element={<PublicProfileView />}
                 />
 
-                {/* LANDING PAGE */}
+                {/* ==================== LANDING PAGE ==================== */}
                 <Route path="/" element={<Home />} />
-
               </Routes>
-
-              {/* ==================== GLOBAL CHATBOT ==================== */}
-              {/* Always visible bottom-right */}
-              <ChatOverlay />
-
             </AdminAuthProvider>
           </TechnicianAuthProvider>
         </OwnerAuthProvider>
