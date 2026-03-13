@@ -1,8 +1,6 @@
 package com.sbms.sbms_monolith.mapper;
 
 
-import java.util.Optional;
-
 import com.sbms.sbms_monolith.dto.boarding.BoardingCreateDTO;
 import com.sbms.sbms_monolith.dto.boarding.BoardingDetailDTO;
 import com.sbms.sbms_monolith.dto.boarding.BoardingSummaryDTO;
@@ -115,11 +113,7 @@ public class BoardingMapper {
 
         b.setLatitude(dto.getLatitude());
         b.setLongitude(dto.getLongitude());
-        
-        
-        b.setDistance_to_uni(Optional.ofNullable(dto.getDistance_to_uni()).orElse(2.0));
-        b.setSize(Optional.ofNullable(dto.getSize()).orElse(50)); 
-        
+
         b.setPricePerMonth(dto.getPricePerMonth());
         b.setKeyMoney(dto.getKeyMoney());
         b.setGenderType(dto.getGenderType());
