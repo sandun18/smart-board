@@ -26,6 +26,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -34,48 +35,41 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
 
-        // 1. Check if Header is present
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        try {
-            // ✅ DECLARE VARIABLES HERE
-            final String jwt = authHeader.substring(7);
-            final String username = jwtService.extractUsername(jwt);
+        String jwt = authHeader.substring(7);
 
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                // 2. Load User from DB
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        if (!jwtService.isTokenValid(jwt)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-                // 3. Validate Token
-                if (jwtService.isTokenValid(jwt, userDetails)) {
-                    // 🔍 DEBUG LOG: Print the roles the backend SEES
-                    // System.out.println("✅ JWT Filter: Authenticated User -> " + username);
-                    // System.out.println("🛡️ Roles Loaded from DB -> " + userDetails.getAuthorities());
+        String username = jwtService.extractUsername(jwt);
+        String role = jwtService.extractRole(jwt); // 
 
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null,
-                                    userDetails.getAuthorities()
-                            );
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                    authToken.setDetails(
-                            new WebAuthenticationDetailsSource().buildDetails(request)
+            List<GrantedAuthority> authorities =
+                    List.of(new SimpleGrantedAuthority("ROLE_" + role));
+
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(
+                            username,
+                            null,
+                            authorities
                     );
 
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                } else {
-                    System.out.println("❌ JWT Filter: Token Invalid for user " + username);
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("❌ JWT Filter Error: " + e.getMessage());
-            e.printStackTrace();
+            authToken.setDetails(
+                    new WebAuthenticationDetailsSource().buildDetails(request)
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authToken);
         }
 
         filterChain.doFilter(request, response);
     }
+
 }
