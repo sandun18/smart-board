@@ -12,4 +12,6 @@ public interface TechnicianReviewRepository extends JpaRepository<TechnicianRevi
     List<TechnicianReview> findByTechnician(User technician);
 
     Optional<TechnicianReview> findByMaintenance(Maintenance maintenance);
+
+    long deleteByOwner_IdOrTechnician_Id(Long ownerId, Long technicianId);
 }

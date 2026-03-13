@@ -11,4 +11,6 @@ public interface OwnerWalletRepository
         extends JpaRepository<OwnerWallet, Long> {
 
     Optional<OwnerWallet> findByOwnerId(Long ownerId);
+
+    long deleteByOwnerId(Long ownerId);
 }
