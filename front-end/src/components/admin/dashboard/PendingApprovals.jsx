@@ -12,7 +12,7 @@ const PendingApprovals = ({ approvals, onApprove, onReject, onNavigate }) => {
           <div key={ad.id} className="flex flex-col sm:flex-row justify-between items-center p-3 lg:p-4 bg-background-light rounded-[15px] shadow-sm gap-3">
             <div className="text-center sm:text-left">
               <h4 className="text-text-dark font-bold text-sm lg:text-base">{ad.title}</h4>
-              <p className="text-text-muted text-[11px] lg:text-sm">By: {ad.submittedBy}</p>
+              <p className="text-text-muted text-[11px] lg:text-sm">By: {ad.submittedBy || ad.ownerName || 'Unknown'}</p>
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
               <button onClick={() => onApprove(ad.id)} className="flex-1 sm:flex-none bg-success text-white px-3 py-1.5 rounded-[12px] text-xs font-bold shadow-sm">Approve</button>
