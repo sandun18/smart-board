@@ -30,8 +30,6 @@ public class RegistrationMapper {
         dto.setStatus(r.getStatus());
         dto.setStudentNote(r.getStudentNote());
         dto.setOwnerNote(r.getOwnerNote());
-        dto.setEmergencyContactPhone(r.getEmergencyContactPhone());
-        dto.setMoveInDate(r.getMoveInDate());
 
         dto.setKeyMoney(r.getBoarding().getKeyMoney());
         dto.setMonthlyPrice(r.getBoarding().getPricePerMonth());
