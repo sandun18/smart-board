@@ -71,12 +71,6 @@ public class Boarding extends BaseEntity {
     
     private boolean isBosted = false;
     protected LocalDateTime boostEndDate;
-    
-    @Column(nullable=true)
-    private Double  distance_to_uni;
-    
-    @Column(nullable=true)
-    private Integer size;
 
     @OneToMany(mappedBy = "boarding", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Review> reviews;
