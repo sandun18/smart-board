@@ -14,12 +14,11 @@ spring:
     username: monolith_user
     password: "monolith09090909"
     driver-class-name: org.postgresql.Driver
-    hikari:     
-      maximum-pool-size: 5
-      minimum-idle: 1        # Only keep 1 connection open when idle
-      idle-timeout: 30000    # Release idle connections after 30 seconds
-      max-lifetime: 600000   # 10 minutes
-      connection-timeout: 20000
+    hikari:
+      max-lifetime: 250000
+      idleTimeout: 200000
+      connectionTimeout: 30000
+      validation-timeout: 5000
 
   # JPA / Hibernate Configuration
   jpa:
