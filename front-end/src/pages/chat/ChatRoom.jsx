@@ -1,17 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import {
-  connectChatSocket,
-  sendMessage,
-  disconnectChatSocket,
-} from "../../api/chatSocket";
+import { connectChatSocket, sendMessage } from "../../api/chatSocket";
 import { getMessages, markAsRead } from "../../api/chatApi";
 import ChatInput from "../../components/chat/ChatInput";
-import ChatBubble from "../../components/chat/ChatBubble";
 import { getChatAuth } from "../../auth/chatAuthAdapter";
 
 export default function ChatRoom() {
-
   const { roomId } = useParams();
   const { state } = useLocation();
   const navigate = useNavigate();
@@ -19,49 +13,40 @@ export default function ChatRoom() {
 
   const [messages, setMessages] = useState([]);
   const [wsReady, setWsReady] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   const listRef = useRef(null);
 
   useEffect(() => {
-    let mounted = true;
+    if (!roomId) return;
+
+    console.log("🔄 INIT CHAT ROOM:", roomId);
+
+    let active = true;
 
     const init = async () => {
-      try {
+      const data = await getMessages(roomId);
+      if (!active) return;
 
-        console.log("🔄 INIT CHAT ROOM:", roomId);
+      setMessages(data.content.reverse());
+      await markAsRead(roomId);
 
-        const data = await getMessages(roomId);
-
-        if (!mounted) return;
-
-        setMessages(data.content.reverse());
-
-        await markAsRead(roomId);
-
-        await connectChatSocket({
-          roomId,
-          onMessage: (msg) => {
-            console.log("📨 Incoming message:", msg);
-            setMessages((prev) => [...prev, msg]);
-          },
-          onConnected: setWsReady,
-        });
-
-      } catch (err) {
-        console.error("❌ Chat init failed", err);
-      } finally {
-        setLoading(false);
-      }
+      connectChatSocket({
+        roomId,
+        onMessage: (msg) => {
+          if (!active) return;
+          setMessages((prev) => [...prev, msg]);
+        },
+        onConnected: setWsReady,
+      });
     };
 
     init();
 
+    // ❌ DO NOT DISCONNECT SOCKET HERE
     return () => {
-      mounted = false;
-      disconnectChatSocket();
+      active = false;
+      console.log("🧹 CHAT ROOM CLEANUP (UI only):", roomId);
     };
-
   }, [roomId]);
 
   useEffect(() => {
@@ -78,82 +63,38 @@ export default function ChatRoom() {
     });
   };
 
-  if (loading) {
-    return (
-      <div className="bg-light min-h-screen flex items-center justify-center text-muted">
-        Loading chat...
-      </div>
-    );
-  }
-
   return (
-    <div className="pt-4 bg-light min-h-screen flex flex-col">
-
-      {/* HEADER */}
-
-      <div className="
-        bg-card-bg
-        border border-light
-        shadow-custom
-        rounded-report
-        mx-4 mb-4
-        px-6 py-4
-        flex items-center gap-4
-      ">
-
-        <button
-          onClick={() => navigate(-1)}
-          className="text-primary font-black"
-        >
-          ←
-        </button>
-
-        <h2 className="font-black text-primary text-lg">
+    <div className="flex flex-col h-screen bg-slate-950 text-slate-100">
+      <div className="h-16 flex items-center gap-3 px-4 border-b border-slate-800">
+        <button onClick={() => navigate(-1)}>←</button>
+        <span className="font-bold truncate">
           {state?.name || "Chat"}
-        </h2>
-
+        </span>
       </div>
 
-      {/* CHAT BODY */}
+      <div
+        ref={listRef}
+        className="flex-1 overflow-y-auto px-3 py-4 space-y-2"
+      >
+        {messages.map((msg) => {
+          const isMe = msg.senderId === user.id;
 
-      <div className="flex-1 px-4">
-
-        <div
-          ref={listRef}
-          className="
-          bg-card-bg
-          border border-light
-          shadow-custom
-          rounded-report
-          p-6
-          h-[65vh]
-          overflow-y-auto
-          space-y-3
-        "
-        >
-
-          {messages.map((msg) => {
-            const isMe = msg.senderId === user.id;
-
-            return (
-              <ChatBubble
-                key={msg.id}
-                message={msg}
-                isMe={isMe}
-              />
-            );
-          })}
-
-        </div>
-
+          return (
+            <div
+              key={msg.id}
+              className={`max-w-[75%] px-4 py-2 rounded-2xl text-sm ${
+                isMe
+                  ? "ml-auto bg-blue-600 rounded-br-md"
+                  : "mr-auto bg-slate-800 rounded-bl-md"
+              }`}
+            >
+              {msg.content}
+            </div>
+          );
+        })}
       </div>
 
-      {/* INPUT */}
-
-      <div className="px-4 pb-6 pt-4">
-        <ChatInput onSend={handleSend} disabled={!wsReady} />
-      </div>
-
+      <ChatInput onSend={handleSend} disabled={!wsReady} />
     </div>
   );
 }
