@@ -9,10 +9,14 @@ import {
   FaRegStar
 } from 'react-icons/fa';
 
-const BoardingCard = ({ boarding, onBook, viewMode }) => {
+const BoardingCard = ({ boarding, onBook, onViewDetails, viewMode, compact = false }) => {
   const navigate = useNavigate();
 
   const handleViewDetails = () => {
+    if (onViewDetails) {
+      onViewDetails(boarding);
+      return;
+    }
     // Navigate to details page with boarding ID and pass boarding data
     navigate(`/student/boarding-details/${boarding.id}`, { 
       state: { boarding } 
@@ -49,7 +53,7 @@ const BoardingCard = ({ boarding, onBook, viewMode }) => {
       className={`bg-white rounded-large overflow-hidden shadow-custom transition-shadow duration-300 hover:shadow-xl cursor-pointer h-full flex ${isListView ? 'flex-row' : 'flex-col'}`}
     >
       {/* Card Image */}
-      <div className={`relative overflow-hidden flex-shrink-0 ${isListView ? 'w-48 h-auto' : 'h-48'}`}>
+      <div className={`relative overflow-hidden flex-shrink-0 ${isListView ? 'w-48 h-auto' : compact ? 'h-40' : 'h-48'}`}>
         <img 
           src={boarding.image} 
           alt={boarding.name}
@@ -62,10 +66,10 @@ const BoardingCard = ({ boarding, onBook, viewMode }) => {
       </div>
 
       {/* Card Content - Added flex-1 and flex-col to stretch content */}
-      <div className="p-5 flex-1 flex flex-col">
+      <div className={`${compact ? 'p-4' : 'p-5'} flex-1 flex flex-col`}>
         <div className="flex justify-between items-start mb-3">
           <div className="flex-1">
-            <h3 className="text-lg font-bold text-text-dark mb-1">{boarding.name}</h3>
+            <h3 className={`${compact ? 'text-base' : 'text-lg'} font-bold text-text-dark mb-1`}>{boarding.name}</h3>
             
             <div className="flex items-center gap-1.5 text-sm mb-1">
               <div className="flex">
@@ -78,7 +82,7 @@ const BoardingCard = ({ boarding, onBook, viewMode }) => {
             
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold text-accent">LKR {boarding.price}</div>
+            <div className={`${compact ? 'text-xl' : 'text-2xl'} font-bold text-accent`}>LKR {boarding.price}</div>
             <span className="text-xs text-text-muted">/month</span>
           </div>
         </div>
@@ -90,7 +94,7 @@ const BoardingCard = ({ boarding, onBook, viewMode }) => {
 
         <div className="flex flex-wrap gap-2 mb-4">
           {boarding.amenities.slice(0, 3).map((amenity, idx) => (
-            <span key={idx} className="bg-background-light text-text-dark px-3 py-1 rounded-full text-xs font-medium">
+            <span key={idx} className={`${compact ? 'px-2.5 py-0.5' : 'px-3 py-1'} bg-background-light text-text-dark rounded-full text-xs font-medium`}>
               {amenity}
             </span>
           ))}
@@ -114,7 +118,7 @@ const BoardingCard = ({ boarding, onBook, viewMode }) => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={(e) => { e.stopPropagation(); handleViewDetails(); }}
-            className="flex-1 border-2 border-accent text-accent py-2.5 rounded-large font-semibold transition-all hover:bg-accent hover:text-white flex items-center justify-center gap-2 text-sm sm:text-base"
+            className={`flex-1 border-2 border-accent text-accent ${compact ? 'py-2' : 'py-2.5'} rounded-large font-semibold transition-all hover:bg-accent hover:text-white flex items-center justify-center gap-2 text-sm ${compact ? '' : 'sm:text-base'}`}
           >
             <FaEye />
             Details
