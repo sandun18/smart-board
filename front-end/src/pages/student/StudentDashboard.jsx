@@ -19,7 +19,7 @@ const StudentDashboard = () => {
   const navigate = useNavigate();
 
   const handlePayNow = () => {
-    navigate("/student/billing");
+    window.location.href = "/student/billing";
   };
 
   const goToChats = () => {
@@ -69,7 +69,7 @@ const StudentDashboard = () => {
               title="Monthly Rent"
               mainDetail={
                 stats.pendingPayment
-                  ? `LKR ${stats.pendingPayment.amount.toLocaleString()}`
+                  ? `LKR ${stats.pendingPayment.amount}`
                   : "No Active Rent"
               }
               subDetail={
@@ -127,6 +127,7 @@ const StudentDashboard = () => {
         </div>
       </section>
 
+      {/* ✅ CHAT BUTTON SECTION */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}

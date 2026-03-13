@@ -2,162 +2,134 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/student/StudentAuthContext';
 import StudentService from '../../api/student/StudentService';
 
-// Statuses that should still show in My Boardings
-const ACTIVE_STATUSES = ['APPROVED', 'PENDING', 'LEAVE_REQUESTED'];
-
-const buildBoardingObject = (activeReg, dashboardData) => {
-  const uniqueMemberIds = new Set();
-  const uniqueMembers = (dashboardData.members || [])
-    .filter(m => {
-      if (uniqueMemberIds.has(m.id)) return false;
-      uniqueMemberIds.add(m.id);
-      return true;
-    })
-    .map(m => ({
-      id: m.id,
-      name: m.name,
-      joinedDate: m.joinedDate,
-      avatar: m.avatar || `https://ui-avatars.com/api/?name=${m.name}&background=random`
-    }));
-
-  return {
-    id: activeReg.boardingId,
-    registrationId: activeReg.id,
-    status: activeReg.status,
-    joinedDate: activeReg.moveInDate,
-
-    name: dashboardData.boardingTitle,
-    address: dashboardData.boardingAddress,
-    image: dashboardData.boardingImage,
-    monthlyRent: dashboardData.monthlyPrice,
-
-    rating: dashboardData.averageRating || 0,
-    boardingSince: dashboardData.boardingCreatedDate || "2024",
-    area: 1200,
-    responseRate: 95,
-    roommates: uniqueMembers.length,
-
-    owner: {
-      id: dashboardData.ownerId,
-      name: dashboardData.ownerName,
-      rating: dashboardData.averageRating || "New",
-      reviews: dashboardData.reviewCount || 0,
-      avatar: dashboardData.ownerProfileImage
-        || `https://ui-avatars.com/api/?name=${dashboardData.ownerName}&background=0D8ABC&color=fff`,
-      email: dashboardData.ownerEmail,
-      phone: dashboardData.ownerPhone
-    },
-
-    members: uniqueMembers,
-
-    nextPayment: {
-      amount: dashboardData.currentMonthDue,
-      dueDate: dashboardData.dueInDays > 0
-        ? `Due in ${dashboardData.dueInDays} days`
-        : "Paid"
-    }
-  };
-};
-
 const useBoardingsLogic = () => {
-  const { currentUser } = useAuth();
-
-  const [allBoardings, setAllBoardings] = useState([]);   // ✅ ALL active boardings
-  const [currentIndex, setCurrentIndex] = useState(0);    // ✅ Pagination index
+  const { currentUser } = useAuth(); 
+  
+  const [currentBoarding, setCurrentBoarding] = useState(null);
   const [hasBoarding, setHasBoarding] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (currentUser?.id) {
-      fetchMyBoardings(currentUser.id);
+        fetchMyBoarding(currentUser.id);
     }
   }, [currentUser]);
 
-  const fetchMyBoardings = async (studentId) => {
-    try {
-      setLoading(true);
+  const fetchMyBoarding = async (studentId) => {
+      try {
+          setLoading(true);
+          
+          // 1. Get All Registrations to check status
+          const registrations = await StudentService.getRegistrations(studentId);
+          
+          // 2. Find the relevant registration (Approved takes priority, then Pending)
+          const activeReg = registrations.find(r => r.status === 'APPROVED') 
+                         || registrations.find(r => r.status === 'PENDING');
 
-      const registrations = await StudentService.getRegistrations(studentId);
+          if (activeReg) {
+              // 3. Fetch Dashboard Data (Contains Boarding Info, Owner, Members)
+              // Note: The backend 'getDashboard' endpoint works for both Pending and Approved
+              // but returns limited info for Pending if you set it up that way.
+              const dashboardData = await StudentService.getDashboard(activeReg.id);
 
-      // ✅ Get ALL active registrations (not just one)
-      const activeRegs = registrations.filter(r => ACTIVE_STATUSES.includes(r.status));
+              // FIX: Deduplicate members to prevent "same key" error
+              const uniqueMemberIds = new Set();
+              const uniqueMembers = (dashboardData.members || [])
+                .filter(m => {
+                    if (uniqueMemberIds.has(m.id)) return false;
+                    uniqueMemberIds.add(m.id);
+                    return true;
+                })
+                .map(m => ({
+                    id: m.id,
+                    name: m.name,
+                    joinedDate: m.joinedDate,
+                    avatar: m.avatar || `https://ui-avatars.com/api/?name=${m.name}&background=random`
+                }));
 
-      if (activeRegs.length === 0) {
-        setHasBoarding(false);
-        setAllBoardings([]);
-        return;
-      }
+              setCurrentBoarding({
+                  // --- Status & ID ---
+                  id: activeReg.boardingId,
+                  registrationId: activeReg.id,
+                  status: activeReg.status, // "PENDING" or "APPROVED"
+                  joinedDate: activeReg.moveInDate,
 
-      // ✅ Fetch dashboard for each active registration in parallel
-      const boardingObjects = await Promise.all(
-        activeRegs.map(async (reg) => {
-          try {
-            const dashboardData = await StudentService.getDashboard(reg.id);
-            return buildBoardingObject(reg, dashboardData);
-          } catch (e) {
-            console.error(`Failed to fetch dashboard for reg ${reg.id}:`, e);
-            return null;
+                  // --- Basic Info (Visible in both states) ---
+                  name: dashboardData.boardingTitle,
+                  address: dashboardData.boardingAddress,
+                  image: dashboardData.boardingImage ,
+                  monthlyRent: dashboardData.monthlyPrice,
+
+                  rating: dashboardData.averageRating || 0,
+                  boardingSince: dashboardData.boardingCreatedDate || "2024",
+                  joinedDate: activeReg.moveInDate || new Date().toISOString().split('T')[0],
+                  area: 1200, 
+                  responseRate: 95,
+                  roommates: dashboardData.members ? dashboardData.members.length : 0,
+
+                  // --- Owner Info ---
+                  owner: {
+                      id: dashboardData.ownerId,
+                      name: dashboardData.ownerName,
+                      rating: dashboardData.averageRating || "New", 
+                      reviews: dashboardData.reviewCount || 0,
+                      avatar: dashboardData.ownerProfileImage || `https://ui-avatars.com/api/?name=${dashboardData.ownerName}&background=0D8ABC&color=fff`,
+                      email: dashboardData.ownerEmail,
+                      phone: dashboardData.ownerPhone
+                  },
+
+                  // --- Members (Empty if pending usually) ---
+                  members: dashboardData.members?.map(m => ({
+                      id: m.id,
+                      name: m.name,
+                      joinedDate: m.joinedDate,
+                      // Use DB avatar, or fallback to generated one
+                      avatar: m.avatar || `https://ui-avatars.com/api/?name=${m.name}&background=random`
+                  })) || [],
+
+                  // --- Payment Info ---
+                  nextPayment: { 
+                      amount: dashboardData.currentMonthDue, 
+                      dueDate: dashboardData.dueInDays > 0 
+                        ? `Due in ${dashboardData.dueInDays} days` 
+                        : "Paid"
+                  }
+              });
+              setHasBoarding(true);
+          } else {
+              setHasBoarding(false);
+              setCurrentBoarding(null);
           }
-        })
-      );
-
-      // Filter out any failed fetches
-      const validBoardings = boardingObjects.filter(Boolean);
-
-      if (validBoardings.length > 0) {
-        setAllBoardings(validBoardings);
-        setCurrentIndex(0);
-        setHasBoarding(true);
-      } else {
-        setHasBoarding(false);
-        setAllBoardings([]);
+      } catch (e) {
+          console.error("Failed to fetch boarding data:", e);
+          setHasBoarding(false);
+      } finally {
+          setLoading(false);
       }
-
-    } catch (e) {
-      console.error("Failed to fetch boarding data:", e);
-      setHasBoarding(false);
-    } finally {
-      setLoading(false);
-    }
   };
-
-  // ✅ Pagination controls
-  const goToNext = () => setCurrentIndex(i => Math.min(i + 1, allBoardings.length - 1));
-  const goToPrev = () => setCurrentIndex(i => Math.max(i - 1, 0));
-  const goToIndex = (i) => setCurrentIndex(i);
-
-  // Current boarding is the one at the current page index
-  const currentBoarding = allBoardings[currentIndex] || null;
-  const totalBoardings = allBoardings.length;
 
   const payRent = () => {
     alert("Payment integration coming soon!");
   };
 
+  // ✅ NEW FUNCTION: Downloads the Key Money PDF
   const downloadReceipt = async () => {
     if (currentBoarding?.registrationId) {
-      try {
-        await StudentService.downloadReceipt(currentBoarding.registrationId);
-      } catch (error) {
-        console.error("Download failed", error);
-        alert("Could not download receipt.");
-      }
+        try {
+            await StudentService.downloadReceipt(currentBoarding.registrationId);
+        } catch (error) {
+            console.error("Download failed", error);
+            alert("Could not download receipt.");
+        }
     }
   };
 
   return {
     currentBoarding,
-    allBoardings,
-    totalBoardings,
-    currentIndex,
-    goToNext,
-    goToPrev,
-    goToIndex,
     hasBoarding,
     payRent,
     downloadReceipt,
-    loading,
-    refetch: () => currentUser?.id && fetchMyBoardings(currentUser.id),
+    loading
   };
 };
 

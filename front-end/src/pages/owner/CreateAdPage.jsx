@@ -57,10 +57,7 @@ const CreateAdPage = () => {
     availableSlots: 1,
     maxOccupants: 1,
     latitude: 6.9271, 
-    longitude: 79.8612,
-
-    distance_to_uni: "",
-    size: ""
+    longitude: 79.8612
   });
 
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -205,24 +202,6 @@ const CreateAdPage = () => {
               value={formData.maxOccupants}
               onChange={handleChange}
             />
-
-            <FormGroup
-              label="Distance to University (KM)"
-              name="distance_to_uni"
-              type="number"
-              value={formData.distance_to_uni}
-              onChange={handleChange}
-            />
-
-            <FormGroup
-              label="Room Size (sqft)"
-              name="size"
-              type="number"
-              value={formData.size}
-              onChange={handleChange}
-            />
-
-
           </div>
           
           <div className="mt-8">

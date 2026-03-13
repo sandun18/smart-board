@@ -3,6 +3,9 @@ import StudentService from "../../api/student/StudentService";
 import { useAuth } from "../../context/student/StudentAuthContext";
 import {
   FaCalendarCheck,
+  FaCreditCard,
+  FaStar,
+  FaHome,
   FaBan,
   FaHourglassHalf,
 } from "react-icons/fa";
@@ -21,26 +24,12 @@ const useDashboardLogic = () => {
 
   const [recentActivity, setRecentActivity] = useState([]);
 
-  // ✅ FINAL TimeAgo Logic
   const getTimeAgo = (date) => {
-    if (!date) return "Recently";
-    
-    // Handle different date formats
-    let past;
-    if (typeof date === 'string') {
-      // If it's an ISO string without 'Z', assume UTC
-      past = date.endsWith('Z') ? new Date(date) : new Date(date + 'Z');
-    } else {
-      past = new Date(date);
-    }
-    
-    if (isNaN(past.getTime())) return "Recently";
-
+    if (!date) return "";
     const now = new Date();
+    const past = new Date(date);
     const diffInSeconds = Math.floor((now - past) / 1000);
-    
-    // Handle future dates (server clock slightly ahead)
-    if (diffInSeconds < -60) return "Recently";
+
     if (diffInSeconds < 60) return "Just now";
     
     const diffInMinutes = Math.floor(diffInSeconds / 60);
@@ -53,12 +42,7 @@ const useDashboardLogic = () => {
     if (diffInDays === 1) return "Yesterday";
     if (diffInDays < 7) return `${diffInDays}d ago`;
     
-    // For older dates, show formatted date
-    return past.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric',
-      year: past.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-    }); 
+    return past.toLocaleDateString(); 
   };
 
   const fetchDashboardData = useCallback(async () => {
@@ -66,107 +50,118 @@ const useDashboardLogic = () => {
 
     setLoading(true);
     try {
-      const [appointments, registrations, bills, reviews] =
+      const [appointments, registrations, payments, reviews] =
         await Promise.all([
           StudentService.getAllAppointments(currentUser.id).catch(() => []),
-          StudentService.getRegistrations(currentUser.id).catch(() => []),
-          StudentService.getStudentBills().catch(() => []),
+          StudentService.getAllRegistrations(currentUser.id).catch(() => []),
+          StudentService.getPaymentHistory().catch(() => []),
           StudentService.getMyReviews(currentUser.id).catch(() => []),
         ]);
 
-      // --- PROCESS APPOINTMENTS ---
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // --- 1. PROCESS APPOINTMENTS FOR WIDGET & NOTIFICATIONS ---
       const processedAppointments = appointments.map((appt) => {
-        // For scheduling (future events)
-        const scheduledDate = appt.requestedStartTime || appt.appointmentDate || appt.visitDate;
-        
-        // For activity feed, prefer updatedAt
-        let activityDate = appt.updatedAt || appt.modifiedAt || appt.lastModified || appt.createdAt || appt.createdDate || scheduledDate;
-        
-        // Ensure we're using a valid date
-        if (!activityDate || activityDate === 'null') {
-          activityDate = scheduledDate;
-        }
-        
+        const rawDate = appt.requestedStartTime || appt.appointmentDate || appt.visitDate || appt.date || appt.createdDate;
         const status = (appt.status || appt.appointmentStatus || "PENDING").toUpperCase();
-        const isApproved = status === "APPROVED" || status === "ACCEPTED";
-        const isRejected = status === "REJECTED" || status === "DECLINED";
 
-        let content = `You requested a visit for ${appt.boardingTitle || 'a boarding'}`;
-        let icon = FaHourglassHalf;
+        const ownerName = appt.ownerName || "Owner";
+        const boardingTitle = appt.boardingTitle || appt.boardingName || "Boarding";
 
-        if (isApproved) {
-          content = `Visit Accepted for ${appt.boardingTitle || 'a boarding'}`;
-          icon = FaCalendarCheck;
-        } else if (isRejected) {
-          content = `Visit Declined for ${appt.boardingTitle || 'a boarding'}`;
-          icon = FaBan;
+        let notificationMessage = `You requested a visit for ${boardingTitle}`;
+        let activityIcon = FaHourglassHalf;
+
+        if (status === "APPROVED" || status === "ACCEPTED") {
+          notificationMessage = `${ownerName} accepted your visit for ${boardingTitle}`;
+          activityIcon = FaCalendarCheck;
+        } else if (status === "REJECTED" || status === "DECLINED") {
+          notificationMessage = `${ownerName} declined your visit for ${boardingTitle}`;
+          activityIcon = FaBan;
         }
 
         return {
           ...appt,
-          scheduledDate: new Date(scheduledDate),
-          activityDate: activityDate,
-          status,
-          isApproved,
-          isRejected,
-          notificationContent: content,
-          icon: icon,
-          widgetDetail: `${appt.ownerName || 'Owner'} @ ${appt.boardingTitle || 'Boarding'}`,
+          rawDate: rawDate, 
+          normalizedDate: new Date(rawDate),
+          status: status,
+          notificationContent: notificationMessage,
+          icon: activityIcon,
+          widgetDetail: `${ownerName} @ ${boardingTitle}`,
         };
       });
 
-      // Stats: Filter for future confirmed visits
+      // --- WIDGET 1: Next Approved Visit ---
       const nextVisit = processedAppointments
-        .filter(a => a.isApproved && a.scheduledDate >= new Date().setHours(0,0,0,0))
-        .sort((a, b) => a.scheduledDate - b.scheduledDate)[0];
+        .filter((a) => {
+          // 1. Validation: Date must be valid
+          if (isNaN(a.normalizedDate.getTime())) return false;
+          
+          
+          const isConfirmed = a.status === "APPROVED" || a.status === "ACCEPTED";
+          
+          // 3. DATE FILTER: Must be today or in the future
+          const startOfToday = new Date().setHours(0, 0, 0, 0);
+          const isUpcoming = a.normalizedDate.getTime() >= startOfToday;
 
-      // --- RENT & BILLS ---
-      const activeReg = registrations.find((r) => r.status === "APPROVED" || r.status === "ACCEPTED");
-      const unpaidBill = bills.find(b => b.status === "UNPAID" || b.status === "PENDING");
-      
+          return isConfirmed && isUpcoming;
+        })
+        // 4. SORT: Put the earliest date at index 0
+        .sort((a, b) => a.normalizedDate - b.normalizedDate)[0]; 
+
+      // Update state
+      setStats(prev => ({
+        ...prev,
+        upcomingVisit: nextVisit 
+      }));
+
+      // --- Widgets 2, 3, 4 (No changes) ---
+      const activeReg = registrations.find((r) => r.status === "APPROVED");
       let paymentInfo = null;
-      if (unpaidBill) {
-        paymentInfo = { amount: unpaidBill.totalAmount, dueDate: unpaidBill.month };
-      } else if (activeReg) {
-        paymentInfo = { amount: activeReg.monthlyRent || 0, dueDate: "Current Month" };
+      if (activeReg) {
+        paymentInfo = {
+          amount: activeReg.monthlyRent || 0,
+          location: activeReg.boardingTitle || "Your Boarding",
+          dueDate: "5th of Month",
+        };
       }
-
-      const reviewAvg = reviews.length > 0
-          ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
+      const reviewAvg =
+        reviews.length > 0
+          ? (
+              reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length
+            ).toFixed(1)
           : 0;
 
       setStats({
-        upcomingVisit: nextVisit ? { ...nextVisit, normalizedDate: nextVisit.scheduledDate } : null,
+        upcomingVisit: nextVisit,
         pendingPayment: paymentInfo,
         currentBoarding: activeReg,
         reviewCount: reviews.length,
         reviewAvg: reviewAvg,
       });
 
-      // --- ACTIVITY FEED ---
-      const twoWeeksAgo = new Date();
-      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+      // --- 2. CONSTRUCT RECENT ACTIVITY FEED (STRICT FILTER APPLIED) ---
+      const fourteenDaysAgo = new Date();
+      fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
 
-      const feed = processedAppointments
-        .map(a => {
-          // Parse the date for filtering
-          const actDate = typeof a.activityDate === 'string' 
-            ? (a.activityDate.endsWith('Z') ? new Date(a.activityDate) : new Date(a.activityDate + 'Z'))
-            : new Date(a.activityDate);
-          
-          return {
-            id: `apt-${a.id}`,
-            content: a.notificationContent,
-            icon: a.icon,
-            timeAgo: getTimeAgo(a.activityDate),
-            rawDate: actDate,
-            status: a.status
-          };
+      // Filter only for Appointments within the last 14 days
+      const appointmentOnlyActivity = processedAppointments
+        .filter((a) => {
+          const activityDate = new Date(a.rawDate);
+          return activityDate >= fourteenDaysAgo;
         })
-        .filter(item => item.rawDate >= twoWeeksAgo)
-        .sort((a, b) => b.rawDate - a.rawDate);
+        .map((a) => ({
+          id: `apt-${a.id}`,
+          type: "appointment",
+          rawDate: a.rawDate,
+          content: a.notificationContent,
+          icon: a.icon,
+          status: a.status,
+          timeAgo: getTimeAgo(a.rawDate),
+        }));
 
-      setRecentActivity(feed);
+      // Sort and update activity feed using only appointment-based notifications
+      setRecentActivity(appointmentOnlyActivity.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate)));
       
     } catch (error) {
       console.error("Dashboard Load Error:", error);

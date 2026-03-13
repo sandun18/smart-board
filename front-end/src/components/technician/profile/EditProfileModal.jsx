@@ -98,5 +98,4 @@ const EditProfileModal = ({ user, onClose, onUpdate }) => {
   );
 };
 
-
 export default EditProfileModal;
