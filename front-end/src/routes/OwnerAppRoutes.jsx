@@ -20,8 +20,10 @@ import ReportsPage from "../pages/owner/ReportsPage";
 import ReportStudentPage from "../pages/owner/AddReportPage";
 import SubscriptionPlanPage from "../pages/owner/SubscriptionPlanPage";
 import ViewSubscriptionPlansPage from "../pages/owner/ViewSubscriptionPlansPage";
-import ManageSubscriptionPlansPage from "../pages/owner/ManageSubscriptionPlansPage";
 import PaymentPage from "../pages/owner/PaymentPage";
+import OwnerSelectPaymentMethod from "../pages/owner/payments/pay/select-method/OwnerSelectPaymentMethod";
+import OwnerCardPayment from "../pages/owner/payments/pay/card/OwnerCardPayment";
+import OwnerPaymentSuccess from "../pages/owner/payments/pay/success/OwnerPaymentSuccess";
 
 const OwnerAppRoutes = () => {
   return (
@@ -65,13 +67,28 @@ const OwnerAppRoutes = () => {
           />
 
           <Route
+            path="subscriptions"
+            element={<ViewSubscriptionPlansPage />}
+          />
+
+          <Route
             path="subscription-plans"
             element={<ViewSubscriptionPlansPage />}
           />
 
           <Route
-            path="subscription-plans/manage"
-            element={<ManageSubscriptionPlansPage />}
+            path="payments/pay/select-method/:intentId"
+            element={<OwnerSelectPaymentMethod />}
+          />
+
+          <Route
+            path="payments/pay/card/:intentId"
+            element={<OwnerCardPayment />}
+          />
+
+          <Route
+            path="payments/success/payment-success"
+            element={<OwnerPaymentSuccess />}
           />
 
         </Route>

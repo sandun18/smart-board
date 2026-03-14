@@ -1,39 +1,20 @@
 import api from "../api";
 
 /**
- * Owner endpoints for managing subscription plans.
+ * Owner endpoints for browsing and purchasing subscription plans.
  */
-export const getAllPlans = async () => {
-  const response = await api.get("/owner/subscription-plans");
+export const createSubscriptionBuyIntent = async (planId) => {
+  const response = await api.post(`/owner/subscription-plans/${planId}/buy-intent`);
   return response.data;
 };
 
-export const createPlan = async (planData) => {
-  const response = await api.post("/owner/subscription-plans", {
-    name: planData.name,
-    price: Number(planData.price) || 0,
-    durationDays: Number(planData.durationDays) || 0,
-    description: planData.description || "",
-    features: planData.features || [],
-    active: planData.active !== undefined ? planData.active : true,
-  });
+export const buySubscriptionPlan = async (planId) => {
+  const response = await api.post(`/owner/subscription-plans/${planId}/buy`);
   return response.data;
 };
 
-export const updatePlan = async (id, planData) => {
-  const response = await api.put(`/owner/subscription-plans/${id}`, {
-    name: planData.name,
-    price: Number(planData.price) || 0,
-    durationDays: Number(planData.durationDays) || 0,
-    description: planData.description || "",
-    features: planData.features || [],
-    active: planData.active !== undefined ? planData.active : true,
-  });
-  return response.data;
-};
-
-export const deletePlan = async (id) => {
-  const response = await api.delete(`/owner/subscription-plans/${id}`);
+export const getCurrentSubscriptionPlan = async () => {
+  const response = await api.get("/owner/subscription-plans/current");
   return response.data;
 };
 

@@ -137,7 +137,7 @@ public class PaymentService {
                 User student = intentRepo.findById(intentId)
                         .map(PaymentIntent::getStudentId)
                         .flatMap(userRepository::findById)
-                        .orElseThrow(() -> new RuntimeException("Student not found for subscription payment"));
+                        .orElseThrow(() -> new RuntimeException("Payer not found for subscription payment"));
                 student.setSubscription_id(intent.getSubscriptionPlanId().intValue());
                 userRepository.save(student);
             }

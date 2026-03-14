@@ -5,11 +5,9 @@ import com.sbms.sbms_monolith.dto.subscription.SubscriptionPlanResponseDTO;
 import com.sbms.sbms_monolith.service.SubscriptionPlanService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -28,28 +26,20 @@ public class AdminSubscriptionPlanController {
 
     @PostMapping
     public ResponseEntity<SubscriptionPlanResponseDTO> createPlan(@Valid @RequestBody SubscriptionPlanCreateDTO dto) {
-        throw new ResponseStatusException(
-                HttpStatus.FORBIDDEN,
-                "Subscription plan creation has moved to owner panel endpoint: /api/owner/subscription-plans"
-        );
+        return ResponseEntity.ok(subscriptionPlanService.createPlan(dto));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<SubscriptionPlanResponseDTO> updatePlan(
             @PathVariable Long id,
             @Valid @RequestBody SubscriptionPlanCreateDTO dto) {
-        throw new ResponseStatusException(
-            HttpStatus.FORBIDDEN,
-            "Subscription plan update has moved to owner panel endpoint: /api/owner/subscription-plans/{id}"
-        );
+        return ResponseEntity.ok(subscriptionPlanService.updatePlan(id, dto));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePlan(@PathVariable Long id) {
-        throw new ResponseStatusException(
-                HttpStatus.FORBIDDEN,
-                "Subscription plan deletion has moved to owner panel endpoint: /api/owner/subscription-plans/{id}"
-        );
+        subscriptionPlanService.deletePlan(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping

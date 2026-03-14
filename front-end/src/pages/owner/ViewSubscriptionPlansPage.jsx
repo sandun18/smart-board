@@ -2,7 +2,10 @@ import React, { useState, useEffect } from "react";
 import { FaCheck, FaStar, FaRocket, FaCrown } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { getActivePlans } from "../../api/common/subscriptionPlanService";
+import { createSubscriptionBuyIntent, getCurrentSubscriptionPlan } from "../../api/owner/subscriptionPlanService";
 import HeaderBar from "../../components/Owner/common/HeaderBar.jsx";
+import { useNavigate } from "react-router-dom";
+import { getApiErrorMessage } from "../../utils/apiError";
 
 // Map plan index to style config for visual variety
 const planStyles = [
@@ -26,7 +29,7 @@ const planStyles = [
   },
 ];
 
-const PlanCard = ({ plan, styleIndex }) => {
+const PlanCard = ({ plan, styleIndex, isCurrent, isBuying, onSelect }) => {
   const style = planStyles[styleIndex % planStyles.length];
   const IconComponent = style.icon;
 
@@ -72,38 +75,59 @@ const PlanCard = ({ plan, styleIndex }) => {
       </ul>
 
       <button
-        onClick={() => {
-          toast.success(`Selected: ${plan.name}`);
-        }}
+        onClick={() => onSelect(plan)}
+        disabled={isCurrent || isBuying}
         className={`
-          w-full py-4 text-xs font-black uppercase tracking-widest rounded-full text-white shadow-lg transition-all active:scale-95
-          ${style.bgClass} hover:brightness-110
+          w-full py-4 text-xs font-black uppercase tracking-widest rounded-full text-white shadow-lg transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed
+          ${isCurrent ? "bg-gray-500" : `${style.bgClass} hover:brightness-110`}
         `}
       >
-        Select {plan.name}
+        {isCurrent ? "Current Plan" : isBuying ? "Processing..." : `Buy ${plan.name}`}
       </button>
     </div>
   );
 };
 
 export default function ViewSubscriptionPlansPage() {
+  const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [buyingPlanId, setBuyingPlanId] = useState(null);
+  const [currentPlanId, setCurrentPlanId] = useState(0);
 
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const data = await getActivePlans();
+        const [data, currentPlanData] = await Promise.all([
+          getActivePlans(),
+          getCurrentSubscriptionPlan(),
+        ]);
         setPlans(data || []);
+        if (currentPlanData?.id) {
+          setCurrentPlanId(Number(currentPlanData.id));
+        }
       } catch (err) {
         console.error("Failed to fetch plans:", err);
-        toast.error("Failed to load subscription plans.");
+        toast.error(getApiErrorMessage(err, "Failed to load subscription plans."));
       } finally {
         setLoading(false);
       }
     };
     fetchPlans();
   }, []);
+
+  const handleSelectPlan = async (plan) => {
+    try {
+      setBuyingPlanId(plan.id);
+      const intent = await createSubscriptionBuyIntent(plan.id);
+      navigate(`/owner/payments/pay/select-method/${intent.id}?flow=subscription&planId=${plan.id}`);
+    } catch (err) {
+      console.error("Failed to start owner subscription payment:", err);
+      toast.error(getApiErrorMessage(err, "Failed to start subscription payment."));
+    } finally {
+      setBuyingPlanId(null);
+    }
+  };
 
   return (
     <div className="pt-4 space-y-8 min-h-screen pb-12">
@@ -143,7 +167,14 @@ export default function ViewSubscriptionPlansPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {plans.map((plan, index) => (
-              <PlanCard key={plan.id} plan={plan} styleIndex={index} />
+              <PlanCard
+                key={plan.id}
+                plan={plan}
+                styleIndex={index}
+                isCurrent={Number(plan.id) === Number(currentPlanId)}
+                isBuying={Number(plan.id) === Number(buyingPlanId)}
+                onSelect={handleSelectPlan}
+              />
             ))}
           </div>
         )}

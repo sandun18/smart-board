@@ -86,7 +86,7 @@ public class PaymentController {
 
     // 2️ CARD PAYMENT (PAYHERE)
     @PostMapping("/pay/{intentId}")
-    @PreAuthorize("hasRole('STUDENT')")
+        @PreAuthorize("hasAnyRole('STUDENT','OWNER')")
     public ResponseEntity<PaymentResult> pay(
             @PathVariable Long intentId,
             @RequestParam PaymentMethod method

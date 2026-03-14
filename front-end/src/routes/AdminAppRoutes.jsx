@@ -11,6 +11,7 @@ import AdminSettings from "../pages/admin/AdminSettings";
 import AdminThirdParty from "../pages/admin/AdminThirdParty";
 import AdminAnalytics from "../pages/admin/AdminAnalytics";
 import AdminProfile from "../pages/admin/AdminProfile";
+import ManageSubscriptionPlansPage from "../pages/admin/ManageSubscriptionPlansPage";
 
 const AdminAppRoutes = () => {
   return (
@@ -21,6 +22,7 @@ const AdminAppRoutes = () => {
           <Route path="/" index element={<AdminDashboard />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="analytics" element={<AdminAnalytics />} />
+          <Route path="subscription-plans/manage" element={<ManageSubscriptionPlansPage />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="ads" element={<AdminAds />} />
           <Route path="reports" element={<AdminReports />} />

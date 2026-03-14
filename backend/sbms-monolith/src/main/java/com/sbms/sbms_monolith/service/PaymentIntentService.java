@@ -114,6 +114,22 @@ public class PaymentIntentService {
 
     private void validate(CreatePaymentIntentDTO dto) {
 
+        if (dto.getType() == PaymentType.SUBSCRIPTION) {
+            if (dto.getStudentId() == null)
+                throw new RuntimeException("Payer ID required");
+
+            if (dto.getAmount() == null || dto.getAmount().signum() <= 0)
+                throw new RuntimeException("Invalid amount");
+
+            if (dto.getSubscriptionPlanId() == null)
+                throw new RuntimeException("Subscription plan ID required");
+
+            if (dto.getMonthlyBillId() != null)
+                throw new RuntimeException("Subscription payment cannot reference monthly bill");
+
+            return;
+        }
+
         if (dto.getStudentId() == null)
             throw new RuntimeException("Student ID required");
         if (dto.getOwnerId() == null)
@@ -154,16 +170,6 @@ public class PaymentIntentService {
 
         if (dto.getAmount() == null || dto.getAmount().signum() <= 0)
             throw new RuntimeException("Invalid amount");
-
-        if (dto.getType() == PaymentType.SUBSCRIPTION) {
-            if (dto.getSubscriptionPlanId() == null)
-                throw new RuntimeException("Subscription plan ID required");
-
-            if (dto.getMonthlyBillId() != null)
-                throw new RuntimeException("Subscription payment cannot reference monthly bill");
-
-            return;
-        }
 
         if (dto.getOwnerId() == null)
             throw new RuntimeException("Owner ID required");

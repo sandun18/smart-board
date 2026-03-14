@@ -55,10 +55,10 @@ const navItems = [
     key: "Payment",
   },
   {
-    path: "/owner/subscription-plans/manage",
+    path: "/owner/subscription-plans",
     icon: FaCrown,
-    label: "Plan Management",
-    key: "PlanManagement",
+    label: "Subscription Plans",
+    key: "SubscriptionPlans",
   },
   { path: "/owner/reports", icon: FaFileAlt, label: "Reports", key: "Reports" },
 ];

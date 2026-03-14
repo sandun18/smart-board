@@ -7,7 +7,6 @@ import {
   FaCalendarAlt,
   FaBuilding,
   FaCreditCard,
-  FaCrown,
   FaTools,
   FaFlag,
   FaSignOutAlt,
@@ -20,7 +19,6 @@ const navItems = [
   { path: "/student/search-boardings", icon: FaSearch, label: "Search Boardings", key: "Search Boardings" },
   { path: "/student/my-boardings", icon: FaBuilding, label: "My Boardings", key: "My Boardings" },
   { path: "/student/billing", icon: FaCreditCard, label: "Billing & Payments", key: "Billing" },
-  { path: "/student/subscription-plans", icon: FaCrown, label: "Subscription Plans", key: "Subscription Plans" },
   { path: "/student/maintenance", icon: FaTools, label: "Maintenance", key: "Maintenance" },
   { path: "/student/reports", icon: FaFlag, label: "Report Issues", key: "Reports" },
 ];

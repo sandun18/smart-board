@@ -64,7 +64,7 @@ public class SecurityConfig {
 
              //   .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 
-                .requestMatchers("/api/payments/**").hasRole("STUDENT")
+                .requestMatchers("/api/payments/**").hasAnyRole("STUDENT", "OWNER")
 
                 .requestMatchers("/api/owner/**").hasRole("OWNER")
                 .requestMatchers("/api/boardings/owner/**").hasRole("OWNER")
