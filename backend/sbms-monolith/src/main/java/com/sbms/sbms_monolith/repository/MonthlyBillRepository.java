@@ -27,4 +27,8 @@ public interface MonthlyBillRepository extends JpaRepository<MonthlyBill, Long> 
             Long boardingId,
             MonthlyBillStatus status
     );
+
+        long deleteByStudent_Id(Long studentId);
+
+        long deleteByBoarding_IdIn(List<Long> boardingIds);
 }

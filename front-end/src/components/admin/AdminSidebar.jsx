@@ -2,7 +2,6 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   FaHome,
-  FaCreditCard,
   FaSignOutAlt,
   FaUser,
 } from "react-icons/fa";
@@ -14,12 +13,6 @@ const navItems = [
     icon: FaHome,
     label: "Dashboard",
     key: "Dashboard",
-  },
-  {
-    path: "/admin/subscription-plans",
-    icon: FaCreditCard,
-    label: "Subscription Plans",
-    key: "SubscriptionPlans",
   },
 ];
 

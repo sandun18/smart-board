@@ -21,6 +21,10 @@ public class UserMapper {
 
         user.setRole(dto.getRole());
 
+        user.setDob(dto.getDob());
+        user.setEmergencyContact(dto.getEmergencyContact());
+        user.setStudentIdNumber(dto.getStudentIdNumber());
+
         if (dto.getRole() == UserRole.OWNER) {
             user.setNicNumber(dto.getNicNumber());
             user.setAccNo(dto.getAccNo());
@@ -51,6 +55,10 @@ public class UserMapper {
         dto.setGender(user.getGender());
         dto.setRole(user.getRole());
 
+        dto.setDob(user.getDob());
+        dto.setEmergencyContact(user.getEmergencyContact());
+        dto.setStudentIdNumber(user.getStudentIdNumber());
+
         if (user.getRole() == UserRole.OWNER) {
             dto.setVerifiedOwner(user.isVerifiedOwner());
             dto.setSubscription_id(user.getSubscription_id());
@@ -60,6 +68,17 @@ public class UserMapper {
         if (user.getRole() == UserRole.STUDENT) {
             dto.setStudentUniversity(user.getStudentUniversity());
         }
+
+        if (user.getRole() == UserRole.TECHNICIAN) {
+            if (user.getTechnicianAverageRating() != null) {
+                dto.setTechnicianAverageRating(user.getTechnicianAverageRating().doubleValue());
+            } else {
+                dto.setTechnicianAverageRating(0.0);
+            }
+            dto.setTechnicianTotalJobs(user.getTechnicianTotalJobs());
+        }
+
+        dto.setCreatedAt(user.getCreatedAt());
 
         return dto;
     }

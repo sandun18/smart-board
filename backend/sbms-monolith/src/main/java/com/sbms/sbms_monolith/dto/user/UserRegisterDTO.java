@@ -1,11 +1,15 @@
 package com.sbms.sbms_monolith.dto.user;
 
 import com.sbms.sbms_monolith.model.enums.Gender;
+import com.sbms.sbms_monolith.model.enums.MaintenanceIssueType;
 import com.sbms.sbms_monolith.model.enums.UserRole;
 import lombok.Data;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Schema(description = "User registration request payload")
@@ -46,6 +50,9 @@ public class UserRegisterDTO {
     @Schema(example = "https://example.com/image.jpg")
     private String profileImageUrl;
 
+    @Schema(description = "Base64 encoded image string for profile picture update")
+    private String profileImageBase64;
+
     // -------- OWNER FIELDS --------
 
     @Schema(
@@ -62,11 +69,22 @@ public class UserRegisterDTO {
 
     // -------- STUDENT FIELDS --------
 
+    private String dob;
+    private String emergencyContact;
+    private String studentIdNumber;
+
     @Schema(
         description = "University name (required if role = STUDENT)",
         example = "University of Colombo"
     )
     private String studentUniversity;
+
+    // -------- Technician FIELDS --------
+
+    private String province;
+    private String city;
+    private Double basePrice;
+    private List<MaintenanceIssueType> skills;
 }
 
 

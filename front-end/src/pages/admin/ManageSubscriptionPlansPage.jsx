@@ -126,7 +126,7 @@ export default function ManageSubscriptionPlansPage() {
             Subscription Plans
           </h1>
           <p className="text-text-muted">
-            Create, edit, and manage subscription plans for owners and students.
+            Create, edit, and manage subscription plans from the admin panel.
           </p>
         </div>
         <button

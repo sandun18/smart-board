@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { FaStar, FaRocket, FaCrown } from "react-icons/fa";
 import toast from "react-hot-toast";
+<<<<<<< HEAD
 import { getActivePlans } from "../../api/admin/subscriptionPlanService";
 import { createSubscription } from "../../api/owner/subscriptionService";
 import HeaderBar from "../../components/Owner/common/HeaderBar.jsx";
 import { useOwnerAuth } from "../../context/owner/OwnerAuthContext.jsx";
+=======
+import { getActivePlans } from "../../api/common/subscriptionPlanService";
+import { createSubscriptionBuyIntent, getCurrentSubscriptionPlan } from "../../api/owner/subscriptionPlanService";
+import HeaderBar from "../../components/Owner/common/HeaderBar.jsx";
+import { useNavigate } from "react-router-dom";
+import { getApiErrorMessage } from "../../utils/apiError";
+>>>>>>> 3621e99b3aa3481d97ecd01ac84d36ff24145c02
 
 // Map plan index to style config for visual variety
 const planStyles = [
@@ -28,6 +36,7 @@ const planStyles = [
   },
 ];
 
+<<<<<<< HEAD
 const normalizeFeatures = (features) => {
   if (Array.isArray(features)) {
     return features
@@ -81,6 +90,9 @@ const PlanCard = ({
   onSelectPlan,
   isSubmitting,
 }) => {
+=======
+const PlanCard = ({ plan, styleIndex, isCurrent, isBuying, onSelect }) => {
+>>>>>>> 3621e99b3aa3481d97ecd01ac84d36ff24145c02
   const style = planStyles[styleIndex % planStyles.length];
   const IconComponent = style.icon;
   const features = normalizeFeatures(plan?.features);
@@ -140,6 +152,7 @@ const PlanCard = ({
       </ul>
 
       <button
+<<<<<<< HEAD
         onClick={() => onSelectPlan(plan)}
         disabled={isSubmitting || isSelected}
         className={`
@@ -149,12 +162,23 @@ const PlanCard = ({
         `}
       >
         {isSelected ? "Selected" : `Select ${plan.name}`}
+=======
+        onClick={() => onSelect(plan)}
+        disabled={isCurrent || isBuying}
+        className={`
+          w-full py-4 text-xs font-black uppercase tracking-widest rounded-full text-white shadow-lg transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed
+          ${isCurrent ? "bg-gray-500" : `${style.bgClass} hover:brightness-110`}
+        `}
+      >
+        {isCurrent ? "Current Plan" : isBuying ? "Processing..." : `Buy ${plan.name}`}
+>>>>>>> 3621e99b3aa3481d97ecd01ac84d36ff24145c02
       </button>
     </div>
   );
 };
 
 export default function ViewSubscriptionPlansPage() {
+<<<<<<< HEAD
   const { currentOwner } = useOwnerAuth();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -171,15 +195,28 @@ export default function ViewSubscriptionPlansPage() {
     const bestPrice = Number(bestPlan?.price) || 0;
     return currentPrice > bestPrice ? currentPlan?.id ?? idx : bestId;
   }, null);
+=======
+  const navigate = useNavigate();
+  const [plans, setPlans] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [buyingPlanId, setBuyingPlanId] = useState(null);
+  const [currentPlanId, setCurrentPlanId] = useState(0);
+>>>>>>> 3621e99b3aa3481d97ecd01ac84d36ff24145c02
 
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const data = await getActivePlans();
+        const [data, currentPlanData] = await Promise.all([
+          getActivePlans(),
+          getCurrentSubscriptionPlan(),
+        ]);
         setPlans(data || []);
+        if (currentPlanData?.id) {
+          setCurrentPlanId(Number(currentPlanData.id));
+        }
       } catch (err) {
         console.error("Failed to fetch plans:", err);
-        toast.error("Failed to load subscription plans.");
+        toast.error(getApiErrorMessage(err, "Failed to load subscription plans."));
       } finally {
         setLoading(false);
       }
@@ -188,6 +225,7 @@ export default function ViewSubscriptionPlansPage() {
   }, []);
 
   const handleSelectPlan = async (plan) => {
+<<<<<<< HEAD
     const ownerId = currentOwner?.id;
     if (!ownerId) {
       toast.error("Owner account not found. Please log in again.");
@@ -217,6 +255,17 @@ export default function ViewSubscriptionPlansPage() {
       toast.error("Failed to activate subscription");
     } finally {
       setSubmittingPlanId(null);
+=======
+    try {
+      setBuyingPlanId(plan.id);
+      const intent = await createSubscriptionBuyIntent(plan.id);
+      navigate(`/owner/payments/pay/select-method/${intent.id}?flow=subscription&planId=${plan.id}`);
+    } catch (err) {
+      console.error("Failed to start owner subscription payment:", err);
+      toast.error(getApiErrorMessage(err, "Failed to start subscription payment."));
+    } finally {
+      setBuyingPlanId(null);
+>>>>>>> 3621e99b3aa3481d97ecd01ac84d36ff24145c02
     }
   };
 
@@ -254,6 +303,7 @@ export default function ViewSubscriptionPlansPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {plans.map((plan, index) => (
               <PlanCard
+<<<<<<< HEAD
                 key={plan.id ?? index}
                 plan={plan}
                 styleIndex={index}
@@ -261,6 +311,14 @@ export default function ViewSubscriptionPlansPage() {
                 isSelected={selectedPlanId === plan.id}
                 isSubmitting={submittingPlanId === plan.id}
                 onSelectPlan={handleSelectPlan}
+=======
+                key={plan.id}
+                plan={plan}
+                styleIndex={index}
+                isCurrent={Number(plan.id) === Number(currentPlanId)}
+                isBuying={Number(plan.id) === Number(buyingPlanId)}
+                onSelect={handleSelectPlan}
+>>>>>>> 3621e99b3aa3481d97ecd01ac84d36ff24145c02
               />
             ))}
           </div>
@@ -269,3 +327,4 @@ export default function ViewSubscriptionPlansPage() {
     </div>
   );
 }
+

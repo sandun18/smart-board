@@ -13,13 +13,16 @@ import com.sbms.sbms_monolith.dto.payment.PaymentResult;
 import com.sbms.sbms_monolith.model.MonthlyBill;
 import com.sbms.sbms_monolith.model.PaymentIntent;
 import com.sbms.sbms_monolith.model.PaymentTransaction;
+import com.sbms.sbms_monolith.model.User;
 import com.sbms.sbms_monolith.model.enums.MonthlyBillStatus;
 import com.sbms.sbms_monolith.model.enums.PaymentIntentStatus;
 import com.sbms.sbms_monolith.model.enums.PaymentMethod;
 import com.sbms.sbms_monolith.model.enums.PaymentStatus;
+import com.sbms.sbms_monolith.model.enums.PaymentType;
 import com.sbms.sbms_monolith.repository.MonthlyBillRepository;
 import com.sbms.sbms_monolith.repository.PaymentIntentRepository;
 import com.sbms.sbms_monolith.repository.PaymentTransactionRepository;
+import com.sbms.sbms_monolith.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +40,7 @@ public class PaymentService {
     
     private final PaymentReceiptPdfService receiptPdfService;
     private final OwnerWalletService ownerWalletService;
+    private final UserRepository userRepository;
     
     private final S3Service s3Service;
 
@@ -88,11 +92,13 @@ public class PaymentService {
             
             
             
-            ownerWalletService.credit(
+                if (intent.getType() != PaymentType.SUBSCRIPTION) {
+                ownerWalletService.credit(
                     intent.getOwnerId(),
                     netAmount,
                     tx.getTransactionRef()
-            );
+                );
+                }
             
             
             
@@ -125,6 +131,15 @@ public class PaymentService {
                         );
                     }
                 );
+            }
+
+            if (intent.getType() == PaymentType.SUBSCRIPTION && intent.getSubscriptionPlanId() != null) {
+                User student = intentRepo.findById(intentId)
+                        .map(PaymentIntent::getStudentId)
+                        .flatMap(userRepository::findById)
+                        .orElseThrow(() -> new RuntimeException("Payer not found for subscription payment"));
+                student.setSubscription_id(intent.getSubscriptionPlanId().intValue());
+                userRepository.save(student);
             }
 
             

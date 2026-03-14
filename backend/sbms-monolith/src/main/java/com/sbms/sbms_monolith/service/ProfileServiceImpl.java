@@ -79,9 +79,15 @@ public class ProfileServiceImpl implements ProfileService {
             throw new RuntimeException("Unauthorized");
         }
 
-        user.setFullName(dto.getFullName());
-        user.setPhone(dto.getPhone());
-        user.setProfileImageUrl(dto.getProfileImageUrl());
+        if (dto.getFullName() != null) {
+            user.setFullName(dto.getFullName());
+        }
+        if (dto.getPhone() != null) {
+            user.setPhone(dto.getPhone());
+        }
+        if (dto.getProfileImageUrl() != null) {
+            user.setProfileImageUrl(dto.getProfileImageUrl());
+        }
 
         return ProfileResponseDTO.from(user);
     }

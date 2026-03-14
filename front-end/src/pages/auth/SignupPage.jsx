@@ -6,10 +6,12 @@ import { FaArrowLeft } from "react-icons/fa";
 // --- CONTEXT IMPORTS ---
 import { useAuth as useStudentAuth } from "../../context/student/StudentAuthContext";
 import { useOwnerAuth } from "../../context/owner/OwnerAuthContext";
+import { useAuth as useAdminAuth } from "../../context/admin/AdminAuthContext";
 
 // --- COMPONENT IMPORTS ---
 import StudentSignupForm from "../../components/student/auth/StudentSignupForm";
 import OwnerSignupForm from "../../components/Owner/auth/OwnerSignupForm";
+import AdminSignupForm from "../../components/admin/auth/AdminSignupForm";
 
 // --- ASSETS ---
 import backgroundImage from "../../assets/s5.jpg";
@@ -36,6 +38,9 @@ const SignupPage = () => {
   const { signup: signupOwner, verifyRegistration: verifyOwner } =
     useOwnerAuth();
 
+  const { signup: signupAdmin, verifyRegistration: verifyAdmin } =
+    useAdminAuth();
+
   // --- HANDLER: Step 1 (Submit Details) ---
   const handleSignup = async (formData) => {
     setIsLoading(true);
@@ -49,9 +54,12 @@ const SignupPage = () => {
       if (role === "student") {
         // Call Student Context
         result = await signupStudent(formData);
-      } else {
+      } else if (role === "owner") {
         // Call Owner Context
         result = await signupOwner(formData);
+      } else if (role === "admin") {
+        // Call Admin Context
+        result = await signupAdmin(formData);
       }
 
       if (result && result.success) {
@@ -83,11 +91,17 @@ const SignupPage = () => {
         if (result && result.success) {
           navigate("/student", { replace: true });
         }
-      } else {
+      } else if (role === "owner") {
         // Verify Owner
         result = await verifyOwner(emailForOtp, otpCode);
         if (result && result.success) {
           navigate("/owner/dashboard", { replace: true });
+        }
+      } else if (role === "admin") {
+        // Verify Admin
+        result = await verifyAdmin(emailForOtp, otpCode);
+        if (result && result.success) {
+          navigate("/admin/dashboard", { replace: true });
         }
       }
 
@@ -178,6 +192,19 @@ const SignupPage = () => {
               >
                 Owner
               </button>
+              <button
+                onClick={() => {
+                  setRole("admin");
+                  setError("");
+                }}
+                className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all ${
+                  role === "admin"
+                    ? "bg-white text-primary shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Admin
+              </button>
             </div>
           )}
 
@@ -246,8 +273,13 @@ const SignupPage = () => {
                     onSubmit={handleSignup}
                     isLoading={isLoading}
                   />
-                ) : (
+                ) : role === "owner" ? (
                   <OwnerSignupForm
+                    onSubmit={handleSignup}
+                    isLoading={isLoading}
+                  />
+                ) : (
+                  <AdminSignupForm
                     onSubmit={handleSignup}
                     isLoading={isLoading}
                   />

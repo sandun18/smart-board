@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { FaCheck, FaStar, FaRocket, FaCrown } from "react-icons/fa";
 import toast from "react-hot-toast";
-import { getActivePlans } from "../../api/admin/subscriptionPlanService";
+import StudentLayout from "../../components/student/common/StudentLayout";
+import { getActivePlans } from "../../api/common/subscriptionPlanService";
+import {
+  createSubscriptionBuyIntent,
+  getCurrentSubscriptionPlan,
+} from "../../api/student/subscriptionPlanService";
+import { useAuth } from "../../context/student/StudentAuthContext";
+import { useNavigate } from "react-router-dom";
+import { getApiErrorMessage } from "../../utils/apiError";
 
 // Map plan index to style config for visual variety
 const planStyles = [
@@ -25,7 +33,7 @@ const planStyles = [
   },
 ];
 
-const PlanCard = ({ plan, styleIndex }) => {
+const PlanCard = ({ plan, styleIndex, isCurrent, isBuying, onBuy }) => {
   const style = planStyles[styleIndex % planStyles.length];
   const IconComponent = style.icon;
 
@@ -65,44 +73,72 @@ const PlanCard = ({ plan, styleIndex }) => {
           </li>
         ))}
       </ul>
+
+      <button
+        onClick={() => onBuy(plan)}
+        disabled={isCurrent || isBuying}
+        className={`
+          w-full py-3 text-xs font-black uppercase tracking-widest rounded-full text-white shadow-lg transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed
+          ${isCurrent ? "bg-gray-500" : `${style.bgClass} hover:brightness-110`}
+        `}
+      >
+        {isCurrent ? "Current Plan" : isBuying ? "Processing..." : "Buy Plan"}
+      </button>
     </div>
   );
 };
 
 export default function StudentSubscriptionPlansPage() {
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [buyingPlanId, setBuyingPlanId] = useState(null);
+  const [currentPlanId, setCurrentPlanId] = useState(
+    Number(currentUser?.subscription_id || 0)
+  );
 
   useEffect(() => {
-    const fetchPlans = async () => {
+    const loadData = async () => {
       try {
-        const data = await getActivePlans();
-        setPlans(data || []);
+        const [plansData, currentPlanData] = await Promise.all([
+          getActivePlans(),
+          getCurrentSubscriptionPlan(),
+        ]);
+        setPlans(plansData || []);
+        if (currentPlanData?.id) {
+          setCurrentPlanId(Number(currentPlanData.id));
+        }
       } catch (err) {
-        console.error("Failed to fetch plans:", err);
-        toast.error("Failed to load subscription plans.");
+        console.error("Failed to load subscription data:", err);
+        toast.error(getApiErrorMessage(err, "Failed to load subscription plans."));
       } finally {
         setLoading(false);
       }
     };
-    fetchPlans();
+    loadData();
   }, []);
 
-  return (
-    <div className="min-h-screen bg-background-light">
-      {/* Header */}
-      <header className="bg-white shadow-custom mb-8">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <h1 className="text-primary text-2xl md:text-3xl font-bold mb-1">
-            Subscription Plans
-          </h1>
-          <p className="text-text-muted">
-            View available boarding subscription plans.
-          </p>
-        </div>
-      </header>
+  const handleBuyPlan = async (plan) => {
+    try {
+      setBuyingPlanId(plan.id);
+      const intent = await createSubscriptionBuyIntent(plan.id);
+      navigate(
+        `/student/payments/pay/select-method/${intent.id}?flow=subscription&planId=${plan.id}`
+      );
+    } catch (err) {
+      console.error("Failed to buy plan:", err);
+      toast.error(getApiErrorMessage(err, "Failed to start subscription payment."));
+    } finally {
+      setBuyingPlanId(null);
+    }
+  };
 
-      {/* Plans Grid */}
+  return (
+    <StudentLayout
+      title="Subscription Plans"
+      subtitle="View available boarding subscription plans."
+    >
       <section className="px-4 max-w-7xl mx-auto pb-12">
         {loading ? (
           <div className="flex justify-center py-20">
@@ -120,11 +156,19 @@ export default function StudentSubscriptionPlansPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {plans.map((plan, index) => (
-              <PlanCard key={plan.id} plan={plan} styleIndex={index} />
+              <PlanCard
+                key={plan.id}
+                plan={plan}
+                styleIndex={index}
+                isCurrent={Number(plan.id) === Number(currentPlanId)}
+                isBuying={Number(plan.id) === Number(buyingPlanId)}
+                onBuy={handleBuyPlan}
+              />
             ))}
           </div>
         )}
       </section>
-    </div>
+    </StudentLayout>
   );
 }
+

@@ -1,12 +1,17 @@
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import api from "../../../../../api/api";
 import StudentLayout from "../../../../../components/student/common/StudentLayout";
+import toast from "react-hot-toast";
+import { getApiErrorMessage } from "../../../../../utils/apiError";
 
 const CardPayment = () => {
   const { intentId } = useParams();
+  const [params] = useSearchParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const flow = params.get("flow") || "billing";
+  const planId = params.get("planId");
 
   const payNow = async () => {
     try {
@@ -24,10 +29,12 @@ const CardPayment = () => {
           amount: res.data.amount,
           ref: res.data.transactionId,
           receiptUrl: res.data.receiptUrl || "",
+          sourceFlow: flow,
+          planId,
         },
       });
-    } catch {
-      alert("Payment Failed. Please try again.");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Payment failed. Please try again."));
     } finally {
       setLoading(false);
     }

@@ -13,24 +13,58 @@ export const StudentAuthProvider = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       const token = localStorage.getItem("token");
+      const refreshToken = localStorage.getItem("refresh_token");
       const savedUser = localStorage.getItem("user_data");
+
+      if (refreshToken) {
+        try {
+          const response = await api.post("/auth/refresh", {
+            refreshToken,
+          });
+
+          if (response.status === 200) {
+            const { token: newToken, refreshToken: newRefreshToken, user } = response.data;
+
+            if (user.role === "STUDENT") {
+              localStorage.setItem("token", newToken);
+              localStorage.setItem("refresh_token", newRefreshToken);
+              localStorage.setItem("user_data", JSON.stringify(user));
+
+              setCurrentUser(user);
+              setIsAuthenticated(true);
+              setIsLoading(false);
+              return;
+            }
+
+            // Valid non-student session should not be treated as student auth.
+            setCurrentUser(null);
+            setIsAuthenticated(false);
+            setIsLoading(false);
+            return;
+          }
+        } catch (error) {
+          console.error("Student auto-login failed:", error);
+          if (error.response?.status === 401 || error.response?.status === 403) {
+            localStorage.clear();
+          }
+        }
+      }
 
       if (token && savedUser) {
         try {
           const user = JSON.parse(savedUser);
 
-          // 🔒 Security Check: Ensure the saved user is a STUDENT
           if (user.role === "STUDENT") {
             setCurrentUser(user);
             setIsAuthenticated(true);
           } else {
-            // Just don't authenticate this context, but DO NOT wipe storage.
-            // It might be an Owner logged in!
+            setCurrentUser(null);
             setIsAuthenticated(false);
           }
         } catch (e) {
           console.error("Failed to parse user data", e);
-          localStorage.clear();
+          localStorage.removeItem("user_data");
+          setIsAuthenticated(false);
         }
       }
       setIsLoading(false);
@@ -141,11 +175,13 @@ export const StudentAuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.clear();
+    localStorage.removeItem("token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user_data");
     setCurrentUser(null);
     setIsAuthenticated(false);
-    window.location.href = "/login";
-  };
+    window.location.href = "/login"; 
+};
 
   // --- 3. PROFILE UPDATE ACTIONS (Connects Sidebar/Header/Profile) ---
 
@@ -170,39 +206,40 @@ export const StudentAuthProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       console.error("Profile Update Failed:", error);
-      return { success: false, message: "Failed to update profile." };
+      return { success: false, message: error.message || "Failed to update profile." };
     }
   };
 
   // Update Avatar
   const updateAvatar = async (fileOrUrl) => {
     try {
-      let newAvatarUrl;
+      if (!currentUser?.id) return { success: false };
+
+      let responseUser;
 
       // Check if it's a file (for upload) or a string (gallery selection)
-      if (typeof fileOrUrl === "object") {
+      if (typeof fileOrUrl === "object" && fileOrUrl instanceof File) {
         // It's a File object, upload to backend
-        const response = await StudentService.updateAvatar(
+        responseUser = await StudentService.uploadAvatar(
           currentUser.id,
           fileOrUrl,
         );
-        newAvatarUrl = response.avatarUrl; // Assuming backend returns { avatarUrl: "..." }
       } else {
-        // It's a string from the gallery, just update profile directly
-        newAvatarUrl = fileOrUrl;
-        // Optional: Call updateProfile here to save the gallery URL choice to backend
-        await updateProfile({ ...currentUser, avatar: newAvatarUrl });
+        // It's a string from the gallery, update profile directly
+        responseUser = await StudentService.updateProfile(currentUser.id, {
+          profileImageUrl: fileOrUrl,
+        });
       }
 
-      // Update State
-      const newUserState = { ...currentUser, avatar: newAvatarUrl };
-      localStorage.setItem("user_data", JSON.stringify(newUserState));
-      setCurrentUser(newUserState);
+      // Merge response with current state
+      const newUser = { ...currentUser, ...responseUser };
+      localStorage.setItem("user_data", JSON.stringify(newUser));
+      setCurrentUser(newUser);
 
       return { success: true };
     } catch (error) {
       console.error("Avatar Update Failed", error);
-      return { success: false };
+      return { success: false, message: error.message };
     }
   };
 

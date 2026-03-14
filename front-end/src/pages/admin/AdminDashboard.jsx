@@ -1,33 +1,58 @@
-import React from "react";
-import { useAdminAuth } from "../../context/admin/AdminAuthContext.jsx";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import StatsGrid from '../../components/admin/dashboard/StatsGrid';
+import PendingApprovals from '../../components/admin/dashboard/PendingApprovals';
+import RecentReports from '../../components/admin/dashboard/RecentReports';
+import QuickActions from '../../components/admin/dashboard/QuickActions';
+import ActivityFeed from '../../components/admin/dashboard/ActivityFeed';
+import Toast from '../../components/admin/common/Toast';
+import { useDashboard } from '../../hooks/admin/useDashboard';
 
-export default function AdminDashboard() {
-  const { currentAdmin } = useAdminAuth();
+const AdminDashboard = () => {
+  const navigate = useNavigate();
+  const { 
+    stats, approvals, recentReports, activities, loading, toast,
+    handleApproveAd, handleRejectAd 
+  } = useDashboard();
 
-  const getDisplayName = () => {
-    if (!currentAdmin?.fullName) return "Admin";
-    return currentAdmin.fullName;
+  const handleNavigate = (page) => {
+    navigate(`/admin/${page}`);
   };
 
   return (
-    <div className="pt-4 space-y-8 min-h-screen pb-12">
-      <header className="flex flex-col md:flex-row justify-between items-center mb-8 bg-white/70 backdrop-blur-sm p-6 rounded-large shadow-custom transition-all duration-500 hover:shadow-xl">
-        <div className="text-center md:text-left mb-4 md:mb-0">
-          <h1 className="text-primary text-2xl md:text-3xl font-bold mb-1">
-            Welcome back, {getDisplayName()}!
-          </h1>
-          <p className="text-text-muted">Admin Control Panel</p>
+    <>
+      {toast && <Toast message={toast.message} type={toast.type} />}
+      
+      {loading ? (
+        <div className="flex justify-center p-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
-      </header>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="bg-white rounded-large shadow-custom p-6 border-t-4 border-accent">
-          <h3 className="text-lg font-bold text-text mb-2">Subscription Plans</h3>
-          <p className="text-text-muted text-sm">
-            Manage subscription plans that owners and students can view and subscribe to.
-          </p>
-        </div>
-      </div>
-    </div>
+      ) : (
+        <>
+          <StatsGrid stats={stats} />
+          
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+            <div className="flex flex-col gap-6">
+              <PendingApprovals 
+                approvals={approvals} 
+                onApprove={handleApproveAd} 
+                onReject={handleRejectAd}
+                onNavigate={handleNavigate} 
+              />
+              <RecentReports 
+                reports={recentReports} 
+                onNavigate={handleNavigate} 
+              />
+            </div>
+            <div className="flex flex-col gap-6">
+              <QuickActions onNavigate={handleNavigate} />
+              <ActivityFeed activities={activities} />
+            </div>
+          </div>
+        </>
+      )}
+    </>
   );
-}
+};
+
+export default AdminDashboard;

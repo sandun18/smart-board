@@ -86,7 +86,7 @@ public class PaymentController {
 
     // 2️ CARD PAYMENT (PAYHERE)
     @PostMapping("/pay/{intentId}")
-    @PreAuthorize("hasRole('STUDENT')")
+        @PreAuthorize("hasAnyRole('STUDENT','OWNER')")
     public ResponseEntity<PaymentResult> pay(
             @PathVariable Long intentId,
             @RequestParam PaymentMethod method
@@ -123,18 +123,22 @@ public class PaymentController {
     public ResponseEntity<String> submitBankSlipUrl(
             @PathVariable Long intentId,
             @RequestParam String slipUrl,
-            @RequestHeader("X-User-Id") Long studentId
+            Authentication authentication   //  use JWT like your other endpoints
     ) {
+        // Get student from JWT instead of custom header
+        String email = authentication.getName();
+        User student = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         PaymentIntent intent = paymentIntentRepo.findById(intentId)
                 .orElseThrow(() -> new RuntimeException("Payment intent not found"));
 
-        // 🔒 OWNERSHIP
-        if (!intent.getStudentId().equals(studentId)) {
+        // Ownership check using JWT-derived ID
+        if (!intent.getStudentId().equals(student.getId())) {
             throw new RuntimeException("Unauthorized access");
         }
 
         bankSlipPaymentService.attachSlipUrl(intentId, slipUrl);
-
         return ResponseEntity.ok("SLIP_SUBMITTED");
     }
 

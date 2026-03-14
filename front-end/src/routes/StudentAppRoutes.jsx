@@ -15,7 +15,6 @@ import BillingPage from "../pages/student/BillingPage";
 import MaintenancePage from "../pages/student/MaintenancePage";
 import ReportsPage from "../pages/student/ReportsPage";
 import ProfilePage from "../pages/student/ProfilePage";
-import SubscriptionPlansPage from "../pages/student/SubscriptionPlansPage";
 
 // Payment Pages
 import SelectPaymentMethod from "../pages/student/payments/pay/select-method/SelectPaymentMethod";
@@ -39,7 +38,6 @@ const StudentAppRoutes = () => {
       <Route path="maintenance" element={<ProtectedRoute><MaintenancePage /></ProtectedRoute>} />
       <Route path="reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
       <Route path="profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-      <Route path="subscription-plans" element={<ProtectedRoute><SubscriptionPlansPage /></ProtectedRoute>} />
       <Route path="/chats" element={<ChatList />} />
       <Route path="/chat/:roomId" element={<ChatRoom />} />
       {/* ==================== PAYMENT ROUTES (PROTECTED) ==================== */}

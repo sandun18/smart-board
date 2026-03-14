@@ -16,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -51,9 +52,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String role = jwtService.extractRole(jwt); // 
 
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            List<GrantedAuthority> authorities;
 
-            List<GrantedAuthority> authorities =
-                    List.of(new SimpleGrantedAuthority("ROLE_" + role));
+            if (role != null && !role.isBlank()) {
+                String normalizedRole = role.trim().toUpperCase(Locale.ROOT);
+                if (normalizedRole.startsWith("ROLE_")) {
+                    normalizedRole = normalizedRole.substring(5);
+                }
+                authorities = List.of(new SimpleGrantedAuthority("ROLE_" + normalizedRole));
+            } else {
+                // Fallback for legacy tokens that don't carry a role claim.
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                authorities = userDetails.getAuthorities().stream()
+                        .map(a -> (GrantedAuthority) new SimpleGrantedAuthority(a.getAuthority()))
+                        .toList();
+            }
 
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(

@@ -7,6 +7,7 @@ import {
   FaCalendarAlt,
   FaBuilding,
   FaCogs,
+  FaCrown,
   FaCreditCard,
   FaFileAlt,
   FaSignOutAlt,
@@ -58,6 +59,12 @@ const navItems = [
     icon: FaCreditCard,
     label: "Payment",
     key: "Payment",
+  },
+  {
+    path: "/owner/subscription-plans",
+    icon: FaCrown,
+    label: "Subscription Plans",
+    key: "SubscriptionPlans",
   },
   { path: "/owner/reports", icon: FaFileAlt, label: "Reports", key: "Reports" },
 ];

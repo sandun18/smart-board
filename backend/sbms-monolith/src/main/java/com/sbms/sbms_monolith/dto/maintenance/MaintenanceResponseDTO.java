@@ -1,4 +1,5 @@
 package com.sbms.sbms_monolith.dto.maintenance;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -23,11 +24,29 @@ public class MaintenanceResponseDTO {
     private List<String> imageUrls;
 
     private MaintenanceStatus status;
+    private BigDecimal technicianFee;
     private MaintenanceUrgency maintenanceUrgency;
 
 
     private String studentNote;
     private String ownerNote;
+    private Long ownerId;
+    private String ownerPhone;
+
+    private int ownerRating;
+    private String ownerComment;
+
+    private Double latitude;
+    private Double longitude;
+
+    private String technicianName;
+    private Long technicianId;
+    private String ownerName;
+    private String boardingAddress;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private Integer rating;
+    private String reviewComment;
 }

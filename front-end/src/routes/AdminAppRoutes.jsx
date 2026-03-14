@@ -1,9 +1,16 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import AdminProtectedRoute from "../components/admin/AdminProtectedRoute.jsx";
-import AdminLayout from "../layouts/AdminLayout";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import AdminProtectedRoute from "../components/admin/common/AdminProtectedRoute.jsx";
+import AdminLayout from "../components/admin/layout/AdminLayout.jsx";
 
 // Admin Pages
 import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminUsers from "../pages/admin/AdminUsers";
+import AdminAds from "../pages/admin/AdminAds";
+import AdminReports from "../pages/admin/AdminReports";
+import AdminSettings from "../pages/admin/AdminSettings";
+import AdminThirdParty from "../pages/admin/AdminThirdParty";
+import AdminAnalytics from "../pages/admin/AdminAnalytics";
+import AdminProfile from "../pages/admin/AdminProfile";
 import ManageSubscriptionPlansPage from "../pages/admin/ManageSubscriptionPlansPage";
 
 const AdminAppRoutes = () => {
@@ -11,17 +18,21 @@ const AdminAppRoutes = () => {
     <Routes>
       {/* ==================== PROTECTED ADMIN ROUTES ==================== */}
       <Route element={<AdminProtectedRoute />}>
-        <Route path="/" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
+        <Route element={<AdminLayout />}>
+          <Route path="/" index element={<AdminDashboard />} />
           <Route path="dashboard" element={<AdminDashboard />} />
-          <Route
-            path="subscription-plans"
-            element={<ManageSubscriptionPlansPage />}
-          />
+          <Route path="analytics" element={<AdminAnalytics />} />
+          <Route path="subscription-plans/manage" element={<ManageSubscriptionPlansPage />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="ads" element={<AdminAds />} />
+          <Route path="reports" element={<AdminReports />} />
+          <Route path="settings" element={<AdminSettings />} />
+          <Route path="thirdparty" element={<AdminThirdParty />} />
+                  <Route path="profile" element={<AdminProfile />} />
         </Route>
       </Route>
 
-      {/* ==================== FALLBACK ==================== */}
+      {/* ==================== FALLBACK ROUTE ==================== */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
