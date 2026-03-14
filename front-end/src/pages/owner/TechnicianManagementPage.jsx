@@ -46,38 +46,51 @@ const TechnicianManagementPage = () => {
   }, [id]);
 
   const fetchInitialData = async () => {
-  try {
-    setLoading(true);
-    const allRequests = await getOwnerMaintenanceRequests(); //
-    const currentReq = allRequests.find((r) => r.id === parseInt(id));
+    try {
+      setLoading(true);
+      const allRequests = await getOwnerMaintenanceRequests();
+      const currentReq = allRequests.find((r) => r.id === parseInt(id));
 
-    if (!currentReq) {
-      toast.error("Request not found");
-      return navigate("/owner/maintenance");
+      if (!currentReq) {
+        toast.error("Request not found");
+        return navigate("/owner/maintenance");
+      }
+
+      // 1. Get correct Tech ID (Already fixed)
+      const techId = currentReq.technicianId || currentReq.technician?.id;
+
+      setRequest({
+        ...currentReq,
+        technicianId: techId
+      });
+
+      // 2. Map Title to Backend Enum Skill for search
+      if (currentReq.status?.toLowerCase() === "pending") {
+        const title = (currentReq.title || "").toUpperCase();
+        let mappedSkill = "OTHER";
+
+        // Simple keyword mapping logic
+        if (title.includes("PLUMB") || title.includes("TAP") || title.includes("LEAK") || title.includes("WATER")) {
+          mappedSkill = "PLUMBING";
+        } else if (title.includes("ELECT") || title.includes("LIGHT") || title.includes("POWER") || title.includes("WIRE")) {
+          mappedSkill = "ELECTRICAL";
+        } else if (title.includes("FURNIT") || title.includes("BED") || title.includes("CHAIR") || title.includes("TABLE")) {
+          mappedSkill = "FURNITURE";
+        } else if (title.includes("APPLIANCE") || title.includes("FRIDGE") || title.includes("AC") || title.includes("FAN")) {
+          mappedSkill = "APPLIANCE";
+        } else if (title.includes("CLEANING") || title.includes("WASH")) {
+          mappedSkill = "CLEANING";
+        }
+
+        // Trigger search with the Mapped Enum
+        handleSearch(mappedSkill);
+      }
+    } catch (err) {
+      toast.error("Error loading page data");
+    } finally {
+      setLoading(false);
     }
-
-    // DEBUG: Log the full object to see where the ID is hidden
-    console.log("Full Request Data:", currentReq);
-
-    // Some backends nest the ID inside a 'technician' object
-    const techId = currentReq.technicianId || currentReq.technician?.id; //
-
-    setRequest({
-      ...currentReq,
-      technicianId: techId // ✅ Explicitly set this
-    });
-
-    
-
-    if (currentReq.status?.toLowerCase() === "pending") {
-      handleSearch(currentReq.title);
-    }
-  } catch (err) {
-    toast.error("Error loading page data");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleSearch = async (skill) => {
     setSearchLoading(true);
