@@ -4,7 +4,7 @@ import AdminLayout from "../layouts/AdminLayout";
 
 // Admin Pages
 import AdminDashboard from "../pages/admin/AdminDashboard";
-import ManageSubscriptionPlansPage from "../pages/admin/ManageSubscriptionPlansPage";
+import SubscriptionPlansMovedPage from "../pages/admin/SubscriptionPlansMovedPage";
 
 const AdminAppRoutes = () => {
   return (
@@ -16,7 +16,7 @@ const AdminAppRoutes = () => {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route
             path="subscription-plans"
-            element={<ManageSubscriptionPlansPage />}
+            element={<SubscriptionPlansMovedPage />}
           />
         </Route>
       </Route>

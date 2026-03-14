@@ -20,6 +20,7 @@ import ReportsPage from "../pages/owner/ReportsPage";
 import ReportStudentPage from "../pages/owner/AddReportPage";
 import SubscriptionPlanPage from "../pages/owner/SubscriptionPlanPage";
 import ViewSubscriptionPlansPage from "../pages/owner/ViewSubscriptionPlansPage";
+import ManageSubscriptionPlansPage from "../pages/owner/ManageSubscriptionPlansPage";
 import PaymentPage from "../pages/owner/PaymentPage";
 
 const OwnerAppRoutes = () => {
@@ -66,6 +67,11 @@ const OwnerAppRoutes = () => {
           <Route
             path="subscription-plans"
             element={<ViewSubscriptionPlansPage />}
+          />
+
+          <Route
+            path="subscription-plans/manage"
+            element={<ManageSubscriptionPlansPage />}
           />
 
         </Route>
