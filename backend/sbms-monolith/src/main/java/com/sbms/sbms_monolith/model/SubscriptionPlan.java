@@ -6,9 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @Table(name = "subscription_plan")
 @Data
@@ -22,17 +19,15 @@ public class SubscriptionPlan extends BaseEntity {
     @Column(nullable = false)
     private Double price;
 
-    @Column(nullable = false)
-    private Integer durationDays;
+    @Column(length = 50)
+    private String duration;
+
+    @Column(columnDefinition = "TEXT")
+    private String features;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @ElementCollection
-    @CollectionTable(name = "subscription_plan_features", joinColumns = @JoinColumn(name = "plan_id"))
-    @Column(name = "feature")
-    private List<String> features = new ArrayList<>();
-
-    @Column(nullable = false)
-    private boolean active = true;
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private Boolean active = true;
 }

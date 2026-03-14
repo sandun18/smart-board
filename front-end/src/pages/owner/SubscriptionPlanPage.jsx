@@ -1,51 +1,24 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import HeaderBar from "../../components/Owner/common/HeaderBar.jsx";
-import { ownerData } from "../../data/mockData";
+import toast from "react-hot-toast";
+import { getActivePlans } from "../../api/admin/subscriptionPlanService";
+import { createSubscription } from "../../api/owner/subscriptionService";
 
-const subscriptionPlans = [
+const planStyles = [
   {
-    id: 1,
-    name: "Basic Boost",
-    price: 500,
-    duration: "7 Days",
-    benefits: [
-      "Top placement for 1 week",
-      "2x view impressions",
-      "Email summary report",
-    ],
     colorClass: "text-info",
     bgClass: "bg-info",
     borderClass: "border-info",
     icon: "fas fa-star",
   },
   {
-    id: 2,
-    name: "Pro Visibility",
-    price: 1800,
-    duration: "30 Days",
-    benefits: [
-      "Highest placement for 1 month",
-      "5x view impressions",
-      "Detailed dashboard",
-      "Homepage rotation",
-    ],
     colorClass: "text-accent",
     bgClass: "bg-accent",
     borderClass: "border-accent",
     icon: "fas fa-rocket",
   },
   {
-    id: 3,
-    name: "Max Occupancy",
-    price: 4500,
-    duration: "90 Days",
-    benefits: [
-      "Guaranteed top placement",
-      "Unlimited impressions",
-      "Email blast",
-      "Priority support",
-    ],
     colorClass: "text-primary",
     bgClass: "bg-primary",
     borderClass: "border-primary",
@@ -53,42 +26,37 @@ const subscriptionPlans = [
   },
 ];
 
-const PlanCard = ({ plan, adId }) => {
+const PlanCard = ({ plan, adId, styleIndex, onSelect }) => {
   const navigate = useNavigate();
 
-  const handleSelectPlan = () => {
+  const style = planStyles[styleIndex % planStyles.length];
+
+  const handleSelectPlan = async () => {
     const confirmation = window.confirm(
       `Confirm purchase of the ${
         plan.name
       } for LKR ${plan.price.toLocaleString()}?`
     );
 
-    if (confirmation) {
-      const boostedAds = JSON.parse(
-        sessionStorage.getItem("boostedAds") || "[]"
-      );
-      if (!boostedAds.includes(adId)) {
-        boostedAds.push(adId);
-        sessionStorage.setItem("boostedAds", JSON.stringify(boostedAds));
-      }
-      alert(`SUCCESS: Ad #${adId} is now boosted!`);
-      navigate("/ownerLayout/myAds");
-    }
+    if (!confirmation) return;
+
+    await onSelect(plan);
+    navigate("/owner/my-ads");
   };
 
   return (
     <div
       className={`
       relative flex flex-col p-8 rounded-report bg-card-bg shadow-custom border-t-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl
-      ${plan.borderClass}
+      ${style.borderClass}
     `}
     >
       <div className="flex justify-between items-start mb-6">
         <h3 className="text-xl font-black text-text uppercase tracking-tight">
           {plan.name}
         </h3>
-        <div className={`p-3 rounded-2xl bg-light ${plan.colorClass}`}>
-          <i className={`${plan.icon} text-2xl`}></i>
+        <div className={`p-3 rounded-2xl bg-light ${style.colorClass}`}>
+          <i className={`${style.icon} text-2xl`}></i>
         </div>
       </div>
 
@@ -102,15 +70,15 @@ const PlanCard = ({ plan, adId }) => {
       </div>
 
       <ul className="flex-1 space-y-4 mb-8">
-        {plan.benefits.map((benefit, index) => (
+        {plan.features && plan.features.split(',').map((feature, index) => (
           <li
             key={index}
             className="flex items-start gap-3 text-sm font-medium text-text"
           >
             <i
-              className={`fas fa-check-circle mt-1 shrink-0 ${plan.colorClass}`}
+              className={`fas fa-check-circle mt-1 shrink-0 ${style.colorClass}`}
             ></i>
-            <span>{benefit}</span>
+            <span>{feature.trim()}</span>
           </li>
         ))}
       </ul>
@@ -119,7 +87,7 @@ const PlanCard = ({ plan, adId }) => {
         onClick={handleSelectPlan}
         className={`
           w-full py-4 text-xs font-black uppercase tracking-widest rounded-full text-white shadow-lg transition-all active:scale-95
-          ${plan.bgClass} hover:brightness-110
+          ${style.bgClass} hover:brightness-110
         `}
       >
         Activate {plan.name}
@@ -131,9 +99,51 @@ const PlanCard = ({ plan, adId }) => {
 export default function SubscriptionPlanPage() {
   const { adId } = useParams();
   const navigate = useNavigate();
+  const [plans, setPlans] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [subscribing, setSubscribing] = useState(false);
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const data = await getActivePlans();
+        setPlans(data || []);
+      } catch (err) {
+        console.error("Failed to fetch plans:", err);
+        toast.error("Failed to load subscription plans.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlans();
+  }, []);
+
+  const handleSelectPlan = async (plan) => {
+    try {
+      setSubscribing(true);
+      
+      // Create subscription payload
+      const payload = {
+        subscriptionPlanId: plan.id,
+        adId: adId, // Include the ad ID for boosting
+      };
+      
+      await createSubscription(payload);
+      toast.success("Subscription activated successfully");
+      
+      // Navigate back to ads page after successful subscription
+      navigate("/owner/myAds");
+    } catch (err) {
+      console.error("Failed to activate subscription:", err);
+      toast.error("Failed to activate subscription");
+    } finally {
+      setSubscribing(false);
+    }
+  };
 
   if (!adId) {
-    setTimeout(() => navigate("/ownerLayout/myAds"), 0);
+    setTimeout(() => navigate("/owner/my-ads"), 0);
     return null;
   }
 
@@ -145,8 +155,6 @@ export default function SubscriptionPlanPage() {
         navBtnText="Back to My Ads"
         navBtnPath="/owner/myAds"
       />
-        
-
       {/* Why Boost Section */}
       <section className="mx-4 p-8 rounded-report bg-card-bg shadow-custom border border-light text-center max-w-4xl lg:mx-auto">
         <h2 className="text-xl font-black text-accent uppercase tracking-widest mb-3">
@@ -160,11 +168,33 @@ export default function SubscriptionPlanPage() {
 
       {/* Subscription Grid */}
       <section className="px-4 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {subscriptionPlans.map((plan) => (
-            <PlanCard key={plan.id} plan={plan} adId={adId} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <div className="w-12 h-12 border-4 rounded-full border-primary border-t-transparent animate-spin"></div>
+          </div>
+        ) : plans.length === 0 ? (
+          <div className="text-center py-20 bg-card-bg rounded-report shadow-custom">
+            <p className="text-text-muted text-lg">
+              No subscription plans available at the moment.
+            </p>
+            <p className="text-text-muted text-sm mt-2">
+              Please check back later.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {plans.map((plan, index) => (
+              <PlanCard
+                key={plan.id}
+                plan={plan}
+                adId={adId}
+                styleIndex={index}
+                onSelect={handleSelectPlan}
+                disabled={subscribing}
+              />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

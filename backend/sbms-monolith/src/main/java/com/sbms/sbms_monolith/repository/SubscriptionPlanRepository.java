@@ -9,9 +9,7 @@ import java.util.List;
 @Repository
 public interface SubscriptionPlanRepository extends JpaRepository<SubscriptionPlan, Long> {
 
-    List<SubscriptionPlan> findByActiveTrue();
-
-    List<SubscriptionPlan> findByActiveTrueOrderByCreatedAtDesc();
-
     List<SubscriptionPlan> findAllByOrderByCreatedAtDesc();
+
+    List<SubscriptionPlan> findAllByActiveTrueOrderByCreatedAtDesc();
 }

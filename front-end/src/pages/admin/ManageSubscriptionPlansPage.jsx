@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaPlus, FaEdit, FaTrash, FaTimes, FaCheck, FaBan } from "react-icons/fa";
+import { FaPlus, FaEdit, FaTrash, FaTimes } from "react-icons/fa";
 import toast from "react-hot-toast";
 import {
   getAllPlans,
@@ -11,10 +11,8 @@ import {
 const emptyForm = {
   name: "",
   price: "",
-  durationDays: "",
-  description: "",
-  featuresText: "",
-  active: true,
+  duration: "",
+  features: "",
 };
 
 export default function ManageSubscriptionPlansPage() {
@@ -56,10 +54,8 @@ export default function ManageSubscriptionPlansPage() {
     setForm({
       name: plan.name || "",
       price: plan.price?.toString() || "",
-      durationDays: plan.durationDays?.toString() || "",
-      description: plan.description || "",
-      featuresText: (plan.features || []).join(", "),
-      active: plan.active,
+      duration: plan.duration || "",
+      features: plan.features || "",
     });
     setShowModal(true);
   };
@@ -76,23 +72,16 @@ export default function ManageSubscriptionPlansPage() {
       toast.error("Price must be greater than 0.");
       return;
     }
-    if (!form.durationDays || Number(form.durationDays) <= 0) {
-      toast.error("Duration must be greater than 0 days.");
+    if (!form.duration.trim()) {
+      toast.error("Duration is required.");
       return;
     }
-
-    const features = form.featuresText
-      .split(",")
-      .map((f) => f.trim())
-      .filter((f) => f.length > 0);
 
     const planData = {
       name: form.name.trim(),
       price: Number(form.price),
-      durationDays: Number(form.durationDays),
-      description: form.description.trim(),
-      features,
-      active: form.active,
+      duration: form.duration.trim(),
+      features: form.features.trim(),
     };
 
     try {
@@ -166,25 +155,10 @@ export default function ManageSubscriptionPlansPage() {
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className={`relative flex flex-col p-6 rounded-large bg-white shadow-custom border-t-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
-                plan.active ? "border-accent" : "border-gray-300 opacity-75"
-              }`}
+              className="relative flex flex-col p-6 rounded-large bg-white shadow-custom border-t-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border-accent"
             >
-              {/* Status Badge */}
-              <div className="absolute top-4 right-4">
-                {plan.active ? (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
-                    <FaCheck className="text-[10px]" /> Active
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-500">
-                    <FaBan className="text-[10px]" /> Inactive
-                  </span>
-                )}
-              </div>
-
               {/* Plan Name */}
-              <h3 className="text-xl font-black text-text uppercase tracking-tight mb-2 pr-20">
+              <h3 className="text-xl font-black text-text uppercase tracking-tight mb-2">
                 {plan.name}
               </h3>
 
@@ -194,29 +168,17 @@ export default function ManageSubscriptionPlansPage() {
                   LKR {plan.price?.toLocaleString()}
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted">
-                  per {plan.durationDays} Days
+                  per {plan.duration}
                 </span>
               </div>
 
-              {/* Description */}
-              {plan.description && (
-                <p className="text-sm text-text-muted mb-4 italic">
-                  {plan.description}
-                </p>
-              )}
-
               {/* Features */}
-              <ul className="flex-1 space-y-2 mb-6">
-                {(plan.features || []).map((feature, index) => (
-                  <li
-                    key={index}
-                    className="flex items-start gap-2 text-sm font-medium text-text"
-                  >
-                    <FaCheck className="mt-1 shrink-0 text-accent text-xs" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
+              {plan.features && (
+                <div className="flex-1 mb-6">
+                  <h4 className="text-sm font-semibold text-text mb-2">Features:</h4>
+                  <p className="text-sm text-text-muted">{plan.features}</p>
+                </div>
+              )}
 
               {/* Meta Info */}
               <div className="text-[10px] text-text-muted mb-4 space-y-1">
@@ -295,72 +257,34 @@ export default function ManageSubscriptionPlansPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-text mb-1.5">
-                    Duration (Days) <span className="text-red-500">*</span>
+                    Duration <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="number"
-                    value={form.durationDays}
+                    type="text"
+                    value={form.duration}
                     onChange={(e) =>
-                      setForm({ ...form, durationDays: e.target.value })
+                      setForm({ ...form, duration: e.target.value })
                     }
-                    placeholder="30"
-                    min="1"
+                    placeholder="30 Days"
                     className="w-full px-4 py-2.5 bg-background-light border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
                   />
                 </div>
               </div>
 
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-semibold text-text mb-1.5">
-                  Description
-                </label>
-                <textarea
-                  value={form.description}
-                  onChange={(e) =>
-                    setForm({ ...form, description: e.target.value })
-                  }
-                  placeholder="Brief description of this plan..."
-                  rows={3}
-                  className="w-full px-4 py-2.5 bg-background-light border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
-                />
-              </div>
-
               {/* Features */}
               <div>
                 <label className="block text-sm font-semibold text-text mb-1.5">
-                  Features{" "}
-                  <span className="text-text-muted font-normal">
-                    (comma separated)
-                  </span>
+                  Features
                 </label>
                 <textarea
-                  value={form.featuresText}
+                  value={form.features}
                   onChange={(e) =>
-                    setForm({ ...form, featuresText: e.target.value })
+                    setForm({ ...form, features: e.target.value })
                   }
                   placeholder="Top placement for 1 week, 2x view impressions, Email summary report"
-                  rows={3}
+                  rows={4}
                   className="w-full px-4 py-2.5 bg-background-light border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
                 />
-              </div>
-
-              {/* Active Toggle */}
-              <div className="flex items-center gap-3">
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={form.active}
-                    onChange={(e) =>
-                      setForm({ ...form, active: e.target.checked })
-                    }
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
-                </label>
-                <span className="text-sm font-medium text-text">
-                  {form.active ? "Active" : "Inactive"}
-                </span>
               </div>
 
               {/* Submit Button */}

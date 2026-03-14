@@ -71,7 +71,7 @@ public class SubscriptionPlanService {
      * Get only active subscription plans (For owners/students)
      */
     public List<SubscriptionPlanResponseDTO> getActivePlans() {
-        return subscriptionPlanRepository.findByActiveTrueOrderByCreatedAtDesc()
+        return subscriptionPlanRepository.findAllByActiveTrueOrderByCreatedAtDesc()
                 .stream()
                 .map(subscriptionPlanMapper::toResponseDto)
                 .collect(Collectors.toList());

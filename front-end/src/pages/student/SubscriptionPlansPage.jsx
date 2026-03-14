@@ -50,22 +50,18 @@ const PlanCard = ({ plan, styleIndex }) => {
           LKR {plan.price?.toLocaleString()}
         </div>
         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted">
-          per {plan.durationDays} Days
+          per {plan.duration}
         </span>
       </div>
 
-      {plan.description && (
-        <p className="text-sm text-text-muted mb-4 italic">{plan.description}</p>
-      )}
-
       <ul className="flex-1 space-y-4 mb-8">
-        {(plan.features || []).map((feature, index) => (
+        {plan.features && plan.features.split(',').map((feature, index) => (
           <li
             key={index}
             className="flex items-start gap-3 text-sm font-medium text-text"
           >
             <FaCheck className={`mt-1 shrink-0 ${style.colorClass}`} />
-            <span>{feature}</span>
+            <span>{feature.trim()}</span>
           </li>
         ))}
       </ul>

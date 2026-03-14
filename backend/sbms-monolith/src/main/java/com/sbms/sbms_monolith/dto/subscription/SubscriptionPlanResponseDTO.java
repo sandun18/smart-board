@@ -12,7 +12,7 @@ public class SubscriptionPlanResponseDTO {
     private Integer durationDays;
     private String description;
     private List<String> features;
-    private boolean active;
+    private Boolean active;
     private String createdAt;
     private String updatedAt;
 }

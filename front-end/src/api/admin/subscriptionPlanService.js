@@ -12,10 +12,8 @@ export const createPlan = async (planData) => {
   const response = await api.post("/admin/subscription-plans", {
     name: planData.name,
     price: Number(planData.price) || 0,
-    durationDays: Number(planData.durationDays) || 0,
-    description: planData.description || "",
-    features: planData.features || [],
-    active: planData.active !== undefined ? planData.active : true,
+    duration: planData.duration || "",
+    features: planData.features || "",
   });
   return response.data;
 };
@@ -24,10 +22,8 @@ export const updatePlan = async (id, planData) => {
   const response = await api.put(`/admin/subscription-plans/${id}`, {
     name: planData.name,
     price: Number(planData.price) || 0,
-    durationDays: Number(planData.durationDays) || 0,
-    description: planData.description || "",
-    features: planData.features || [],
-    active: planData.active !== undefined ? planData.active : true,
+    duration: planData.duration || "",
+    features: planData.features || "",
   });
   return response.data;
 };

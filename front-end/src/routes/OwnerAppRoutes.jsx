@@ -36,6 +36,7 @@ const OwnerAppRoutes = () => {
           <Route path="myAds" element={<MyAdsPage />} />
           <Route path="myAds/createAd" element={<CreateAdPage />} />
           <Route path="myAds/editAd/:adId" element={<EditAdPage />} />
+          <Route path="my-ads" element={<MyAdsPage />} />
 
           <Route path="appointments" element={<AppointmentsPage />} />
           <Route path="registrations" element={<RegistrationPage />} />
