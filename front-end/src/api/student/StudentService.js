@@ -159,17 +159,21 @@ const StudentService = {
   },
 
   downloadReceipt: async (regId) => {
-    const response = await api.get(`/registrations/${regId}/receipt`, {
-      responseType: "blob",
-    });
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `Receipt_${regId}.pdf`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  },
+  try {
+    const response = await api.get(`/registrations/${regId}/dashboard`);
+
+    const agreementUrl = response.data.agreementPdfPath;
+
+    if (!agreementUrl) {
+      alert("Agreement not available");
+      return;
+    }
+
+    window.open(agreementUrl, "_blank"); // opens PDF in new tab
+  } catch (error) {
+    console.error("Failed to open agreement", error);
+  }
+},
 
   requestLeave: async (studentId, regId) => {
     const response = await api.post(
