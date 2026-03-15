@@ -7,7 +7,7 @@ import SockJS from "sockjs-client";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 const WS_BASE = API_BASE.replace(/\/api\/?$/, "");
-const WS_URL = `${WS_BASE}/ws`;
+const WS_URL = `${WS_BASE}/backend-ws`;
 
 console.log("🔥 CHAT SOCKET FILE LOADED");
 console.log("🔗 WS URL =", WS_URL);
