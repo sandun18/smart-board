@@ -282,6 +282,7 @@ public class RegistrationService {
             dto.setOwnerProfileImage(reg.getBoarding().getOwner().getProfileImageUrl());
             dto.setOwnerEmail(reg.getBoarding().getOwner().getEmail());
             dto.setOwnerPhone(reg.getBoarding().getOwner().getPhone());
+            dto.setAgreementPdfPath(reg.getAgreementPdfPath());
         }
 
         dto.setAverageRating(avgRating);
