@@ -13,12 +13,7 @@ const AdminLayout = () => {
   
   const navItems = [
     { id: 'dashboard', label: 'Home', icon: 'fa-tachometer-alt' },
-    { id: 'users', label: 'Users', icon: 'fa-users' },
-    { id: 'subscription-plans/manage', label: 'Plans', icon: 'fa-crown' },
-    { id: 'ads', label: 'Ads', icon: 'fa-home' },
-    { id: 'reports', label: 'Reports', icon: 'fa-flag' },
-    { id: 'analytics', label: 'Analytics', icon: 'fa-chart-bar' },
-    { id: 'settings', label: 'Settings', icon: 'fa-cogs' },
+    { id: 'subscription-plans', label: 'Plans', icon: 'fa-crown' },
   ];
 
   const handleNavigate = (page) => {

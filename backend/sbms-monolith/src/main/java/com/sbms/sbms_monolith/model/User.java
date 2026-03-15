@@ -47,7 +47,13 @@ public class User extends BaseEntity implements UserDetails {
 
     // Owner
     private boolean verifiedOwner = true;
-    private int subscription_id;
+    @Column(name = "subscription_id")
+    private Integer subscription_id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subscription_id", insertable = false, updatable = false)
+    private SubscriptionPlan subscriptionPlan;
+
     private String accNo;
 
     // TECHNICIAN SPECIFIC FIELDS

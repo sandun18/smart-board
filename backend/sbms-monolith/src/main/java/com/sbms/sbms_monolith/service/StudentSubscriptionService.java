@@ -34,7 +34,7 @@ public class StudentSubscriptionService {
         SubscriptionPlan plan = subscriptionPlanRepository.findById(planId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Subscription plan not found"));
 
-        if (!plan.isActive()) {
+        if (!Boolean.TRUE.equals(plan.getActive())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selected plan is inactive");
         }
 
@@ -56,7 +56,7 @@ public class StudentSubscriptionService {
         SubscriptionPlan plan = subscriptionPlanRepository.findById(planId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Subscription plan not found"));
 
-        if (!plan.isActive()) {
+        if (!Boolean.TRUE.equals(plan.getActive())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selected plan is inactive");
         }
 
@@ -71,7 +71,7 @@ public class StudentSubscriptionService {
         User student = userRepository.findByEmail(studentEmail)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
 
-        if (student.getSubscription_id() <= 0) {
+        if (student.getSubscription_id() == null || student.getSubscription_id() <= 0) {
             return null;
         }
 

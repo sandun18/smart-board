@@ -57,16 +57,25 @@ const Header = ({
             </div>
 
             {/* LOGOUT BUTTON - MOBILE ONLY (lg:hidden) */}
-            <button 
+            <div
+              role="button"
+              tabIndex={0}
               onClick={(e) => {
                 e.stopPropagation();
                 onLogout();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onLogout();
+                }
               }}
               className="lg:hidden ml-1 w-8 h-8 flex items-center justify-center rounded-full bg-red-alert/10 text-red-alert active:bg-red-alert active:text-white transition-all"
               title="Logout"
             >
               <i className="fas fa-sign-out-alt text-xs"></i>
-            </button>
+            </div>
           </button>
       </div>
           {/* Desktop Profile Dropdown Menu */}

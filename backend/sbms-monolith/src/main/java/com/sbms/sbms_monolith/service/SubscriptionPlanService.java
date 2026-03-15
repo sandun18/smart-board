@@ -1,9 +1,14 @@
 package com.sbms.sbms_monolith.service;
 
+import com.sbms.sbms_monolith.common.SubscriptionPlanInUseException;
 import com.sbms.sbms_monolith.dto.subscription.SubscriptionPlanCreateDTO;
 import com.sbms.sbms_monolith.dto.subscription.SubscriptionPlanResponseDTO;
 import com.sbms.sbms_monolith.mapper.SubscriptionPlanMapper;
+import com.sbms.sbms_monolith.model.Subscription;
 import com.sbms.sbms_monolith.model.SubscriptionPlan;
+import com.sbms.sbms_monolith.model.enums.OwnerSubscriptionStatus;
+import com.sbms.sbms_monolith.repository.OwnerSubscriptionRepository;
+import com.sbms.sbms_monolith.repository.SubscriptionRepository;
 import com.sbms.sbms_monolith.repository.SubscriptionPlanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +24,8 @@ import java.util.stream.Collectors;
 public class SubscriptionPlanService {
 
     private final SubscriptionPlanRepository subscriptionPlanRepository;
+    private final OwnerSubscriptionRepository ownerSubscriptionRepository;
+    private final SubscriptionRepository subscriptionRepository;
     private final SubscriptionPlanMapper subscriptionPlanMapper;
 
     /**
@@ -46,15 +53,42 @@ public class SubscriptionPlanService {
     }
 
     /**
-     * Delete a subscription plan (Admin only)
+     * Delete a subscription plan (Admin only).
+     * Allowed only if there are no ACTIVE subscriptions that reference the plan.
      */
     @Transactional
     public void deletePlan(Long id) {
-        if (!subscriptionPlanRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Subscription plan not found with id: " + id);
+        SubscriptionPlan plan = subscriptionPlanRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Subscription plan not found with id: " + id));
+
+        long activeOwnerSubscriptionCount = ownerSubscriptionRepository
+                .countByPlanIdAndStatus(id, OwnerSubscriptionStatus.ACTIVE);
+        long activeSubscriptionCount = subscriptionRepository
+                .countBySubscriptionPlanIdAndStatus(id, Subscription.SubscriptionStatus.ACTIVE);
+
+        if (activeOwnerSubscriptionCount > 0 || activeSubscriptionCount > 0) {
+            throw new SubscriptionPlanInUseException(id, activeOwnerSubscriptionCount, activeSubscriptionCount);
         }
-        subscriptionPlanRepository.deleteById(id);
+
+        subscriptionPlanRepository.delete(plan);
+    }
+
+    /**
+     * Deactivate a subscription plan (Admin only).
+     */
+    @Transactional
+    public SubscriptionPlanResponseDTO deactivatePlan(Long id) {
+        SubscriptionPlan plan = subscriptionPlanRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Subscription plan not found with id: " + id));
+
+        if (!Boolean.FALSE.equals(plan.getActive())) {
+            plan.setActive(false);
+            plan = subscriptionPlanRepository.save(plan);
+        }
+
+        return subscriptionPlanMapper.toResponseDto(plan);
     }
 
     /**

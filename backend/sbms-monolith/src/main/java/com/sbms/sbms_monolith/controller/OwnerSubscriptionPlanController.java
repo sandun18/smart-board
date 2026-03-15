@@ -2,12 +2,15 @@ package com.sbms.sbms_monolith.controller;
 
 import com.sbms.sbms_monolith.dto.subscription.SubscriptionPlanCreateDTO;
 import com.sbms.sbms_monolith.dto.subscription.SubscriptionPlanResponseDTO;
+import com.sbms.sbms_monolith.model.PaymentIntent;
+import com.sbms.sbms_monolith.service.OwnerSubscriptionService;
 import com.sbms.sbms_monolith.service.SubscriptionPlanService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -23,6 +26,7 @@ import java.util.List;
 public class OwnerSubscriptionPlanController {
 
     private final SubscriptionPlanService subscriptionPlanService;
+    private final OwnerSubscriptionService ownerSubscriptionService;
 
     @PostMapping
     public ResponseEntity<SubscriptionPlanResponseDTO> createPlan(@Valid @RequestBody SubscriptionPlanCreateDTO dto) {
@@ -58,5 +62,23 @@ public class OwnerSubscriptionPlanController {
     @GetMapping("/{id}")
     public ResponseEntity<SubscriptionPlanResponseDTO> getPlanById(@PathVariable Long id) {
         return ResponseEntity.ok(subscriptionPlanService.getPlanById(id));
+    }
+
+    @PostMapping("/{planId}/buy-intent")
+    public ResponseEntity<PaymentIntent> createBuyIntent(
+            @PathVariable Long planId,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(ownerSubscriptionService.createBuyPlanIntent(email, planId));
+    }
+
+    @PostMapping("/{planId}/buy")
+    public ResponseEntity<SubscriptionPlanResponseDTO> buyPlan(
+            @PathVariable Long planId,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(ownerSubscriptionService.buyPlan(email, planId));
     }
 }

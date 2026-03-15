@@ -6,13 +6,7 @@ const Sidebar = ({ onNavigate, activePage, onLogout, onBrandClick, badgeCounts =
   const { currentUser } = useAuth();
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: 'fa-tachometer-alt' },
-    { id: 'users', label: 'User Management', icon: 'fa-users' },
-    { id: 'subscription-plans/manage', label: 'Subscription Plans', icon: 'fa-crown' },
-    { id: 'ads', label: 'Ad Approvals', icon: 'fa-home', badge: badgeCounts.ads || 0 },
-    { id: 'reports', label: 'Reports', icon: 'fa-flag', badge: badgeCounts.reports || 0 },
-    { id: 'analytics', label: 'Analytics', icon: 'fa-chart-bar' },
-    { id: 'thirdparty', label: 'Third-Party Ads', icon: 'fa-ad', badge: badgeCounts.thirdparty || 0 },
-    { id: 'settings', label: 'System Settings', icon: 'fa-cogs' },
+    { id: 'subscription-plans', label: 'Subscription Plans', icon: 'fa-crown' },
   ];
 
   return (

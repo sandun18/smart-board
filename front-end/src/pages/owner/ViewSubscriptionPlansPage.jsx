@@ -1,20 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { FaStar, FaRocket, FaCrown } from "react-icons/fa";
 import toast from "react-hot-toast";
-<<<<<<< HEAD
 import { getActivePlans } from "../../api/admin/subscriptionPlanService";
-import { createSubscription } from "../../api/owner/subscriptionService";
 import HeaderBar from "../../components/Owner/common/HeaderBar.jsx";
-import { useOwnerAuth } from "../../context/owner/OwnerAuthContext.jsx";
-=======
-import { getActivePlans } from "../../api/common/subscriptionPlanService";
-import { createSubscriptionBuyIntent, getCurrentSubscriptionPlan } from "../../api/owner/subscriptionPlanService";
-import HeaderBar from "../../components/Owner/common/HeaderBar.jsx";
-import { useNavigate } from "react-router-dom";
-import { getApiErrorMessage } from "../../utils/apiError";
->>>>>>> 3621e99b3aa3481d97ecd01ac84d36ff24145c02
+import PaymentModal from "../../components/Owner/subscription/PaymentModal.jsx";
 
-// Map plan index to style config for visual variety
 const planStyles = [
   {
     colorClass: "text-info",
@@ -36,11 +26,12 @@ const planStyles = [
   },
 ];
 
-<<<<<<< HEAD
 const normalizeFeatures = (features) => {
   if (Array.isArray(features)) {
     return features
-      .map((item) => (typeof item === "string" ? item.trim() : String(item).trim()))
+      .map((item) =>
+        typeof item === "string" ? item.trim() : String(item).trim(),
+      )
       .filter(Boolean);
   }
 
@@ -90,9 +81,6 @@ const PlanCard = ({
   onSelectPlan,
   isSubmitting,
 }) => {
-=======
-const PlanCard = ({ plan, styleIndex, isCurrent, isBuying, onSelect }) => {
->>>>>>> 3621e99b3aa3481d97ecd01ac84d36ff24145c02
   const style = planStyles[styleIndex % planStyles.length];
   const IconComponent = style.icon;
   const features = normalizeFeatures(plan?.features);
@@ -122,7 +110,9 @@ const PlanCard = ({ plan, styleIndex, isCurrent, isBuying, onSelect }) => {
         <h3 className="text-xl font-black text-text uppercase tracking-tight">
           {plan.name}
         </h3>
-        <div className={`p-3 rounded-2xl bg-background-light ${style.colorClass}`}>
+        <div
+          className={`p-3 rounded-2xl bg-background-light ${style.colorClass}`}
+        >
           <IconComponent className="text-2xl" />
         </div>
       </div>
@@ -142,7 +132,9 @@ const PlanCard = ({ plan, styleIndex, isCurrent, isBuying, onSelect }) => {
             key={index}
             className="flex items-start gap-3 text-sm font-medium text-text"
           >
-            <span className={`mt-[2px] shrink-0 font-bold ${style.colorClass}`}>✔</span>
+            <span className={`mt-[2px] shrink-0 font-bold ${style.colorClass}`}>
+              ✔
+            </span>
             <span>{feature}</span>
           </li>
         ))}
@@ -152,7 +144,6 @@ const PlanCard = ({ plan, styleIndex, isCurrent, isBuying, onSelect }) => {
       </ul>
 
       <button
-<<<<<<< HEAD
         onClick={() => onSelectPlan(plan)}
         disabled={isSubmitting || isSelected}
         className={`
@@ -162,28 +153,17 @@ const PlanCard = ({ plan, styleIndex, isCurrent, isBuying, onSelect }) => {
         `}
       >
         {isSelected ? "Selected" : `Select ${plan.name}`}
-=======
-        onClick={() => onSelect(plan)}
-        disabled={isCurrent || isBuying}
-        className={`
-          w-full py-4 text-xs font-black uppercase tracking-widest rounded-full text-white shadow-lg transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed
-          ${isCurrent ? "bg-gray-500" : `${style.bgClass} hover:brightness-110`}
-        `}
-      >
-        {isCurrent ? "Current Plan" : isBuying ? "Processing..." : `Buy ${plan.name}`}
->>>>>>> 3621e99b3aa3481d97ecd01ac84d36ff24145c02
       </button>
     </div>
   );
 };
 
 export default function ViewSubscriptionPlansPage() {
-<<<<<<< HEAD
-  const { currentOwner } = useOwnerAuth();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlanId, setSelectedPlanId] = useState(null);
   const [submittingPlanId, setSubmittingPlanId] = useState(null);
+  const [activePaymentPlan, setActivePaymentPlan] = useState(null);
 
   const mostPopularPlanId = plans.reduce((bestId, currentPlan, idx) => {
     const currentPrice = Number(currentPlan?.price) || 0;
@@ -195,28 +175,15 @@ export default function ViewSubscriptionPlansPage() {
     const bestPrice = Number(bestPlan?.price) || 0;
     return currentPrice > bestPrice ? currentPlan?.id ?? idx : bestId;
   }, null);
-=======
-  const navigate = useNavigate();
-  const [plans, setPlans] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [buyingPlanId, setBuyingPlanId] = useState(null);
-  const [currentPlanId, setCurrentPlanId] = useState(0);
->>>>>>> 3621e99b3aa3481d97ecd01ac84d36ff24145c02
 
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const [data, currentPlanData] = await Promise.all([
-          getActivePlans(),
-          getCurrentSubscriptionPlan(),
-        ]);
+        const data = await getActivePlans();
         setPlans(data || []);
-        if (currentPlanData?.id) {
-          setCurrentPlanId(Number(currentPlanData.id));
-        }
       } catch (err) {
         console.error("Failed to fetch plans:", err);
-        toast.error(getApiErrorMessage(err, "Failed to load subscription plans."));
+        toast.error("Failed to load subscription plans.");
       } finally {
         setLoading(false);
       }
@@ -224,49 +191,31 @@ export default function ViewSubscriptionPlansPage() {
     fetchPlans();
   }, []);
 
-  const handleSelectPlan = async (plan) => {
-<<<<<<< HEAD
-    const ownerId = currentOwner?.id;
+  const handleSelectPlan = (plan) => {
+    // Get current user data from localStorage
+    const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
+    const ownerId = userData.id;
+    
     if (!ownerId) {
       toast.error("Owner account not found. Please log in again.");
       return;
     }
 
-    const now = new Date();
-    const durationDays = getDurationDays(plan);
-    const endDate = new Date(now);
-    endDate.setDate(endDate.getDate() + durationDays);
+    setSubmittingPlanId(plan.id);
+    setActivePaymentPlan(plan);
+  };
 
-    const payload = {
-      ownerId,
-      planId: plan.id,
-      startDate: toIsoString(now),
-      endDate: toIsoString(endDate),
-      status: "ACTIVE",
-    };
+  const handlePaymentClose = () => {
+    setActivePaymentPlan(null);
+    setSubmittingPlanId(null);
+  };
 
-    try {
-      setSubmittingPlanId(plan.id);
-      await createSubscription(payload);
-      setSelectedPlanId(plan.id);
-      toast.success("Subscription activated successfully");
-    } catch (error) {
-      console.error("Failed to create subscription:", error);
-      toast.error("Failed to activate subscription");
-    } finally {
-      setSubmittingPlanId(null);
-=======
-    try {
-      setBuyingPlanId(plan.id);
-      const intent = await createSubscriptionBuyIntent(plan.id);
-      navigate(`/owner/payments/pay/select-method/${intent.id}?flow=subscription&planId=${plan.id}`);
-    } catch (err) {
-      console.error("Failed to start owner subscription payment:", err);
-      toast.error(getApiErrorMessage(err, "Failed to start subscription payment."));
-    } finally {
-      setBuyingPlanId(null);
->>>>>>> 3621e99b3aa3481d97ecd01ac84d36ff24145c02
+  const handlePaymentSuccess = () => {
+    if (activePaymentPlan?.id !== undefined && activePaymentPlan?.id !== null) {
+      setSelectedPlanId(activePaymentPlan.id);
     }
+    toast.success("Subscription activated successfully");
+    handlePaymentClose();
   };
 
   return (
@@ -278,7 +227,6 @@ export default function ViewSubscriptionPlansPage() {
         navBtnPath="/owner/dashboard"
       />
 
-      {/* Why Subscribe Section */}
       <section className="mx-4 p-8 rounded-large bg-white shadow-custom border border-gray-100 text-center max-w-4xl lg:mx-auto">
         <h2 className="text-xl font-black text-accent uppercase tracking-widest mb-3">
           Why Subscribe?
@@ -289,7 +237,6 @@ export default function ViewSubscriptionPlansPage() {
         </p>
       </section>
 
-      {/* Plans Grid */}
       <section className="px-4 max-w-7xl mx-auto">
         {loading ? (
           <div className="text-center py-20 text-lg font-semibold text-text-muted">
@@ -303,28 +250,26 @@ export default function ViewSubscriptionPlansPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {plans.map((plan, index) => (
               <PlanCard
-<<<<<<< HEAD
                 key={plan.id ?? index}
                 plan={plan}
                 styleIndex={index}
                 isPopular={(plan.id ?? index) === mostPopularPlanId}
                 isSelected={selectedPlanId === plan.id}
-                isSubmitting={submittingPlanId === plan.id}
+                isSubmitting={submittingPlanId === plan.id || Boolean(activePaymentPlan)}
                 onSelectPlan={handleSelectPlan}
-=======
-                key={plan.id}
-                plan={plan}
-                styleIndex={index}
-                isCurrent={Number(plan.id) === Number(currentPlanId)}
-                isBuying={Number(plan.id) === Number(buyingPlanId)}
-                onSelect={handleSelectPlan}
->>>>>>> 3621e99b3aa3481d97ecd01ac84d36ff24145c02
               />
             ))}
           </div>
         )}
       </section>
+
+      {activePaymentPlan && (
+        <PaymentModal
+          plan={activePaymentPlan}
+          onClose={handlePaymentClose}
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
     </div>
   );
 }
-

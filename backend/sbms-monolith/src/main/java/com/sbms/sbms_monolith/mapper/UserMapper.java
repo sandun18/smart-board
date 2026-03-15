@@ -30,7 +30,7 @@ public class UserMapper {
             user.setAccNo(dto.getAccNo());
 
             user.setVerifiedOwner(false);
-            user.setSubscription_id(0);
+            user.setSubscription_id(null);
         }
 
         if (dto.getRole() == UserRole.STUDENT) {

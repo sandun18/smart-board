@@ -20,6 +20,7 @@ import ReportsPage from "../pages/owner/ReportsPage";
 import ReportStudentPage from "../pages/owner/AddReportPage";
 import SubscriptionPlanPage from "../pages/owner/SubscriptionPlanPage";
 import ViewSubscriptionPlansPage from "../pages/owner/ViewSubscriptionPlansPage";
+import MySubscriptionsPage from "../pages/owner/MySubscriptionsPage";
 import PaymentPage from "../pages/owner/PaymentPage";
 import OwnerSelectPaymentMethod from "../pages/owner/payments/pay/select-method/OwnerSelectPaymentMethod";
 import OwnerCardPayment from "../pages/owner/payments/pay/card/OwnerCardPayment";
@@ -75,6 +76,11 @@ const OwnerAppRoutes = () => {
           <Route
             path="subscription-plans"
             element={<ViewSubscriptionPlansPage />}
+          />
+
+          <Route
+            path="my-subscriptions"
+            element={<MySubscriptionsPage />}
           />
 
           <Route

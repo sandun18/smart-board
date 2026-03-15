@@ -14,4 +14,10 @@ public interface OwnerSubscriptionRepository extends JpaRepository<OwnerSubscrip
     Optional<OwnerSubscription> findByOwnerIdAndStatus(Long ownerId, OwnerSubscriptionStatus status);
 
     boolean existsByOwnerIdAndStatus(Long ownerId, OwnerSubscriptionStatus status);
+
+    boolean existsByPlanId(Long planId);
+
+    long countByPlanId(Long planId);
+
+    long countByPlanIdAndStatus(Long planId, OwnerSubscriptionStatus status);
 }
