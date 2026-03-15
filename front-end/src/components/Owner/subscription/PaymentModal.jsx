@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FaCreditCard, FaLock, FaTimes, FaCheckCircle } from "react-icons/fa";
 import toast from "react-hot-toast";
 import api from "../../../api/api";
-import { createSubscriptionBuyIntent, buySubscriptionPlan } from "../../../api/owner/subscriptionPlanService";
+import { createSubscriptionBuyIntent, subscribeToPlan } from "../../../api/owner/subscriptionPlanService";
 
 const STEPS = { CARD_FORM: "CARD_FORM", PROCESSING: "PROCESSING", SUCCESS: "SUCCESS" };
 
@@ -50,8 +50,8 @@ export default function PaymentModal({ plan, onClose, onSuccess }) {
         params: { method: "CARD" },
       });
 
-      // Step 3: Activate subscription via buyPlan
-      await buySubscriptionPlan(plan.id);
+      // Step 3: Activate subscription only after successful payment.
+      await subscribeToPlan(plan.id, true);
 
       setResult({
         amount: payRes.data.amount,

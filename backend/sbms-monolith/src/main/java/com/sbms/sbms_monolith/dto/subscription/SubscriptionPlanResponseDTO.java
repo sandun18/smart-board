@@ -10,6 +10,8 @@ public class SubscriptionPlanResponseDTO {
     private String name;
     private Double price;
     private Integer durationDays;
+    private Integer maxAds;
+    private Boolean boostAllowed;
     private String description;
     private List<String> features;
     private Boolean active;

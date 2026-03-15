@@ -12,7 +12,7 @@ public class OwnerSubscriptionMapper {
             return null;
         }
 
-        int durationDays = parseDurationToDays(entity.getPlan().getDuration());
+        int durationDays = resolveDurationDays(entity);
 
         return OwnerSubscriptionResponseDTO.builder()
                 .id(entity.getId())
@@ -22,6 +22,8 @@ public class OwnerSubscriptionMapper {
                 .planName(entity.getPlan().getName())
                 .planPrice(entity.getPlan().getPrice())
                 .planDurationDays(durationDays)
+                .maxAds(entity.getPlan().getMaxAds() != null ? entity.getPlan().getMaxAds() : 1)
+                .boostAllowed(entity.getPlan().getBoostAllowed() != null ? entity.getPlan().getBoostAllowed() : false)
                 .startDate(entity.getStartDate())
                 .endDate(entity.getEndDate())
                 .status(entity.getStatus().name())
@@ -49,5 +51,12 @@ public class OwnerSubscriptionMapper {
         } catch (NumberFormatException ex) {
             return 30;
         }
+    }
+
+    private int resolveDurationDays(OwnerSubscription entity) {
+        if (entity.getPlan().getDurationDays() != null && entity.getPlan().getDurationDays() > 0) {
+            return entity.getPlan().getDurationDays();
+        }
+        return parseDurationToDays(entity.getPlan().getDuration());
     }
 }

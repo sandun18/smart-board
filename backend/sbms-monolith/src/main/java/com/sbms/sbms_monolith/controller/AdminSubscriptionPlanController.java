@@ -21,7 +21,7 @@ import java.util.Map;
  * and method-level @PreAuthorize.
  */
 @RestController
-@RequestMapping("/api/admin/subscription-plans")
+@RequestMapping({"/api/admin/subscription-plans", "/api/admin/plans"})
 @PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class AdminSubscriptionPlanController {

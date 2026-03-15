@@ -2,13 +2,16 @@ package com.sbms.sbms_monolith.service;
 
 import com.sbms.sbms_monolith.dto.boarding.*;
 import com.sbms.sbms_monolith.model.Boarding;
+import com.sbms.sbms_monolith.model.OwnerSubscription;
 import com.sbms.sbms_monolith.model.User;
 import com.sbms.sbms_monolith.model.enums.Status;
 import com.sbms.sbms_monolith.repository.BoardingRepository;
 import com.sbms.sbms_monolith.repository.UserRepository;
 import com.sbms.sbms_monolith.mapper.BoardingMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,10 +26,29 @@ public class OwnerBoardingService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private OwnerSubscriptionService ownerSubscriptionService;
+
     public OwnerBoardingResponseDTO create(Long ownerId, BoardingCreateDTO dto) {
 
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> new RuntimeException("Owner not found"));
+
+        if (!ownerSubscriptionService.hasActiveSubscriptionForOwner(ownerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "An active subscription is required before publishing ads.");
+        }
+
+        OwnerSubscription activeSubscription = ownerSubscriptionService.getCurrentActiveSubscriptionEntity(ownerId);
+        if (activeSubscription != null && activeSubscription.getPlan() != null
+                && activeSubscription.getPlan().getMaxAds() != null
+                && activeSubscription.getPlan().getMaxAds() > 0) {
+            long usedAds = boardingRepository.countByOwner_Id(ownerId);
+            if (usedAds >= activeSubscription.getPlan().getMaxAds()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Maximum ads reached for the current subscription plan.");
+            }
+        }
 
         Boarding b = BoardingMapper.toEntityFromCreate(dto);
         b.setOwner(owner); // link owner
@@ -89,6 +111,18 @@ public class OwnerBoardingService {
     }
 
     public OwnerBoardingResponseDTO boost(Long ownerId, Long boardingId, int days) {
+
+        if (!ownerSubscriptionService.hasActiveSubscriptionForOwner(ownerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                "An active subscription is required before boosting ads.");
+        }
+
+        OwnerSubscription activeSubscription = ownerSubscriptionService.getCurrentActiveSubscriptionEntity(ownerId);
+        if (activeSubscription == null || activeSubscription.getPlan() == null
+            || !Boolean.TRUE.equals(activeSubscription.getPlan().getBoostAllowed())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                "Your current subscription plan does not allow ad boosting.");
+        }
 
         Boarding b = boardingRepository.findById(boardingId)
                 .orElseThrow(() -> new RuntimeException("Boarding not found"));

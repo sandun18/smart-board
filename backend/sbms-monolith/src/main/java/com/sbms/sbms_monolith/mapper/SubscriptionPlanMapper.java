@@ -28,7 +28,11 @@ public class SubscriptionPlanMapper {
         SubscriptionPlan plan = new SubscriptionPlan();
         plan.setName(dto.getName());
         plan.setPrice(dto.getPrice());
-        plan.setDuration(formatDuration(resolveDurationDays(dto)));
+        Integer durationDays = resolveDurationDays(dto);
+        plan.setDurationDays(durationDays);
+        plan.setDuration(formatDuration(durationDays));
+        plan.setMaxAds(dto.getMaxAds() != null ? dto.getMaxAds() : 1);
+        plan.setBoostAllowed(dto.getBoostAllowed() != null ? dto.getBoostAllowed() : false);
         plan.setDescription(dto.getDescription() != null ? dto.getDescription() : "");
         plan.setFeatures(serializeFeatures(dto.getFeatures()));
         plan.setActive(dto.getActive() != null ? dto.getActive() : true);
@@ -48,7 +52,9 @@ public class SubscriptionPlanMapper {
         dto.setId(plan.getId());
         dto.setName(plan.getName());
         dto.setPrice(plan.getPrice());
-        dto.setDurationDays(parseDurationDays(plan.getDuration()));
+        dto.setDurationDays(resolveEntityDurationDays(plan));
+        dto.setMaxAds(plan.getMaxAds() != null ? plan.getMaxAds() : 1);
+        dto.setBoostAllowed(plan.getBoostAllowed() != null ? plan.getBoostAllowed() : false);
         dto.setDescription(plan.getDescription() != null ? plan.getDescription() : "");
         dto.setFeatures(deserializeFeatures(plan.getFeatures()));
         dto.setActive(plan.getActive() != null ? plan.getActive() : true);
@@ -75,9 +81,20 @@ public class SubscriptionPlanMapper {
         }
 
         if (dto.getDurationDays() != null) {
+            plan.setDurationDays(dto.getDurationDays());
             plan.setDuration(formatDuration(dto.getDurationDays()));
         } else if (dto.getDuration() != null && !dto.getDuration().isBlank()) {
-            plan.setDuration(formatDuration(parseDurationDays(dto.getDuration())));
+            Integer parsedDurationDays = parseDurationDays(dto.getDuration());
+            plan.setDurationDays(parsedDurationDays);
+            plan.setDuration(formatDuration(parsedDurationDays));
+        }
+
+        if (dto.getMaxAds() != null) {
+            plan.setMaxAds(dto.getMaxAds());
+        }
+
+        if (dto.getBoostAllowed() != null) {
+            plan.setBoostAllowed(dto.getBoostAllowed());
         }
 
         if (dto.getDescription() != null) {
@@ -116,6 +133,18 @@ public class SubscriptionPlanMapper {
             return dto.getDurationDays();
         }
         return parseDurationDays(dto.getDuration());
+    }
+
+    private Integer resolveEntityDurationDays(SubscriptionPlan plan) {
+        if (plan == null) {
+            return DEFAULT_DURATION_DAYS;
+        }
+
+        if (plan.getDurationDays() != null && plan.getDurationDays() > 0) {
+            return plan.getDurationDays();
+        }
+
+        return parseDurationDays(plan.getDuration());
     }
 
     private String formatDuration(Integer days) {

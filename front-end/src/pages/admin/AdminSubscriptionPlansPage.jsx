@@ -13,6 +13,8 @@ const emptyForm = {
   name: "",
   price: "",
   duration: "",
+  maxAds: "1",
+  boostAllowed: false,
   features: "",
 };
 
@@ -53,6 +55,8 @@ export default function AdminSubscriptionPlansPage() {
       name: plan?.name || "",
       price: plan?.price?.toString() || "",
       duration: plan?.durationDays?.toString() || "",
+      maxAds: plan?.maxAds?.toString() || "1",
+      boostAllowed: Boolean(plan?.boostAllowed),
       features: plan?.featuresText || "",
     });
     setShowModal(true);
@@ -64,6 +68,7 @@ export default function AdminSubscriptionPlansPage() {
     const trimmedName = form.name.trim();
     const numericPrice = Number(form.price);
     const numericDuration = Number(form.duration);
+    const numericMaxAds = Number(form.maxAds);
 
     if (!trimmedName) {
       toast.error("Plan name is required.");
@@ -77,11 +82,17 @@ export default function AdminSubscriptionPlansPage() {
       toast.error("Duration (days) must be greater than 0.");
       return;
     }
+    if (!Number.isFinite(numericMaxAds) || numericMaxAds <= 0) {
+      toast.error("Max ads must be greater than 0.");
+      return;
+    }
 
     const payload = {
       name: trimmedName,
       price: numericPrice,
       durationDays: numericDuration,
+      maxAds: numericMaxAds,
+      boostAllowed: Boolean(form.boostAllowed),
       features: form.features,
     };
 
@@ -192,6 +203,11 @@ export default function AdminSubscriptionPlansPage() {
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted">per {plan.duration || "N/A"}</span>
               </div>
 
+              <div className="mb-4 text-xs text-text-muted space-y-1">
+                <p>Max Ads: <strong>{plan.maxAds ?? 1}</strong></p>
+                <p>Boost Allowed: <strong>{plan.boostAllowed ? "Yes" : "No"}</strong></p>
+              </div>
+
               {Array.isArray(plan.features) && plan.features.length > 0 && (
                 <div className="flex-1 mb-6">
                   <h4 className="text-sm font-semibold text-text mb-2">Features:</h4>
@@ -284,6 +300,30 @@ export default function AdminSubscriptionPlansPage() {
                     className="w-full px-4 py-2.5 bg-background-light border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-semibold text-text mb-1.5">Max Ads <span className="text-red-500">*</span></label>
+                  <input
+                    type="number"
+                    value={form.maxAds}
+                    onChange={(e) => setForm({ ...form, maxAds: e.target.value })}
+                    placeholder="5"
+                    min="1"
+                    step="1"
+                    className="w-full px-4 py-2.5 bg-background-light border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="flex items-center gap-2 text-sm font-semibold text-text mb-1.5">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(form.boostAllowed)}
+                    onChange={(e) => setForm({ ...form, boostAllowed: e.target.checked })}
+                    className="h-4 w-4"
+                  />
+                  Allow ad boosting
+                </label>
               </div>
 
               <div>

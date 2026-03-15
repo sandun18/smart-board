@@ -51,7 +51,8 @@ public class User extends BaseEntity implements UserDetails {
     private Integer subscription_id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subscription_id", insertable = false, updatable = false)
+        @JoinColumn(name = "subscription_id", insertable = false, updatable = false,
+            foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private SubscriptionPlan subscriptionPlan;
 
     private String accNo;

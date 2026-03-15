@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaStar, FaRocket, FaCrown } from "react-icons/fa";
 import toast from "react-hot-toast";
-import { getActivePlans } from "../../api/admin/subscriptionPlanService";
+import { getActivePlans } from "../../api/owner/subscriptionPlanService";
 import HeaderBar from "../../components/Owner/common/HeaderBar.jsx";
 import PaymentModal from "../../components/Owner/subscription/PaymentModal.jsx";
 
@@ -127,6 +127,18 @@ const PlanCard = ({
       </div>
 
       <ul className="flex-1 space-y-3 mb-8">
+        <li className="flex items-start gap-3 text-sm font-medium text-text">
+          <span className={`mt-[2px] shrink-0 font-bold ${style.colorClass}`}>
+            ✔
+          </span>
+          <span>Max Ads: {plan?.maxAds ?? 1}</span>
+        </li>
+        <li className="flex items-start gap-3 text-sm font-medium text-text">
+          <span className={`mt-[2px] shrink-0 font-bold ${style.colorClass}`}>
+            ✔
+          </span>
+          <span>Boost Allowed: {plan?.boostAllowed ? "Yes" : "No"}</span>
+        </li>
         {features.map((feature, index) => (
           <li
             key={index}

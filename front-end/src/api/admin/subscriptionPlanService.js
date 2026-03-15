@@ -175,10 +175,14 @@ const normalizeFeatures = (value) => {
 const normalizePlan = (plan) => {
   const durationDays = resolveDurationDays(plan?.durationDays);
   const featuresList = normalizeFeatures(plan?.features);
+  const parsedMaxAds = Number(plan?.maxAds);
+  const maxAds = Number.isFinite(parsedMaxAds) && parsedMaxAds > 0 ? Math.round(parsedMaxAds) : 1;
 
   return {
     ...plan,
     durationDays,
+    maxAds,
+    boostAllowed: Boolean(plan?.boostAllowed),
     duration: durationDays ? `${durationDays} Days` : "",
     features: featuresList,
     featuresText: featuresList.join("\n"),
@@ -194,6 +198,8 @@ const toPlanPayload = (planData) => {
     name: String(planData?.name || "").trim(),
     price: toNumberOrNull(planData?.price),
     durationDays,
+    maxAds: toNumberOrNull(planData?.maxAds) ?? 1,
+    boostAllowed: Boolean(planData?.boostAllowed),
     description: String(planData?.description || "").trim(),
     features: normalizeFeatures(planData?.features),
     active: planData?.active ?? true,
@@ -309,7 +315,7 @@ export const deactivatePlan = async (id) => {
  */
 export const getActivePlans = async () => {
   try {
-    const response = await api.get("/subscription-plans");
+    const response = await api.get("/plans");
     return Array.isArray(response.data)
       ? response.data.map(normalizePlan)
       : [];
@@ -325,7 +331,7 @@ export const getActivePlans = async () => {
 
 export const getPlanById = async (id) => {
   try {
-    const response = await api.get(`/subscription-plans/${id}`);
+    const response = await api.get(`/plans/${id}`);
     return normalizePlan(response.data);
   } catch (error) {
     console.error("Failed to fetch subscription plan:", error);

@@ -19,6 +19,10 @@ public class OwnerSubscriptionResponseDTO {
     private String planName;
     private Double planPrice;
     private Integer planDurationDays;
+    private Integer maxAds;
+    private Boolean boostAllowed;
+    private Long usedAds;
+    private Long remainingAdsAllowed;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private String status;

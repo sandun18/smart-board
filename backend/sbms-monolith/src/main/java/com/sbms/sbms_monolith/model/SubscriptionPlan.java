@@ -19,8 +19,17 @@ public class SubscriptionPlan extends BaseEntity {
     @Column(nullable = false)
     private Double price;
 
+    @Column
+    private Integer durationDays = 30;
+
     @Column(length = 50)
     private String duration;
+
+    @Column
+    private Integer maxAds = 1;
+
+    @Column
+    private Boolean boostAllowed = false;
 
     @Column(columnDefinition = "TEXT")
     private String features;

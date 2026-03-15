@@ -9,14 +9,29 @@ import DashboardSection from "../../components/Owner/dashboard/DashboardSection"
 import RecentTransactions from "../../components/Owner/dashboard/RecentTransactions";
 import RevenueChart from "../../components/Owner/dashboard/RevenueChart";
 import { recentAppointments, ownerData } from "../../data/mockData.js";
+import { getMySubscription } from "../../api/owner/subscriptionPlanService";
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
+  const [subscriptionInfo, setSubscriptionInfo] = useState(null);
 
   // Simulate data fetching from backend
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 500);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const loadSubscription = async () => {
+      try {
+        const data = await getMySubscription();
+        setSubscriptionInfo(data || null);
+      } catch (_error) {
+        setSubscriptionInfo(null);
+      }
+    };
+
+    loadSubscription();
   }, []);
 
   return (
@@ -37,6 +52,12 @@ export default function Dashboard() {
             [...Array(4)].map((_, i) => <SkeletonWidget key={i} />)
           ) : (
             <>
+              <StatWidget
+                icon="fas fa-crown"
+                title="Subscription"
+                mainValue={subscriptionInfo?.planName || "No Active Plan"}
+                subValue={subscriptionInfo?.endDate ? `Expires ${new Date(subscriptionInfo.endDate).toLocaleDateString()}` : "Please subscribe"}
+              />
               <StatWidget
                 icon="fas fa-money-bill-wave"
                 title="Total Revenue"
@@ -60,8 +81,12 @@ export default function Dashboard() {
               <StatWidget
                 icon="fas fa-bullhorn"
                 title="Active Ads"
-                mainValue="3"
-                subValue="1 Expiring Soon"
+                mainValue={String(subscriptionInfo?.usedAds ?? 0)}
+                subValue={
+                  subscriptionInfo
+                    ? `${subscriptionInfo.remainingAdsAllowed ?? 0} ad slots remaining`
+                    : "Subscribe to publish ads"
+                }
                 trend={{ value: "Low", isPositive: false }}
               />
             </>

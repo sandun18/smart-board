@@ -14,7 +14,7 @@ import java.util.List;
  * Secured by ".anyRequest().authenticated()" in SecurityConfig.
  */
 @RestController
-@RequestMapping("/api/subscription-plans")
+@RequestMapping({"/api/subscription-plans", "/api/plans"})
 @RequiredArgsConstructor
 public class SubscriptionPlanController {
 
