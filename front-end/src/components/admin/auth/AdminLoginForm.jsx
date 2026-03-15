@@ -111,9 +111,9 @@ const AdminLoginForm = ({ onSubmit, isLoading, error }) => {
       </button>
 
       {/* Admin Info */}
-      <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-        <p className="text-xs text-amber-700 text-center">
-          <strong>First time?</strong> Contact your system administrator or use the signup tab to create an admin account.
+      <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        <p className="text-xs text-blue-700 text-center">
+          <strong>Admin Access Only:</strong> Use your admin credentials provided by the system administrator. Admin accounts cannot be self-registered.
         </p>
       </div>
     </div>

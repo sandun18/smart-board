@@ -1,12 +1,39 @@
 import React from 'react';
 
 const ReportTable = ({ reports, onView }) => {
+  const formatDate = (value) => {
+    if (!value) return 'N/A';
+
+    if (Array.isArray(value) && value.length >= 3) {
+      const [year, month, day, hour = 0, minute = 0, second = 0] = value;
+      const parsed = new Date(year, month - 1, day, hour, minute, second);
+      return Number.isNaN(parsed.getTime()) ? 'N/A' : parsed.toLocaleDateString();
+    }
+
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toLocaleDateString();
+    }
+
+    return typeof value === 'string' ? value : 'N/A';
+  };
+
   const getPriorityStyle = (p) => {
     switch (p.toLowerCase()) {
       case 'high': return 'bg-red-alert/10 text-red-alert';
       case 'medium': return 'bg-yellow-500/10 text-yellow-600';
       default: return 'bg-info/10 text-info';
     }
+  };
+
+  const getOutcomeText = (report) => {
+    if (report.status === 'RESOLVED') {
+      return report.resolutionDetails || report.actionTaken || 'Resolution recorded.';
+    }
+    if (report.status === 'DISMISSED') {
+      return report.dismissalReason || 'Dismissed without reason.';
+    }
+    return null;
   };
 
   return (
@@ -21,6 +48,7 @@ const ReportTable = ({ reports, onView }) => {
                 <div>
                   <div className="font-bold text-text-dark text-sm">{report.reporter.name}</div>
                   <div className="text-[9px] uppercase text-accent font-bold tracking-tight">{report.reporter.role}</div>
+                  <div className="text-[10px] text-text-muted">Joined: {formatDate(report.reporter?.joinedDate)}</div>
                 </div>
               </div>
               <span className={`px-2 py-1 rounded-full text-[9px] font-bold uppercase ${getPriorityStyle(report.priority)}`}>
@@ -31,6 +59,12 @@ const ReportTable = ({ reports, onView }) => {
             <div className="mb-4">
               <div className="text-sm font-bold text-text-dark mb-1">{report.title}</div>
               <div className="text-xs text-text-muted">{report.type} • {report.date}</div>
+              {getOutcomeText(report) && (
+                <div className="mt-2 text-xs text-text-muted line-clamp-2">
+                  {report.status === 'RESOLVED' ? 'Resolution: ' : 'Dismissed: '}
+                  {getOutcomeText(report)}
+                </div>
+              )}
             </div>
 
             <button 
@@ -64,12 +98,19 @@ const ReportTable = ({ reports, onView }) => {
                     <div>
                       <div className="font-bold text-text-dark text-sm">{report.reporter.name}</div>
                       <div className="text-[10px] uppercase text-accent font-bold tracking-tight">{report.reporter.role}</div>
+                      <div className="text-[11px] text-text-muted">Joined: {formatDate(report.reporter?.joinedDate)}</div>
                     </div>
                   </div>
                 </td>
                 <td className="p-5">
                   <div className="text-sm font-bold text-text-dark truncate max-w-[250px]">{report.title}</div>
                   <div className="text-xs text-text-muted">{report.type}</div>
+                  {getOutcomeText(report) && (
+                    <div className="text-xs text-text-muted mt-1 max-w-[300px] truncate">
+                      {report.status === 'RESOLVED' ? 'Resolution: ' : 'Dismissed: '}
+                      {getOutcomeText(report)}
+                    </div>
+                  )}
                 </td>
                 <td className="p-5">
                   <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${getPriorityStyle(report.priority)}`}>

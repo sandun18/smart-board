@@ -30,33 +30,43 @@ export const useAds = () => {
     const safeAds = Array.isArray(ads) ? ads : [];
     return {
       total: safeAds.length,
-      pending: safeAds.filter(ad => ad.status?.toLowerCase() === 'pending').length,
-      approved: safeAds.filter(ad => ad.status?.toLowerCase() === 'approved').length,
-      rejected: safeAds.filter(ad => ad.status?.toLowerCase() === 'rejected').length,
+      pending: safeAds.filter(ad => ad.status === 'PENDING' || ad.status?.toLowerCase() === 'pending').length,
+      approved: safeAds.filter(ad => ad.status === 'APPROVED' || ad.status?.toLowerCase() === 'approved').length,
+      rejected: safeAds.filter(ad => ad.status === 'REJECTED' || ad.status?.toLowerCase() === 'rejected').length,
     };
   }, [ads]);
 
   const filteredAds = useMemo(() => 
-    (Array.isArray(ads) ? ads : []).filter(ad => ad.status?.toLowerCase() === currentTab), 
+    (Array.isArray(ads) ? ads : []).filter(ad => {
+      const status = ad.status || '';
+      const compareTab = currentTab.toUpperCase();
+      return status.toUpperCase() === compareTab;
+    }), 
   [ads, currentTab]);
 
   const handleApprove = async (id) => {
     try {
       await api.put(`/admin/boardings/${id}/approve`);
-      setAds(prev => prev.map(ad => ad.id === id ? { ...ad, status: 'approved' } : ad));
+      setAds(prev => prev.map(ad => ad.id === id ? { ...ad, status: 'APPROVED' } : ad));
       showToast("Ad approved successfully!", "success");
+      fetchAds(); // Refresh the list after approval
     } catch (error) {
-      showToast("Approval failed", "error");
+      console.error("Approval error:", error);
+      showToast("Approval failed: " + (error.response?.data?.message || error.message), "error");
     }
   };
 
   const handleReject = async (id, reason) => {
     try {
-      await api.put(`/admin/boardings/${id}/reject`, null, { params: { reason } });
-      setAds(prev => prev.map(ad => ad.id === id ? { ...ad, status: 'rejected' } : ad));
-      showToast("Ad rejected", "error");
+      await api.put(`/admin/boardings/${id}/reject`, {}, { 
+        params: { reason: reason || "Rejected by admin" } 
+      });
+      setAds(prev => prev.map(ad => ad.id === id ? { ...ad, status: 'REJECTED', rejectionReason: reason } : ad));
+      showToast("Ad rejected successfully", "error");
+      fetchAds(); // Refresh the list after rejection
     } catch (error) {
-      showToast("Rejection failed", "error");
+      console.error("Rejection error:", error);
+      showToast("Rejection failed: " + (error.response?.data?.message || error.message), "error");
     }
   };
 

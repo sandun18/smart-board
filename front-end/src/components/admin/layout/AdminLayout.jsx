@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { useAuth } from '../../../context/admin/AdminAuthContext';
+import AdminService from '../../../api/admin/AdminService';
 
 const AdminLayout = () => {
   const navigate = useNavigate();
   const { logout, currentUser } = useAuth();
   const [activePage, setActivePage] = useState('dashboard');
+  const [badgeCounts, setBadgeCounts] = useState({ ads: 0, reports: 0, thirdparty: 0 });
   
   const navItems = [
     { id: 'dashboard', label: 'Home', icon: 'fa-tachometer-alt' },
@@ -32,12 +34,45 @@ const AdminLayout = () => {
     navigate('/login', { replace: true });
   };
 
+  const handleBrandClick = () => {
+    navigate('/');
+  };
+
+  useEffect(() => {
+    const loadPendingCounts = async () => {
+      try {
+        const [boardings, reports, submissions] = await Promise.all([
+          AdminService.getAllBoardings(),
+          AdminService.getReports('PENDING'),
+          AdminService.getSubmissions()
+        ]);
+
+        const pendingAds = (Array.isArray(boardings) ? boardings : []).filter(
+          (b) => String(b?.status || '').toUpperCase() === 'PENDING'
+        ).length;
+
+        const pendingReports = Array.isArray(reports) ? reports.length : 0;
+        const pendingThirdParty = (Array.isArray(submissions) ? submissions : []).filter(
+          (s) => String(s?.status || '').toUpperCase() === 'PENDING'
+        ).length;
+
+        setBadgeCounts({ ads: pendingAds, reports: pendingReports, thirdparty: pendingThirdParty });
+      } catch (error) {
+        console.error('Failed to load sidebar pending counts', error);
+      }
+    };
+
+    loadPendingCounts();
+  }, []);
+
   return (
     <div className="flex min-h-screen bg-background-light font-sans text-text-dark">
       <Sidebar 
         onNavigate={handleNavigate} 
         activePage={activePage} 
         onLogout={handleLogout} 
+        onBrandClick={handleBrandClick}
+        badgeCounts={badgeCounts}
       />
       
       <main className="w-full p-3 pb-28 lg:p-10 lg:ml-80 lg:pb-10 pt-4 transform scale-[0.98] lg:scale-100 origin-top transition-transform duration-300">

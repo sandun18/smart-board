@@ -4,6 +4,9 @@ const CreateAdForm = ({ plans, onSubmit, prefillData }) => {
   const [formData, setFormData] = useState({
     title: '', 
     companyName: '', 
+    email: '',
+    phone: '',
+    description: '',
     bannerImageUrl: '', 
     redirectUrl: '',
     planName: '',
@@ -15,16 +18,24 @@ const CreateAdForm = ({ plans, onSubmit, prefillData }) => {
   // Pre-fill when coming from an approved submission
   useEffect(() => {
     if (prefillData) {
+      // Extract just the date part if expiryDate is a full datetime string
+      let expiryDateValue = prefillData.expiryDate || '';
+      if (expiryDateValue && expiryDateValue.includes('T')) {
+        expiryDateValue = expiryDateValue.split('T')[0]; // "2026-03-03T00:00:00" -> "2026-03-03"
+      }
+      
       setFormData(prev => ({ 
         ...prev, 
         title: prefillData.title || '',
         companyName: prefillData.companyName || '',
+        email: prefillData.email || '',
+        phone: prefillData.phone || '',
+        description: prefillData.description || '',
         bannerImageUrl: prefillData.bannerImageUrl || '',
         redirectUrl: prefillData.redirectUrl || '',
         planName: prefillData.planName || '',
         planPrice: prefillData.planPrice || 0,
-        // Default expiry to 30 days from now if not provided
-        expiryDate: prefillData.expiryDate || new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0]
+        expiryDate: expiryDateValue || new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0]
       }));
     }
   }, [prefillData]);
@@ -40,9 +51,12 @@ const CreateAdForm = ({ plans, onSubmit, prefillData }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Ensure expiryDate is formatted for LocalDateTime if needed, 
-    // or just send as ISO string which Spring handles well.
-    onSubmit(formData);
+    // Convert date string "2026-03-03" to LocalDateTime format "2026-03-03T00:00:00"
+    const submissionData = {
+      ...formData,
+      expiryDate: formData.expiryDate ? `${formData.expiryDate}T00:00:00` : null
+    };
+    onSubmit(submissionData);
   };
 
   return (
@@ -77,6 +91,43 @@ const CreateAdForm = ({ plans, onSubmit, prefillData }) => {
               placeholder="Brand Name" 
             />
           </div>
+
+          {/* Email */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-gray-400 uppercase ml-2">Contact Email</label>
+            <input 
+              required
+              type="email"
+              value={formData.email} 
+              onChange={e => setFormData({...formData, email: e.target.value})} 
+              className="w-full p-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-[#D84C38]" 
+              placeholder="contact@company.com" 
+            />
+          </div>
+
+          {/* Phone */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-gray-400 uppercase ml-2">Contact Phone</label>
+            <input 
+              required
+              type="tel"
+              value={formData.phone} 
+              onChange={e => setFormData({...formData, phone: e.target.value})} 
+              className="w-full p-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-[#D84C38]" 
+              placeholder="+94 701 234567" 
+            />
+          </div>
+        </div>
+
+        {/* Description */}
+        <div className="space-y-1">
+          <label className="text-[10px] font-bold text-gray-400 uppercase ml-2">Campaign Description</label>
+          <textarea 
+            value={formData.description} 
+            onChange={e => setFormData({...formData, description: e.target.value})} 
+            className="w-full p-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-[#D84C38] resize-none h-24" 
+            placeholder="Describe your campaign, offers, and target audience..." 
+          />
         </div>
 
         {/* Redirect URL */}
@@ -84,7 +135,6 @@ const CreateAdForm = ({ plans, onSubmit, prefillData }) => {
           <label className="text-[10px] font-bold text-gray-400 uppercase ml-2">Redirect URL (Link)</label>
           <input 
             required
-            type="url"
             value={formData.redirectUrl} 
             onChange={e => setFormData({...formData, redirectUrl: e.target.value})} 
             className="w-full p-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-[#D84C38]" 

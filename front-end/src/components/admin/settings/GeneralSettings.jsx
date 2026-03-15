@@ -1,12 +1,40 @@
 import React, { useState } from 'react';
 
-const GeneralSettings = ({ onSave }) => {
+const GeneralSettings = ({ settings, maintenanceMode, onSave, saving }) => {
   const [logoPreview, setLogoPreview] = useState(null);
+  const [form, setForm] = useState({
+    platformName: settings?.platformName || 'SmartBoAD',
+    supportEmail: settings?.supportEmail || 'support@smartboad.lk',
+    supportPhone: settings?.supportPhone || '+94 77 123 4567',
+    address: settings?.address || '123, High Level Road, Colombo 07, Sri Lanka'
+  });
+
+  React.useEffect(() => {
+    setForm({
+      platformName: settings?.platformName || 'SmartBoAD',
+      supportEmail: settings?.supportEmail || 'support@smartboad.lk',
+      supportPhone: settings?.supportPhone || '+94 77 123 4567',
+      address: settings?.address || '123, High Level Road, Colombo 07, Sri Lanka'
+    });
+  }, [settings]);
 
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setLogoPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const updateField = (key, value) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSubmit = async () => {
+    const res = await onSave({ ...form, maintenanceMode });
+    if (res?.success) {
+      alert('Settings saved successfully!');
+    } else {
+      alert(res?.message || 'Failed to save settings.');
     }
   };
 
@@ -54,7 +82,8 @@ const GeneralSettings = ({ onSave }) => {
                 <i className="fas fa-signature absolute left-4 top-1/2 -translate-y-1/2 text-accent/50"></i>
                 <input 
                   type="text" 
-                  defaultValue="SmartBoAD"
+                  value={form.platformName}
+                  onChange={(e) => updateField('platformName', e.target.value)}
                   className="w-full pl-12 pr-4 py-4 rounded-[18px] bg-background-light/20 border-2 border-transparent focus:border-accent focus:bg-white outline-none transition-all font-bold text-text-dark shadow-inner"
                 />
               </div>
@@ -77,7 +106,8 @@ const GeneralSettings = ({ onSave }) => {
               <i className="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-primary/50"></i>
               <input 
                 type="email" 
-                defaultValue="support@smartboad.lk"
+                value={form.supportEmail}
+                onChange={(e) => updateField('supportEmail', e.target.value)}
                 className="w-full pl-12 pr-4 py-4 rounded-[18px] bg-background-light/20 border-2 border-transparent focus:border-primary focus:bg-white outline-none transition-all font-bold text-text-dark shadow-inner"
               />
             </div>
@@ -89,7 +119,8 @@ const GeneralSettings = ({ onSave }) => {
               <i className="fas fa-phone-alt absolute left-4 top-1/2 -translate-y-1/2 text-primary/50"></i>
               <input 
                 type="text" 
-                defaultValue="+94 77 123 4567"
+                value={form.supportPhone}
+                onChange={(e) => updateField('supportPhone', e.target.value)}
                 className="w-full pl-12 pr-4 py-4 rounded-[18px] bg-background-light/20 border-2 border-transparent focus:border-primary focus:bg-white outline-none transition-all font-bold text-text-dark shadow-inner"
               />
             </div>
@@ -103,7 +134,8 @@ const GeneralSettings = ({ onSave }) => {
             <textarea 
               rows="3" 
               className="w-full pl-12 pr-4 py-4 rounded-[18px] bg-background-light/20 border-2 border-transparent focus:border-primary focus:bg-white outline-none transition-all font-bold text-text-dark shadow-inner resize-none"
-              defaultValue="123, High Level Road, Colombo 07, Sri Lanka"
+              value={form.address}
+              onChange={(e) => updateField('address', e.target.value)}
             ></textarea>
           </div>
         </div>
@@ -111,15 +143,24 @@ const GeneralSettings = ({ onSave }) => {
 
       {/* Footer Actions - Matches the fixed look of the HTML version */}
       <div className="pt-8 border-t border-gray-100 flex justify-end gap-4">
-        <button className="px-8 py-4 rounded-[15px] font-bold text-text-muted hover:bg-gray-100 transition-colors">
+        <button
+          onClick={() => setForm({
+            platformName: settings?.platformName || 'SmartBoAD',
+            supportEmail: settings?.supportEmail || 'support@smartboad.lk',
+            supportPhone: settings?.supportPhone || '+94 77 123 4567',
+            address: settings?.address || '123, High Level Road, Colombo 07, Sri Lanka'
+          })}
+          className="px-8 py-4 rounded-[15px] font-bold text-text-muted hover:bg-gray-100 transition-colors"
+        >
           Reset Changes
         </button>
         <button 
-          onClick={onSave}
+          onClick={handleSubmit}
+          disabled={saving}
           className="bg-accent text-white font-black py-4 px-12 rounded-[18px] shadow-[0_10px_20px_rgba(255,122,0,0.3)] hover:-translate-y-1 hover:shadow-[0_15px_25px_rgba(255,122,0,0.4)] transition-all active:scale-95 flex items-center gap-3"
         >
           <i className="fas fa-save"></i>
-          Save Settings
+          {saving ? 'Saving...' : 'Save Settings'}
         </button>
       </div>
     </div>

@@ -13,22 +13,70 @@ export const AdminAuthProvider = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       const token = localStorage.getItem("token");
+      const refreshToken = localStorage.getItem("refresh_token");
       const savedUser = localStorage.getItem("user_data");
 
-      if (token && savedUser) {
+      if (savedUser) {
         try {
           const user = JSON.parse(savedUser);
 
-          // 🔒 Security Check: Ensure the saved user is an ADMIN
-          if (user.role === "ADMIN") {
-            setCurrentUser(user);
-            setIsAuthenticated(true);
-          } else {
-            // localStorage.clear();
+          if (user.role !== "ADMIN") {
+            setIsAuthenticated(false);
+            setCurrentUser(null);
+            setIsLoading(false);
+            return;
           }
+
+          // Try refresh first so ADMIN endpoints don't fail with stale tokens.
+          if (refreshToken) {
+            try {
+              const response = await api.post(
+                "/auth/refresh",
+                { refreshToken },
+                { headers: { Authorization: undefined } }
+              );
+
+              if (response.status === 200) {
+                const {
+                  token: newToken,
+                  refreshToken: newRefreshToken,
+                  user: refreshedUser,
+                } = response.data;
+
+                if (refreshedUser?.role === "ADMIN") {
+                  localStorage.setItem("token", newToken);
+                  localStorage.setItem("refresh_token", newRefreshToken);
+                  localStorage.setItem("user_data", JSON.stringify(refreshedUser));
+                  setCurrentUser(refreshedUser);
+                  setIsAuthenticated(true);
+                  setIsLoading(false);
+                  return;
+                }
+
+                // Refreshed session is not admin -> force clean logout state.
+                localStorage.clear();
+                setCurrentUser(null);
+                setIsAuthenticated(false);
+                setIsLoading(false);
+                return;
+              }
+            } catch (refreshError) {
+              console.warn("Admin refresh failed", refreshError);
+              localStorage.clear();
+              setCurrentUser(null);
+              setIsAuthenticated(false);
+              setIsLoading(false);
+              return;
+            }
+          }
+
+          // No refresh token means we cannot safely prove the session is still valid.
+          setCurrentUser(null);
+          setIsAuthenticated(false);
         } catch (e) {
           console.error("Failed to parse user data", e);
-          // localStorage.clear();
+          localStorage.clear();
+          setCurrentUser(null);
           setIsAuthenticated(false);
         }
       }
@@ -75,69 +123,9 @@ export const AdminAuthProvider = ({ children }) => {
     }
   };
 
-  // 3. Signup Step 1: Request OTP
-  const signup = async (userData) => {
-    try {
-      const payload = {
-        ...userData,
-        role: "ADMIN",
-      };
-
-      // 🚀 CRITICAL FIX: Force Authorization header to undefined
-      // This ensures the request is sent as "Public" even if an old token exists
-      const config = {
-        headers: {
-          Authorization: undefined,
-        },
-      };
-
-      //  Using the endpoint: /auth/register/request
-      const response = await api.post(
-        "/auth/register/request",
-        payload,
-        config
-      );
-
-      return {
-        success: true,
-        message: response.data?.message || "OTP sent successfully!",
-      };
-    } catch (error) {
-      console.error("Signup Error:", error);
-      return {
-        success: false,
-        message: error.response?.data?.message || "Registration failed.",
-      };
-    }
-  };
-
-  // 4. Verify OTP
-  const verifyRegistration = async (email, otp) => {
-    try {
-      const response = await api.post("/auth/register/verify", { email, otp });
-      const { token, refreshToken, user } = response.data;
-
-      if (user.role !== "ADMIN") {
-        return {
-          success: false,
-          message: "Role mismatch during verification.",
-        };
-      }
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("refresh_token", refreshToken);
-      localStorage.setItem("user_data", JSON.stringify(user));
-
-      setCurrentUser(user);
-      setIsAuthenticated(true);
-      return { success: true };
-    } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data || "Invalid OTP Code",
-      };
-    }
-  };
+  // 🚫 ADMIN NO LONGER HAS SIGNUP:
+  // Admin accounts should be created by system initialization
+  // Only login is permitted for admin users
 
   const logout = () => {
     localStorage.clear();
@@ -242,8 +230,6 @@ export const AdminAuthProvider = ({ children }) => {
     isLoading,
     login,
     logout,
-    signup,
-    verifyRegistration,
     updateProfile,
     updateAvatar,
     updatePreferences,

@@ -23,16 +23,25 @@ export const useThirdPartyAds = () => {
         setLoading(true);
         setIsOffline(false);
         try {
-            // Promise.all with individual catches to ensure the UI loads even if one endpoint fails
-            const [subData, campData, planData] = await Promise.all([
-                AdminService.getSubmissions().catch(() => { throw new Error("Submissions failed"); }),
-                AdminService.getCampaigns().catch(() => { throw new Error("Campaigns failed"); }),
-                AdminService.getPlans().catch(() => { throw new Error("Plans failed"); })
+            const [subResult, campResult, planResult] = await Promise.allSettled([
+                AdminService.getSubmissions(),
+                AdminService.getCampaigns(),
+                AdminService.getPlans()
             ]);
-            
-            setSubmissions(subData || []);
-            setCampaigns(campData || []);
-            setPlans(planData || []);
+
+            setSubmissions(subResult.status === 'fulfilled' ? (subResult.value || []) : []);
+            setCampaigns(campResult.status === 'fulfilled' ? (campResult.value || []) : []);
+            setPlans(planResult.status === 'fulfilled' ? (planResult.value || []) : []);
+
+            const allFailed = [subResult, campResult, planResult].every(r => r.status === 'rejected');
+            const anyFailed = [subResult, campResult, planResult].some(r => r.status === 'rejected');
+
+            if (allFailed) {
+                setIsOffline(true);
+                showToast("Backend connection failed. Showing offline mode.", "error");
+            } else if (anyFailed) {
+                showToast("Some ad data failed to load.", "error");
+            }
         } catch (err) {
             console.error("Connection Error:", err);
             setIsOffline(true);
@@ -50,6 +59,10 @@ export const useThirdPartyAds = () => {
 
     useEffect(() => {
         fetchData();
+        
+        // Auto-refresh every 5 minutes to check for expired ads
+        const interval = setInterval(fetchData, 5 * 60 * 1000);
+        return () => clearInterval(interval);
     }, [fetchData]);
 
     // 4. STATS CALCULATION (Safe from undefined/null data)
@@ -63,17 +76,17 @@ export const useThirdPartyAds = () => {
     const handleApprove = async (id) => {
         try {
             await AdminService.approveAd(id);
-            showToast("Ad approved successfully");
+            showToast("Ad approved successfully", 'success');
             fetchData();
-        } catch (err) { showToast("Approval failed", "error"); }
+        } catch (err) { showToast(err.response?.data?.message || err.message || "Approval failed", "error"); }
     };
 
     const handleReject = async (id) => {
         try {
             await AdminService.rejectAd(id);
-            showToast("Ad rejected");
+            showToast("Ad rejected", 'success');
             fetchData();
-        } catch (err) { showToast("Rejection failed", "error"); }
+        } catch (err) { showToast(err.response?.data?.message || err.message || "Rejection failed", "error"); }
     };
 
     // 6. CAMPAIGN ACTIONS
@@ -85,60 +98,60 @@ export const useThirdPartyAds = () => {
     const createAd = async (data) => {
         try {
             await AdminService.publishAd(data);
-            showToast("Campaign is now LIVE!");
+            showToast("Campaign is now LIVE!", 'success');
             setPrefillAdData(null);
             setActiveTab('campaigns');
             fetchData();
-        } catch (err) { showToast("Failed to publish", "error"); }
+        } catch (err) { showToast(err.response?.data?.message || err.message || "Failed to publish", "error"); }
     };
 
     const toggleCampaignStatus = async (id) => {
         try {
             await AdminService.toggleCampaignStatus(id);
-            showToast("Status updated");
+            showToast("Status updated", 'success');
             fetchData();
-        } catch (err) { showToast("Update failed", "error"); }
+        } catch (err) { showToast(err.response?.data?.message || err.message || "Update failed", "error"); }
     };
 
     const updateCampaign = async (id, data) => {
         try {
             await AdminService.updateCampaign(id, data);
-            showToast("Campaign updated");
+            showToast("Campaign updated", 'success');
             fetchData();
-        } catch (err) { showToast("Update failed", "error"); }
+        } catch (err) { showToast(err.response?.data?.message || err.message || "Update failed", "error"); }
     };
 
     const deleteAd = async (id) => {
         try {
             await AdminService.deleteAd(id);
-            showToast("Ad deleted");
+            showToast("Ad deleted", 'success');
             fetchData();
-        } catch (err) { showToast("Delete failed", "error"); }
+        } catch (err) { showToast(err.response?.data?.message || err.message || "Delete failed", "error"); }
     };
 
     // 7. PLAN ACTIONS
     const addPlan = async (data) => {
         try {
             await AdminService.addPlan(data);
-            showToast("New plan added");
+            showToast("New plan added", 'success');
             fetchData();
-        } catch (err) { showToast("Could not add plan", "error"); }
+        } catch (err) { showToast(err.response?.data?.message || err.message || "Could not add plan", "error"); }
     };
 
     const updatePlan = async (id, data) => {
         try {
             await AdminService.updatePlan(id, data);
-            showToast("Plan updated");
+            showToast("Plan updated", 'success');
             fetchData();
-        } catch (err) { showToast("Update failed", "error"); }
+        } catch (err) { showToast(err.response?.data?.message || err.message || "Update failed", "error"); }
     };
 
     const deletePlan = async (id) => {
         try {
             await AdminService.deletePlan(id);
-            showToast("Plan deleted");
+            showToast("Plan deleted", 'success');
             fetchData();
-        } catch (err) { showToast("Delete failed", "error"); }
+        } catch (err) { showToast(err.response?.data?.message || err.message || "Delete failed", "error"); }
     };
 
     return {

@@ -1,8 +1,5 @@
 package com.sbms.sbms_monolith.dto.admin;
 
-
-
-
 import com.sbms.sbms_monolith.model.Report;
 import com.sbms.sbms_monolith.model.enums.ReportSeverity;
 import com.sbms.sbms_monolith.model.enums.ReportStatus;
@@ -31,9 +28,11 @@ public class AdminReportResponseDTO {
 
     private Long senderId;
     private String senderName;
+    private LocalDateTime senderJoinedDate;
 
     private Long reportedUserId;
     private String reportedUserName;
+    private LocalDateTime reportedUserJoinedDate;
 
     private boolean allowContact;
 
@@ -46,7 +45,7 @@ public class AdminReportResponseDTO {
 
     private List<String> evidence;
 
-    // ✅ REQUIRED STATIC MAPPER
+    // Maps a report entity to the admin-facing API response shape.
     public static AdminReportResponseDTO fromEntity(Report r) {
 
         AdminReportResponseDTO dto = new AdminReportResponseDTO();
@@ -63,12 +62,16 @@ public class AdminReportResponseDTO {
         dto.setIncidentDate(r.getIncidentDate());
         dto.setBoardingName(r.getBoardingName());
 
-        dto.setSenderId(r.getSender().getId());
-        dto.setSenderName(r.getSender().getFullName());
+        if (r.getSender() != null) {
+            dto.setSenderId(r.getSender().getId());
+            dto.setSenderName(r.getSender().getFullName());
+            dto.setSenderJoinedDate(r.getSender().getCreatedAt());
+        }
 
         if (r.getReportedUser() != null) {
             dto.setReportedUserId(r.getReportedUser().getId());
             dto.setReportedUserName(r.getReportedUser().getFullName());
+            dto.setReportedUserJoinedDate(r.getReportedUser().getCreatedAt());
         }
 
         dto.setAllowContact(r.isAllowContact());

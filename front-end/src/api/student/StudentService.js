@@ -27,7 +27,7 @@ const StudentService = {
   // ==========================================
   // 3. BOARDINGS (Search & Details)
   // ==========================================
-  searchBoardings: async (filters) => {
+  searchBoardings: async (filters, page = 0, size = 50) => {
     let backendBoardingType = null;
     if (filters.roomTypes && filters.roomTypes.length > 0) {
       const selected = filters.roomTypes[0].toLowerCase();
@@ -43,8 +43,8 @@ const StudentService = {
       genderType:
         filters.gender !== "any" ? filters.gender?.toUpperCase() : null,
       boardingType: backendBoardingType,
-      page: 0,
-      size: 50,
+      page,
+      size,
     };
 
     Object.keys(params).forEach(

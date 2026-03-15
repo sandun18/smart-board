@@ -7,6 +7,7 @@ import AdDetailsModal from '../../components/admin/thirdparty/AdDetailsModal';
 import CreateAdForm from '../../components/admin/thirdparty/CreateAdForm'; 
 import EditCampaignModal from '../../components/admin/thirdparty/EditCampaignModal';
 import PlanModal from '../../components/admin/thirdparty/PlanModal';
+import ConfirmModal from '../../components/admin/common/ConfirmModal';
 import { useThirdPartyAds } from '../../hooks/admin/useThirdPartyAds'; 
 
 const AdminThirdParty = () => {
@@ -21,6 +22,8 @@ const AdminThirdParty = () => {
 
     const [selectedAd, setSelectedAd] = useState(null);
     const [editingCampaign, setEditingCampaign] = useState(null);
+    const [deleteTargetAd, setDeleteTargetAd] = useState(null);
+    const [deletingAd, setDeletingAd] = useState(false);
     const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
     const [planToEdit, setPlanToEdit] = useState(null);
 
@@ -84,6 +87,7 @@ const AdminThirdParty = () => {
                                     onReject={handleReject}
                                     onViewDetails={setSelectedAd}
                                     onPublish={startPublishWorkflow}
+                                    onDelete={(id) => setDeleteTargetAd(id)}
                                 />
                             ))
                         ) : (
@@ -100,7 +104,7 @@ const AdminThirdParty = () => {
                         campaigns={campaigns || []} 
                         onEdit={setEditingCampaign}
                         onToggleStatus={toggleCampaignStatus}
-                        onDelete={deleteAd}
+                        onDelete={(id) => setDeleteTargetAd(id)}
                     />
                 )}
 
@@ -113,7 +117,45 @@ const AdminThirdParty = () => {
                         >
                             + Add New Plan
                         </button>
-                        {/* Plans list would be rendered here */}
+                        {(plans || []).length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {plans.map(plan => (
+                                    <div key={plan.id} className="p-4 border rounded-[18px] flex flex-col gap-3">
+                                        <div className="flex items-start justify-between">
+                                            <div>
+                                                <h4 className="font-bold text-lg text-[#332720]">{plan.name}</h4>
+                                                <div className="text-sm text-gray-500">{plan.duration}</div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="font-black text-lg text-[#D84C38]">LKR {Number(plan.price).toLocaleString()}</div>
+                                                <div className="text-xs text-gray-400">{plan.active ? 'Active' : 'Inactive'}</div>
+                                            </div>
+                                        </div>
+                                        {plan.description && <div className="text-sm text-gray-600">{plan.description}</div>}
+                                        <div className="flex gap-3 mt-2">
+                                            <button
+                                                onClick={() => { setPlanToEdit(plan); setIsPlanModalOpen(true); }}
+                                                className="px-4 py-2 bg-white border rounded-lg text-sm font-bold hover:bg-gray-50"
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    if (window.confirm('Delete this plan? This action cannot be undone.')) {
+                                                        deletePlan(plan.id);
+                                                    }
+                                                }}
+                                                className="px-4 py-2 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm font-bold hover:bg-red-100"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="py-20 text-center text-gray-400 italic font-bold">No pricing plans available.</div>
+                        )}
                     </div>
                 )}
 
@@ -137,6 +179,27 @@ const AdminThirdParty = () => {
                     onSave={(data) => { updateCampaign(editingCampaign.id, data); setEditingCampaign(null); }}
                 />
             )}
+            {/* Confirm modal for deleting submissions/campaigns/plans */}
+            <ConfirmModal
+                open={!!deleteTargetAd}
+                title="Delete Item"
+                message="Are you sure you want to delete this item? This action cannot be undone."
+                onCancel={() => setDeleteTargetAd(null)}
+                onConfirm={async () => {
+                    if (!deleteTargetAd) return;
+                    setDeletingAd(true);
+                    try {
+                        await deleteAd(deleteTargetAd);
+                        setDeleteTargetAd(null);
+                    } catch (err) {
+                        console.error('Failed to delete ad/campaign', err);
+                    } finally {
+                        setDeletingAd(false);
+                    }
+                }}
+                loading={deletingAd}
+                confirmLabel="Yes, delete"
+            />
             {isPlanModalOpen && (
                 <PlanModal 
                     isOpen={isPlanModalOpen} 

@@ -4,7 +4,7 @@ const UserModal = ({ user, onClose, onDelete, onVerify }) => {
   if (!user) return null;
 
   // Check if the user is an owner awaiting verification
-  const isPendingOwner = user.role === 'OWNER' && !user.verifiedOwner;
+  const isPendingOwner = user.role === 'OWNER' && user.verifiedOwner === false;
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-text-dark/40 backdrop-blur-sm transition-opacity">
@@ -63,8 +63,47 @@ const UserModal = ({ user, onClose, onDelete, onVerify }) => {
                 </div>
               </div>
 
+              {/* Show Student ID for Students */}
+              {user.role === 'STUDENT' && user.studentIdNumber && (
+                <div className="flex items-center gap-4 p-3 lg:p-4 border border-gray-100 rounded-[15px] bg-gray-50/30">
+                  <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-500">
+                    <i className="fas fa-id-card"></i>
+                  </div>
+                  <div>
+                    <p className="text-text-muted text-[10px] lg:text-xs uppercase font-bold tracking-wider">Student ID</p>
+                    <p className="text-xs lg:text-sm text-text-dark font-bold">{user.studentIdNumber}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Show Address */}
+              {user.address && (
+                <div className="flex items-center gap-4 p-3 lg:p-4 border border-gray-100 rounded-[15px] bg-gray-50/30">
+                  <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-500">
+                    <i className="fas fa-map-marker-alt"></i>
+                  </div>
+                  <div>
+                    <p className="text-text-muted text-[10px] lg:text-xs uppercase font-bold tracking-wider">Address</p>
+                    <p className="text-xs lg:text-sm text-text-dark font-bold">{user.address}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Show Number of Boardings for Owners */}
+              {user.role === 'OWNER' && user.boardingCount !== undefined && (
+                <div className="flex items-center gap-4 p-3 lg:p-4 border border-gray-100 rounded-[15px] bg-gray-50/30">
+                  <div className="w-10 h-10 rounded-full bg-cyan-50 flex items-center justify-center text-cyan-500">
+                    <i className="fas fa-building"></i>
+                  </div>
+                  <div>
+                    <p className="text-text-muted text-[10px] lg:text-xs uppercase font-bold tracking-wider">Active Boardings</p>
+                    <p className="text-xs lg:text-sm text-text-dark font-bold">{user.boardingCount}</p>
+                  </div>
+                </div>
+              )}
+
               {/* Show University for Students */}
-              {user.studentUniversity && (
+              {user.role === 'STUDENT' && user.studentUniversity && (
                 <div className="flex items-center gap-4 p-3 lg:p-4 border border-gray-100 rounded-[15px] bg-gray-50/30">
                   <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-500">
                     <i className="fas fa-university"></i>

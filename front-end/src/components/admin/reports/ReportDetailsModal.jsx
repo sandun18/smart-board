@@ -7,6 +7,7 @@ const ReportDetailsModal = ({ report, onClose, onDismiss, onResolve }) => {
   const [dismissReasonInput, setDismissReasonInput] = useState('');
   const [isResolving, setIsResolving] = useState(false);
   const [solutionInput, setSolutionInput] = useState('');
+  const [selectedEvidence, setSelectedEvidence] = useState(null);
 
   if (!report) return null;
 
@@ -20,13 +21,39 @@ const ReportDetailsModal = ({ report, onClose, onDismiss, onResolve }) => {
     if (isResolving) {
       // Maps to ReportDecisionDTO.java
       onResolve(report.id, {
-        details: solutionInput,
-        action: "RESOLVED_BY_ADMIN",
-        duration: "N/A"
+        resolutionDetails: solutionInput,
+        actionTaken: "RESOLVED_BY_ADMIN",
+        actionDuration: "N/A"
       });
     } else if (isDismissing) {
       onDismiss(report.id, dismissReasonInput);
     }
+  };
+
+  const handleEvidenceClick = (url) => {
+    if (!url) return;
+    setSelectedEvidence(url);
+  };
+
+  const closeEvidencePreview = () => {
+    setSelectedEvidence(null);
+  };
+
+  const formatDate = (value) => {
+    if (!value) return 'N/A';
+
+    if (Array.isArray(value) && value.length >= 3) {
+      const [year, month, day, hour = 0, minute = 0, second = 0] = value;
+      const parsed = new Date(year, month - 1, day, hour, minute, second);
+      return Number.isNaN(parsed.getTime()) ? 'N/A' : parsed.toLocaleDateString();
+    }
+
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toLocaleDateString();
+    }
+
+    return typeof value === 'string' ? value : 'N/A';
   };
 
   return (
@@ -73,9 +100,14 @@ const ReportDetailsModal = ({ report, onClose, onDismiss, onResolve }) => {
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {report.evidence && report.evidence.length > 0 ? (
                       report.evidence.map((img, idx) => (
-                        <div key={idx} className="aspect-square rounded-xl bg-gray-100 overflow-hidden border border-gray-100 group cursor-zoom-in">
-                          <img src={img} alt="Evidence" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                        </div>
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleEvidenceClick(img)}
+                          className="aspect-square rounded-xl bg-gray-100 overflow-hidden border border-gray-100 group cursor-zoom-in text-left"
+                        >
+                          <img src={img} alt={`Evidence ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        </button>
                       ))
                     ) : (
                       <p className="text-xs text-gray-400 italic">No visual evidence provided.</p>
@@ -87,8 +119,16 @@ const ReportDetailsModal = ({ report, onClose, onDismiss, onResolve }) => {
                 {isResolved && (
                   <section className="bg-emerald-50 border border-emerald-100 p-5 rounded-2xl">
                     <h4 className="text-[11px] font-black text-emerald-700 uppercase tracking-widest mb-2">Resolution Details</h4>
-                    <p className="text-sm text-emerald-800">{report.resolutionDetails}</p>
-                    <div className="mt-2 text-[10px] font-bold text-emerald-600">Action: {report.actionTaken}</div>
+                    <p className="text-sm text-emerald-800">{report.resolutionDetails || 'No resolution details provided.'}</p>
+                    <div className="mt-2 text-[10px] font-bold text-emerald-600">Action: {report.actionTaken || 'N/A'}</div>
+                  </section>
+                )}
+
+                {/* Dismissal History (If Dismissed) */}
+                {isDismissed && (
+                  <section className="bg-amber-50 border border-amber-100 p-5 rounded-2xl">
+                    <h4 className="text-[11px] font-black text-amber-700 uppercase tracking-widest mb-2">Dismiss Reason</h4>
+                    <p className="text-sm text-amber-800">{report.dismissalReason || 'No dismissal reason provided.'}</p>
                   </section>
                 )}
               </div>
@@ -103,10 +143,13 @@ const ReportDetailsModal = ({ report, onClose, onDismiss, onResolve }) => {
                       <span className="text-[10px] font-bold text-gray-400 block mb-1">Reporter (Sender)</span>
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-[#FF7A00] text-white flex items-center justify-center text-xs font-bold">
-                          {report.senderName?.charAt(0)}
+                          {report.senderName?.charAt(0) || '?'}
                         </div>
                         <span className="text-sm font-bold text-[#332720]">{report.senderName}</span>
                       </div>
+                      <span className="text-[11px] text-gray-500 mt-1 block">
+                        Joined: {formatDate(report.senderJoinedDate || report.reporter?.joinedDate)}
+                      </span>
                     </div>
 
                     {report.reportedUserName && (
@@ -118,6 +161,9 @@ const ReportDetailsModal = ({ report, onClose, onDismiss, onResolve }) => {
                           </div>
                           <span className="text-sm font-bold text-[#332720]">{report.reportedUserName}</span>
                         </div>
+                        <span className="text-[11px] text-gray-500 mt-1 block">
+                          Joined: {formatDate(report.reportedUserJoinedDate)}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -128,7 +174,7 @@ const ReportDetailsModal = ({ report, onClose, onDismiss, onResolve }) => {
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-xs text-gray-500">Submitted</span>
-                      <span className="text-xs font-bold text-[#332720]">{new Date(report.submissionDate).toLocaleDateString()}</span>
+                      <span className="text-xs font-bold text-[#332720]">{formatDate(report.submissionDate)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-xs text-gray-500">Type</span>
@@ -186,13 +232,40 @@ const ReportDetailsModal = ({ report, onClose, onDismiss, onResolve }) => {
           onClose={() => setShowSuspendFlow(false)}
           onConfirm={(userId, duration) => {
             onResolve(report.id, {
-                details: "User suspended following policy violation.",
-                action: "ACCOUNT_SUSPENSION",
-                duration: duration
+                resolutionDetails: "User suspended following policy violation.",
+                actionTaken: "ACCOUNT_SUSPENSION",
+                actionDuration: duration
             });
             setShowSuspendFlow(false);
           }}
         />
+      )}
+
+      {selectedEvidence && (
+        <div className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={closeEvidencePreview}>
+          <div className="relative max-w-5xl w-full" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={closeEvidencePreview}
+              className="absolute -top-12 right-0 w-10 h-10 rounded-full bg-white/20 text-white text-2xl flex items-center justify-center hover:bg-white/30"
+              aria-label="Close evidence preview"
+            >
+              &times;
+            </button>
+            <img src={selectedEvidence} alt="Evidence preview" className="w-full max-h-[80vh] object-contain rounded-xl border border-white/20" />
+            <div className="mt-3 text-center">
+              <a
+                href={selectedEvidence}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 text-white text-sm font-bold hover:bg-white/25 transition-colors"
+              >
+                <i className="fas fa-up-right-from-square"></i>
+                Open in new tab
+              </a>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

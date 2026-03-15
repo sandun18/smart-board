@@ -6,7 +6,7 @@ const AdDetailsModal = ({ ad, onClose, onApprove, onReject }) => {
   const [showRejectionInput, setShowRejectionInput] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
 
-  const isPending = ad.status === 'pending';
+  const isPending = ad.status === 'PENDING' || ad.status?.toLowerCase() === 'pending';
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-0 lg:p-4 bg-text-dark/40 backdrop-blur-sm">
@@ -17,8 +17,8 @@ const AdDetailsModal = ({ ad, onClose, onApprove, onReject }) => {
           <div className="flex items-center gap-3 truncate">
             <h3 className="text-base lg:text-xl font-bold text-primary truncate pr-4">Review: {ad.title}</h3>
             <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-              ad.status === 'approved' ? 'bg-success/10 text-success' : 
-              ad.status === 'rejected' ? 'bg-red-alert/10 text-red-alert' : 
+              ad.status === 'APPROVED' || ad.status?.toLowerCase() === 'approved' ? 'bg-success/10 text-success' : 
+              ad.status === 'REJECTED' || ad.status?.toLowerCase() === 'rejected' ? 'bg-red-alert/10 text-red-alert' : 
               'bg-accent/10 text-accent'
             }`}>
               {ad.status}
@@ -52,22 +52,22 @@ const AdDetailsModal = ({ ad, onClose, onApprove, onReject }) => {
             <div className="space-y-4 lg:space-y-6">
               <div>
                 <span className="px-3 py-1 bg-accent/10 text-accent text-[10px] font-bold uppercase rounded-full">Primary Info</span>
-                <h2 className="text-xl lg:text-3xl font-bold text-text-dark mt-2">{ad.price} <span className="text-sm font-normal text-text-muted">/ month</span></h2>
-                <p className="text-text-muted text-sm mt-1"><i className="fas fa-map-marker-alt mr-2 text-accent"></i>{ad.location}</p>
+                <h2 className="text-xl lg:text-3xl font-bold text-text-dark mt-2">Rs. {ad.price} <span className="text-sm font-normal text-text-muted">/ month</span></h2>
+                <p className="text-text-muted text-sm mt-1"><i className="fas fa-map-marker-alt mr-2 text-accent"></i>{ad.address}</p>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-3 bg-background-light rounded-xl">
                   <p className="text-[10px] text-text-muted uppercase font-bold">Boarding Type</p>
-                  <p className="text-sm font-bold text-text-dark capitalize">{ad.category || 'Boarding'}</p>
+                  <p className="text-sm font-bold text-text-dark capitalize">{ad.boardingType || 'N/A'}</p>
                 </div>
                 <div className="p-3 bg-background-light rounded-xl">
                   <p className="text-[10px] text-text-muted uppercase font-bold">Status</p>
-                  <p className="text-sm font-bold text-text-dark capitalize">{ad.status}</p>
+                  <p className="text-sm font-bold text-text-dark capitalize">{ad.status || 'N/A'}</p>
                 </div>
               </div>
 
-              {ad.status === 'rejected' && ad.rejectionReason && (
+              {(ad.status === 'REJECTED' || ad.status?.toLowerCase() === 'rejected') && ad.rejectionReason && (
                 <div className="p-4 bg-red-alert/5 border border-red-alert/10 rounded-xl">
                   <p className="text-[10px] text-red-alert uppercase font-bold mb-1">Reason for Rejection</p>
                   <p className="text-sm italic text-text-dark">"{ad.rejectionReason}"</p>
@@ -101,7 +101,7 @@ const AdDetailsModal = ({ ad, onClose, onApprove, onReject }) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <div className="flex items-center gap-3 text-sm text-text-muted">
                       <i className="fas fa-door-open w-5 text-accent"></i>
-                      <span>Rooms Available: {ad.availableRooms || 'N/A'}</span>
+                      <span>Available Slots: {ad.availableSlots || 'N/A'}</span>
                     </div>
                     <div className="flex items-center gap-3 text-sm text-text-muted">
                       <i className="fas fa-venus-mars w-5 text-accent"></i>
@@ -126,32 +126,38 @@ const AdDetailsModal = ({ ad, onClose, onApprove, onReject }) => {
               {/* OWNER INFORMATION SECTION */}
               {activeTab === 'owner' && (
                 <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                  <div className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-background-light rounded-2xl">
-                    <img 
-                      src={ad.owner.avatar} 
-                      alt={ad.owner.name} 
-                      className="w-24 h-24 rounded-full border-4 border-white shadow-md object-cover"
-                    />
-                    <div className="text-center sm:text-left space-y-2">
-                      <h4 className="text-xl font-bold text-text-dark">{ad.owner.name}</h4>
-                      <div className="flex flex-col gap-1">
-                        <p className="text-sm text-text-muted flex items-center justify-center sm:justify-start gap-2">
-                          <i className="fas fa-envelope text-accent w-4"></i> {ad.owner.email || 'N/A'}
-                        </p>
-                        <p className="text-sm text-text-muted flex items-center justify-center sm:justify-start gap-2">
-                          <i className="fas fa-phone text-accent w-4"></i> {ad.owner.phone || 'N/A'}
-                        </p>
-                      </div>
-                      <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
-                         <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Rating:</span>
-                         <div className="flex text-yellow-500 text-xs">
+                  {ad.owner ? (
+                    <div className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-background-light rounded-2xl">
+                      <img 
+                        src={ad.owner.avatar || 'https://via.placeholder.com/96?text=No+Avatar'} 
+                        alt={ad.owner.name} 
+                        className="w-24 h-24 rounded-full border-4 border-white shadow-md object-cover"
+                      />
+                      <div className="text-center sm:text-left space-y-2">
+                        <h4 className="text-xl font-bold text-text-dark">{ad.owner.name || 'Unknown Owner'}</h4>
+                        <div className="flex flex-col gap-1">
+                          <p className="text-sm text-text-muted flex items-center justify-center sm:justify-start gap-2">
+                            <i className="fas fa-envelope text-accent w-4"></i> {ad.owner.email || 'N/A'}
+                          </p>
+                          <p className="text-sm text-text-muted flex items-center justify-center sm:justify-start gap-2">
+                            <i className="fas fa-phone text-accent w-4"></i> {ad.owner.phone || 'N/A'}
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
+                          <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Rating:</span>
+                          <div className="flex text-yellow-500 text-xs">
                             {[...Array(5)].map((_, i) => (
                               <i key={i} className={`fas fa-star ${i < (ad.owner.rating || 0) ? 'fill-current' : 'opacity-20'}`}></i>
                             ))}
-                         </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="p-6 bg-background-light rounded-2xl text-center text-text-muted">
+                      <p>Owner information not available</p>
+                    </div>
+                  )}
                 </div>
               )}
 

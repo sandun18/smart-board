@@ -9,6 +9,7 @@ import { useReports } from '../../hooks/admin/useReports';
 const AdminReports = () => {
   const navigate = useNavigate();
   const { 
+    stats,
     filteredReports, 
     currentTab, 
     setCurrentTab, 
@@ -22,14 +23,6 @@ const AdminReports = () => {
     handleResolve 
   } = useReports();
 
-  // Calculate stats dynamically from the current view
-  const stats = {
-    pending: filteredReports.filter(r => r.status === 'PENDING').length,
-    urgent: filteredReports.filter(r => r.severity === 'HIGH').length,
-    resolved: filteredReports.filter(r => r.status === 'RESOLVED').length,
-    total: filteredReports.length
-  };
-
   return (
     <>
       {/* Notifications */}
@@ -41,7 +34,7 @@ const AdminReports = () => {
           { label: 'Pending', val: stats.pending, color: 'border-[#FF7A00]', icon: 'fa-clock', bg: 'bg-[#FF7A00]/10', text: 'text-[#FF7A00]' },
           { label: 'Urgent', val: stats.urgent, color: 'border-[#EF4444]', icon: 'fa-bolt', bg: 'bg-[#EF4444]/10', text: 'text-[#EF4444]' },
           { label: 'Resolved', val: stats.resolved, color: 'border-emerald-500', icon: 'fa-check-circle', bg: 'bg-emerald-50', text: 'text-emerald-600' },
-          { label: 'Current View', val: stats.total, color: 'border-blue-500', icon: 'fa-list', bg: 'bg-blue-50', text: 'text-blue-600' },
+          { label: 'Total Reports', val: stats.total, color: 'border-blue-500', icon: 'fa-list', bg: 'bg-blue-50', text: 'text-blue-600' },
         ].map((s, i) => (
           <div key={i} className={`bg-white p-5 lg:p-6 rounded-[20px] lg:rounded-[25px] shadow-sm border-l-4 ${s.color} flex items-center gap-4`}>
              <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-full ${s.bg} ${s.text} flex items-center justify-center text-lg lg:text-xl`}>

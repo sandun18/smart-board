@@ -1,12 +1,14 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import AdminService from '../../api/admin/AdminService';
 
 export const useReports = () => {
   const [reports, setReports] = useState([]);
+  const [stats, setStats] = useState({ pending: 0, urgent: 0, resolved: 0, dismissed: 0, total: 0 });
   const [currentTab, setCurrentTab] = useState('PENDING'); // PENDING, RESOLVED, DISMISSED
   const [category, setCategory] = useState('all'); 
   const [selectedReport, setSelectedReport] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [toast, setToast] = useState(null);
 
   const showToast = (message, type = 'info') => {
@@ -14,34 +16,92 @@ export const useReports = () => {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      const data = await AdminService.getReports(currentTab);
+      const statuses = ['PENDING', 'RESOLVED', 'DISMISSED'];
+      const responses = await Promise.allSettled(
+        statuses.map((status) => AdminService.getReports(status))
+      );
+
+      const byStatus = statuses.reduce((acc, status, idx) => {
+        const value = responses[idx]?.status === 'fulfilled' && Array.isArray(responses[idx].value)
+          ? responses[idx].value
+          : [];
+        acc[status] = value;
+        return acc;
+      }, {});
+
+      const reportsArray = byStatus[currentTab] || [];
+      const allReports = statuses.flatMap((status) => byStatus[status] || []);
+
+      setStats({
+        pending: (byStatus.PENDING || []).length,
+        resolved: (byStatus.RESOLVED || []).length,
+        dismissed: (byStatus.DISMISSED || []).length,
+        urgent: allReports.filter((r) => String(r?.severity || '').toUpperCase() === 'HIGH').length,
+        total: allReports.length,
+      });
+      
       // Map Backend DTO to Frontend UI structure
-      const mapped = data.map(r => ({
+      const mapped = reportsArray.map(r => ({
+        // Preserve raw joined-date values; UI formatter handles string/array/timestamp variants.
         ...r,
         id: r.id,
-        title: r.title,
-        priority: r.severity, // High, Medium, Low
-        date: new Date(r.submissionDate).toLocaleDateString(),
+        title: r.title || 'Untitled Report',
+        priority: r.severity || 'LOW',
+        date: r.submissionDate ? new Date(r.submissionDate).toLocaleDateString() : 'N/A',
+        senderJoinedDate:
+          r.senderJoinedDate ||
+          r.sender_joined_date ||
+          r.senderCreatedAt ||
+          r.sender?.joinedDate ||
+          r.sender?.createdAt ||
+          null,
+        reportedUserJoinedDate:
+          r.reportedUserJoinedDate ||
+          r.reported_user_joined_date ||
+          r.reportedUserCreatedAt ||
+          r.reportedUser?.joinedDate ||
+          r.reportedUser?.createdAt ||
+          null,
         reporter: {
-          name: r.senderName,
-          role: "USER", // You can refine this logic
-          avatar: `https://ui-avatars.com/api/?name=${r.senderName}&background=random`
+          name: r.senderName || 'Unknown',
+          role: 'USER',
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(r.senderName || 'User')}&background=random`,
+          joinedDate:
+            r.senderJoinedDate ||
+            r.sender_joined_date ||
+            r.senderCreatedAt ||
+            r.sender?.joinedDate ||
+            r.sender?.createdAt ||
+            null,
         }
       }));
+      
       setReports(mapped);
     } catch (error) {
-      showToast("Could not load reports", "error");
+      console.error('❌ [AdminReports] Error fetching reports:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.config?.headers ? { Authorization: error.config.headers.Authorization ? '✅ Present' : '❌ Missing' } : 'N/A'
+      });
+      
+      setError(`Failed to load reports: ${error.response?.status === 401 ? 'Unauthorized - Please login again' : error.response?.status === 403 ? 'Forbidden - Admin access required' : error.message}`);
+      setReports([]);
+      setStats({ pending: 0, urgent: 0, resolved: 0, dismissed: 0, total: 0 });
+      showToast("Could not load reports: " + (error.message || 'Unknown error'), "error");
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentTab]);
 
   useEffect(() => {
     fetchReports();
-  }, [currentTab]);
+  }, [fetchReports]);
 
   const filteredReports = useMemo(() => {
     if (category === 'all') return reports;
@@ -61,7 +121,11 @@ export const useReports = () => {
 
   const handleDismiss = async (id, reason) => {
     try {
-      await AdminService.dismissReport(id, reason);
+      // Wrap reason in ReportDecisionDTO format expected by backend
+      const decisionData = {
+        dismissalReason: reason
+      };
+      await AdminService.dismissReport(id, decisionData);
       showToast(`Report #${id} dismissed`, 'warning');
       setSelectedReport(null);
       fetchReports();
@@ -71,8 +135,9 @@ export const useReports = () => {
   };
 
   return {
+    stats,
     filteredReports, currentTab, setCurrentTab, category, setCategory,
-    selectedReport, setSelectedReport, toast, loading,
+    selectedReport, setSelectedReport, toast, loading, error,
     handleDismiss, handleResolve, refresh: fetchReports
   };
 };

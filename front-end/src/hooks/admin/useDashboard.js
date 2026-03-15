@@ -1,4 +1,3 @@
-// src/hooks/useDashboard.js
 import { useState, useEffect } from 'react';
 import AdminService from '../../api/admin/AdminService';
 
@@ -15,27 +14,79 @@ export const useDashboard = () => {
     setTimeout(() => setToast(null), 3000);
   };
 
+  const mapActivityType = (log) => {
+    const status = String(log?.status || '').toLowerCase();
+    const action = String(log?.action || '').toLowerCase();
+
+    if (status.includes('success')) return 'success';
+    if (status.includes('fail') || status.includes('error')) return 'warning';
+    if (action.includes('delete') || action.includes('reject')) return 'warning';
+    if (action.includes('approve') || action.includes('create') || action.includes('publish')) return 'primary';
+    return 'info';
+  };
+
+  const formatActivityTime = (createdAt) => {
+    if (!createdAt) return 'N/A';
+    const date = new Date(createdAt);
+    if (Number.isNaN(date.getTime())) return 'N/A';
+    return date.toLocaleString();
+  };
+
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      // 1. Fetch Stats from AdminDashboardDTO
-      const statsData = await AdminService.getDashboardStats();
-      setStats(statsData);
+      const [statsRes, boardingsRes, reportsRes, activityRes] = await Promise.allSettled([
+        AdminService.getDashboardStats(),
+        AdminService.getAllBoardings(),
+        AdminService.getReports('PENDING'),
+        AdminService.getActivityLogs()
+      ]);
 
-      // 2. Fetch Boardings for PendingApprovals
-      const boardings = await AdminService.getAllBoardings();
-      setApprovals(boardings.filter(b => b.status === 'PENDING').slice(0, 5));
+      if (statsRes.status === 'fulfilled') {
+        setStats(statsRes.value);
+      } else {
+        setStats(null);
+      }
 
-      // 3. Fetch Reports for RecentReports
-      const reports = await AdminService.getReports('PENDING');
-      setRecentReports(reports.slice(0, 5));
+      if (boardingsRes.status === 'fulfilled') {
+        const boardings = Array.isArray(boardingsRes.value) ? boardingsRes.value : [];
+        setApprovals(boardings.filter(b => b?.status === 'PENDING').slice(0, 5));
+      } else {
+        setApprovals([]);
+      }
+
+      if (reportsRes.status === 'fulfilled') {
+        const reports = Array.isArray(reportsRes.value) ? reportsRes.value : [];
+        setRecentReports(reports.slice(0, 5));
+      } else {
+        setRecentReports([]);
+      }
+
+      if (activityRes.status === 'fulfilled') {
+        const logs = Array.isArray(activityRes.value) ? activityRes.value : [];
+        const mappedActivities = logs
+          .map((log, index) => ({
+            id: log.eventId || `activity-${index}`,
+            user: log.user || 'System',
+            action: log.action || 'performed an action',
+            time: formatActivityTime(log.createdAt),
+            icon: log.icon || 'fa-history',
+            type: mapActivityType(log)
+          }))
+          .slice(0, 6);
+
+        setActivities(mappedActivities);
+      } else {
+        setActivities([]);
+      }
+
+      if ([statsRes, boardingsRes, reportsRes, activityRes].some(r => r.status === 'rejected')) {
+        showToast('Some dashboard sections failed to load', 'error');
+      }
 
       setLoading(false);
     } catch (error) {
-      // Log detailed error for debugging
       console.error('Dashboard load error:', error);
-      console.error('Error response data:', error?.response?.data);
-      console.error('Error status:', error?.response?.status);
       showToast('Error loading dashboard data', 'error');
       setLoading(false);
     }
@@ -49,7 +100,7 @@ export const useDashboard = () => {
     try {
       await AdminService.approveBoarding(id);
       showToast(`Boarding #${id} approved!`, 'success');
-      fetchDashboardData(); // Refresh data
+      fetchDashboardData();
     } catch (error) {
       showToast('Approval failed', 'error');
     }

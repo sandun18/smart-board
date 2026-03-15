@@ -47,20 +47,27 @@ const UserTable = ({ users, onView, onDelete }) => {
                                         </div>
                                     </div>
                                 </td>
-                                <td className="p-5 capitalize">{user.role}</td>
+                                <td className="p-5">
+                                    <div className="text-sm font-medium capitalize">
+                                        {user.role}
+                                        {user.role === 'OWNER' && user.boardingCount > 0 && (
+                                            <div className="text-[10px] text-text-muted font-normal">{user.boardingCount} boarding(s)</div>
+                                        )}
+                                    </div>
+                                </td>
                                 <td className="p-5">
                                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                        user.status === 'active' ? 'bg-success/10 text-success' : 'bg-red-alert/10 text-red-alert'
+                                        user.status === 'active' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
                                     }`}>
-                                        {user.status}
+                                        {user.status === 'pending' ? 'Pending Approval' : 'Active'}
                                     </span>
                                 </td>
                                 <td className="p-5 text-sm text-text-muted">{user.registrationDate}</td>
                                 <td className="p-5 text-right space-x-2">
-                                    <button onClick={() => onView(user)} className="p-2 text-info hover:bg-info/10 rounded-lg">
+                                    <button onClick={() => onView(user)} className="p-2 text-info hover:bg-info/10 rounded-lg transition-colors">
                                         <i className="fas fa-eye"></i>
                                     </button>
-                                    <button onClick={() => onDelete(user.id)} className="p-2 text-red-alert hover:bg-red-alert/10 rounded-lg">
+                                    <button onClick={() => onDelete(user.id)} className="p-2 text-red-alert hover:bg-red-alert/10 rounded-lg transition-colors">
                                         <i className="fas fa-trash"></i>
                                     </button>
                                 </td>
@@ -91,13 +98,19 @@ const UserTable = ({ users, onView, onDelete }) => {
                         
                         <div className="flex justify-between items-center bg-background-light/50 p-3 rounded-xl">
                             <div className="text-[11px] font-bold text-text-muted uppercase tracking-wider">
-                                Role: <span className="text-text-dark">{user.role}</span>
+                                <div>Role: <span className="text-text-dark">{user.role}</span></div>
+                                {user.role === 'OWNER' && user.boardingCount > 0 && (
+                                    <div className="text-success">📍 {user.boardingCount} boarding(s)</div>
+                                )}
+                                {user.status === 'pending' && (
+                                    <div className="text-warning">⚠️ Pending Approval</div>
+                                )}
                             </div>
                             <div className="flex gap-2">
-                                <button onClick={() => onView(user)} className="w-9 h-9 flex items-center justify-center bg-white text-info rounded-full shadow-sm">
+                                <button onClick={() => onView(user)} className="w-9 h-9 flex items-center justify-center bg-white text-info rounded-full shadow-sm hover:bg-info/10 transition-colors">
                                     <i className="fas fa-eye"></i>
                                 </button>
-                                <button onClick={() => onDelete(user.id)} className="w-9 h-9 flex items-center justify-center bg-white text-red-alert rounded-full shadow-sm">
+                                <button onClick={() => onDelete(user.id)} className="w-9 h-9 flex items-center justify-center bg-white text-red-alert rounded-full shadow-sm hover:bg-red-alert/10 transition-colors">
                                     <i className="fas fa-trash"></i>
                                 </button>
                             </div>

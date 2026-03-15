@@ -28,4 +28,8 @@ public interface ReviewRepository extends JpaRepository<Review,Long> {
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.boarding.id = :boardingId")
     Double getAverageRatingForBoarding(Long boardingId);
 
+    long deleteByStudent_Id(Long studentId);
+
+    long deleteByBoarding_IdIn(List<Long> boardingIds);
+
 }

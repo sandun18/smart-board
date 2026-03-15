@@ -12,7 +12,7 @@ const AdminSettings = () => {
   const { 
     activeSection, setActiveSection, 
     maintenanceMode, setMaintenanceMode, 
-    systemHealth, handleSave 
+    systemHealth, generalSettings, saving, handleSave 
   } = useSettings();
 
   const tabs = [
@@ -57,7 +57,12 @@ const AdminSettings = () => {
                 <input 
                   type="checkbox" 
                   checked={maintenanceMode}
-                  onChange={(e) => setMaintenanceMode(e.target.checked)}
+                  onChange={async (e) => {
+                    const next = e.target.checked;
+                    setMaintenanceMode(next);
+                    localStorage.setItem('sbms_maintenance_mode', String(next));
+                    await handleSave({ maintenanceMode: next });
+                  }}
                   className="sr-only peer"
                 />
                 <div className="w-11 h-6 bg-white/20 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
@@ -71,7 +76,14 @@ const AdminSettings = () => {
           <SystemStatus health={systemHealth} />
           
           <div className="bg-white rounded-large shadow-custom border border-gray-50 p-8 min-h-[500px]">
-            {activeSection === 'general' && <GeneralSettings onSave={handleSave} />}
+            {activeSection === 'general' && (
+              <GeneralSettings
+                settings={generalSettings}
+                maintenanceMode={maintenanceMode}
+                onSave={handleSave}
+                saving={saving}
+              />
+            )}
             {activeSection === 'backup' && <BackupManagement />}
             {activeSection === 'logs' && <SystemLogs />}
             {activeSection === 'security' && (

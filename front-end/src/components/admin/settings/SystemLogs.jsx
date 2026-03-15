@@ -1,12 +1,57 @@
 import React from 'react';
+import AdminService from '../../../api/admin/AdminService';
 
 const SystemLogs = () => {
-  const logs = [
-    { id: 'LOG-452', user: 'Admin (Alex)', action: 'Modified System Settings', status: 'Success', time: '10 mins ago', icon: 'fa-edit', color: 'text-success' },
-    { id: 'LOG-451', user: 'System', action: 'Daily Backup Completed', status: 'Success', time: '2 hours ago', icon: 'fa-database', color: 'text-info' },
-    { id: 'LOG-450', user: 'Admin (Alex)', action: 'Login Attempt', status: 'Success', time: '5 hours ago', icon: 'fa-sign-in-alt', color: 'text-primary' },
-    { id: 'LOG-449', user: 'Unknwon', action: 'Failed Login Attempt', status: 'Failed', time: '1 day ago', icon: 'fa-exclamation-triangle', color: 'text-red-alert' },
-  ];
+  const [logs, setLogs] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+
+  const loadLogs = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await AdminService.getActivityLogs();
+      setLogs(
+        (data || []).map((l) => ({
+          id: l.eventId,
+          user: l.user,
+          action: l.action,
+          status: l.status,
+          time: l.createdAt ? new Date(l.createdAt).toLocaleString() : 'N/A',
+          icon: l.icon || 'fa-history'
+        }))
+      );
+    } catch (error) {
+      console.error('Failed to load activity logs', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    loadLogs();
+  }, [loadLogs]);
+
+  const exportCsv = () => {
+    const lines = [
+      ['Event ID', 'User', 'Action', 'Status', 'Time'].join(','),
+      ...logs.map((l) => [
+        l.id,
+        `"${String(l.user || '').replaceAll('"', '""')}"`,
+        `"${String(l.action || '').replaceAll('"', '""')}"`,
+        l.status,
+        `"${l.time}"`
+      ].join(','))
+    ];
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `activity-logs-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="animate-fadeIn">
@@ -16,14 +61,22 @@ const SystemLogs = () => {
           <p className="text-text-muted text-sm">Audit trail of all administrative actions</p>
         </div>
         <div className="flex gap-2 w-full md:w-auto">
-          <button className="flex-1 md:flex-none px-4 py-2 border border-gray-200 rounded-xl text-sm font-bold text-text-muted hover:bg-gray-50 transition-colors">
+          <button
+            onClick={exportCsv}
+            className="flex-1 md:flex-none px-4 py-2 border border-gray-200 rounded-xl text-sm font-bold text-text-muted hover:bg-gray-50 transition-colors"
+          >
             <i className="fas fa-file-export mr-2"></i> Export CSV
           </button>
-          <button className="flex-1 md:flex-none px-4 py-2 bg-text-dark text-white rounded-xl text-sm font-bold hover:shadow-lg transition-all">
+          <button
+            onClick={loadLogs}
+            className="flex-1 md:flex-none px-4 py-2 bg-text-dark text-white rounded-xl text-sm font-bold hover:shadow-lg transition-all"
+          >
             <i className="fas fa-sync-alt mr-2"></i> Refresh
           </button>
         </div>
       </div>
+
+      {loading && <p className="text-sm text-text-muted mb-4">Loading activity logs...</p>}
 
       <div className="overflow-x-auto rounded-2xl border border-gray-100">
         <table className="w-full text-left border-collapse">

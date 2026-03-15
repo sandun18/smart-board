@@ -12,7 +12,7 @@ const RecentReports = ({ reports, onNavigate }) => {
           <div key={report.id} className="flex flex-col sm:flex-row items-center gap-3 p-4 bg-background-light rounded-[15px] border border-transparent hover:border-accent/10 transition-all">
             <div className="flex-1 text-center sm:text-left">
               <h4 className="text-text-dark font-bold text-base">{report.title}</h4>
-              <p className="text-text-muted text-xs">{report.desc}</p>
+              <p className="text-text-muted text-xs">{report.description || 'No description'}</p>
             </div>
             <button 
               className="w-full sm:w-auto border-2 border-accent text-accent px-4 py-1.5 rounded-[12px] text-xs font-bold"

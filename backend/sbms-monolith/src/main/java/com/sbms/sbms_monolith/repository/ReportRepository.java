@@ -4,6 +4,8 @@ import com.sbms.sbms_monolith.model.Report;
 import com.sbms.sbms_monolith.model.enums.ReportStatus;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,5 +24,11 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
     
     long countByStatus(ReportStatus status);
     List<Report> findByStatus(ReportStatus status);
+
+    long deleteBySender_Id(Long senderId);
+
+    @Modifying
+    @Query("UPDATE Report r SET r.reportedUser = null WHERE r.reportedUser.id = :userId")
+    int clearReportedUserReference(Long userId);
 
 }

@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
-import AdminService from '../../api/admin/AdminService'; // Updated Import Path
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import AdminService from '../../api/admin/AdminService';
 
 export const useUsers = () => {
     const [users, setUsers] = useState([]);
@@ -9,54 +9,80 @@ export const useUsers = () => {
     const [statusFilter, setStatusFilter] = useState('all');
     const [selectedUser, setSelectedUser] = useState(null);
     const [toast, setToast] = useState(null);
+    const [error, setError] = useState(null);
 
     const showToast = (message, type = 'success') => {
         setToast({ message, type });
         setTimeout(() => setToast(null), 3000);
     };
 
-    // Load users from Backend
-    const fetchUsers = async () => {
+    const formatJoinedDate = (value) => {
+        if (!value) return 'N/A';
+
+        if (Array.isArray(value) && value.length >= 3) {
+            const [year, month, day, hour = 0, minute = 0, second = 0] = value;
+            const parsed = new Date(year, month - 1, day, hour, minute, second);
+            return Number.isNaN(parsed.getTime())
+                ? 'N/A'
+                : parsed.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        const parsed = new Date(value);
+        if (!Number.isNaN(parsed.getTime())) {
+            return parsed.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        return typeof value === 'string' ? value : 'N/A';
+    };
+
+    const fetchUsers = useCallback(async () => {
         try {
             setLoading(true);
-            console.log('🔄 Fetching users from backend...');
+            setError(null);
+            
             const data = await AdminService.getAllUsers();
-            
-            console.log('✅ Backend Response:', data);
-            
+
             if (!data || !Array.isArray(data)) {
-                console.warn('⚠️ Expected array but got:', typeof data, data);
+                setError('Invalid data format from backend - expected array');
                 setUsers([]);
                 showToast('Invalid data format from backend', 'error');
                 return;
             }
             
-            // MAP BACKEND TO FRONTEND:
-            // Java DTO uses 'fullName', React UI uses 'name'
-            const mappedUsers = data.map(u => ({
-                ...u,
-                name: u.fullName || u.name || 'Unknown',
-                // If verifiedOwner is false for an owner, show 'pending'
-                status: (u.role === 'OWNER' && !u.verifiedOwner) ? 'pending' : 'active',
-                avatar: `https://ui-avatars.com/api/?name=${u.fullName || u.name || 'User'}&background=random`
-            }));
+            if (data.length === 0) {
+                setError('No users found in database');
+            }
             
-            console.log('✅ Mapped Users:', mappedUsers);
+            // Keep UI model stable even if backend field names vary by role/user type.
+            const mappedUsers = data.map(u => {
+                const registrationDate = formatJoinedDate(
+                    u.createdAt || u.joinedDate || u.created_date || null
+                );
+                
+                return {
+                    ...u,
+                    name: u.fullName || u.name || 'Unknown',
+                    status: (u.role === 'OWNER' && !u.verifiedOwner) ? 'pending' : 'active',
+                    avatar: u.profileImageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.fullName || u.name || 'User')}&background=random`,
+                    registrationDate: registrationDate
+                };
+            });
+
             setUsers(mappedUsers);
         } catch (error) {
-            console.error('❌ Error fetching users:', error);
+            console.error('Failed to fetch users', error);
+            setError(`Connection failed: ${error.response?.status === 401 ? 'Unauthorized - Please login again' : error.response?.status === 403 ? 'Forbidden - Admin access required' : error.message}`);
             showToast(`Connection to backend failed: ${error.message}`, 'error');
             setUsers([]);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchUsers();
-    }, []);
+    }, [fetchUsers]);
 
-    // Logic to calculate top card stats using real data
     const stats = useMemo(() => {
         return {
             total: users.length,
@@ -66,13 +92,16 @@ export const useUsers = () => {
         };
     }, [users]);
 
-    // Filtering logic (Search, Role, and Status)
     const filteredUsers = useMemo(() => {
         return users.filter(user => {
             const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                                 user.email.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesRole = roleFilter === 'all' || user.role === roleFilter.toUpperCase();
+            
+            const filterRoleUpper = roleFilter === 'all' ? 'all' : roleFilter.toUpperCase();
+            const matchesRole = filterRoleUpper === 'all' || user.role === filterRoleUpper;
+            
             const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
+            
             return matchesSearch && matchesRole && matchesStatus;
         });
     }, [users, searchTerm, roleFilter, statusFilter]);
@@ -80,6 +109,7 @@ export const useUsers = () => {
     return {
         users: filteredUsers,
         loading,
+        error,
         stats,
         searchTerm, setSearchTerm,
         roleFilter, setRoleFilter,
@@ -90,6 +120,7 @@ export const useUsers = () => {
             setSearchTerm(''); 
             setRoleFilter('all');
             setStatusFilter('all');
-        }
+        },
+        removeUser: (id) => setUsers(prev => prev.filter(u => u.id !== id))
     };
 };

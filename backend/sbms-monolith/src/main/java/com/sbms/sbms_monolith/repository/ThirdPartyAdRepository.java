@@ -8,5 +8,6 @@ import java.util.List;
 
 public interface ThirdPartyAdRepository extends JpaRepository<ThirdPartyAd, Long> {
     List<ThirdPartyAd> findByStatus(AdStatus status);
+    List<ThirdPartyAd> findByStatusIn(java.util.List<AdStatus> statuses);
     List<ThirdPartyAd> findByExpiryDateBeforeAndStatus(LocalDateTime now, AdStatus status);
 }

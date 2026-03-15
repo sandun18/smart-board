@@ -1,11 +1,85 @@
 import React, { useState } from 'react';
+import AdminService from '../../../api/admin/AdminService';
 
 const BackupManagement = () => {
-  const [backups, setBackups] = useState([
-    { id: 1, name: 'Full_System_Backup_2023_12_20.zip', size: '142.5 MB', date: '2023-12-20 00:00', type: 'System' },
-    { id: 2, name: 'Database_Snapshot_Dec_15.sql', size: '12.1 MB', date: '2023-12-15 14:30', type: 'Database' },
-    { id: 3, name: 'Media_Assets_Backup.tar.gz', size: '890.2 MB', date: '2023-12-10 02:15', type: 'Media' },
-  ]);
+  const [backups, setBackups] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const loadBackups = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await AdminService.getBackups();
+      setBackups(
+        (data || []).map((b) => ({
+          id: b.id,
+          name: b.name,
+          size: b.size,
+          date: b.createdAt ? new Date(b.createdAt).toLocaleString() : 'N/A',
+          type: b.type || 'System'
+        }))
+      );
+    } catch (error) {
+      console.error('Failed to load backups', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    loadBackups();
+  }, [loadBackups]);
+
+  const handleCreateBackup = async () => {
+    try {
+      await AdminService.createBackup();
+      await loadBackups();
+      alert('Backup created successfully.');
+    } catch (error) {
+      console.error('Failed to create backup', error);
+      alert('Failed to create backup.');
+    }
+  };
+
+  const handleDownload = async (id) => {
+    try {
+      const { blob, filename } = await AdminService.downloadBackup(id);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to download backup', error);
+      alert('Backup download failed.');
+    }
+  };
+
+  const handleRestore = async (id) => {
+    try {
+      await AdminService.restoreBackup(id);
+      alert('Restore action recorded successfully.');
+    } catch (error) {
+      console.error('Failed to restore backup', error);
+      alert('Restore failed.');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this backup permanently?')) {
+      return;
+    }
+    try {
+      await AdminService.deleteBackupFile(id);
+      await loadBackups();
+      alert('Backup deleted.');
+    } catch (error) {
+      console.error('Failed to delete backup', error);
+      alert('Delete failed.');
+    }
+  };
 
   return (
     <div className="animate-fadeIn space-y-8">
@@ -15,7 +89,10 @@ const BackupManagement = () => {
           <h3 className="text-2xl font-black text-text-dark tracking-tight mb-1">Backup & Recovery</h3>
           <p className="text-text-muted text-sm">Manage system snapshots and data restoration points.</p>
         </div>
-        <button className="bg-primary text-white font-black py-4 px-8 rounded-[18px] shadow-[0_10px_20px_rgba(216,76,56,0.3)] hover:-translate-y-1 transition-all flex items-center gap-3 active:scale-95">
+        <button
+          onClick={handleCreateBackup}
+          className="bg-primary text-white font-black py-4 px-8 rounded-[18px] shadow-[0_10px_20px_rgba(216,76,56,0.3)] hover:-translate-y-1 transition-all flex items-center gap-3 active:scale-95"
+        >
           <i className="fas fa-plus-circle"></i>
           Create New Backup
         </button>
@@ -52,7 +129,9 @@ const BackupManagement = () => {
       <div className="grid grid-cols-1 gap-4">
         <h4 className="text-xs font-black text-text-muted uppercase tracking-widest ml-1">Available Restore Points</h4>
         
-        {backups.map((backup) => (
+        {loading && <p className="text-sm text-text-muted">Loading backups...</p>}
+
+        {!loading && backups.map((backup) => (
           <div 
             key={backup.id} 
             className="group flex flex-col md:flex-row items-center justify-between p-5 bg-white rounded-[20px] border border-gray-100 hover:border-accent/30 hover:shadow-xl transition-all duration-300"
@@ -84,13 +163,25 @@ const BackupManagement = () => {
 
             {/* Action Buttons */}
             <div className="flex gap-2 mt-4 md:mt-0 w-full md:w-auto justify-end border-t md:border-t-0 pt-4 md:pt-0">
-              <button title="Restore System" className="p-3 w-11 h-11 flex items-center justify-center rounded-xl bg-success/10 text-success hover:bg-success hover:text-white transition-all shadow-sm">
+              <button
+                title="Restore System"
+                onClick={() => handleRestore(backup.id)}
+                className="p-3 w-11 h-11 flex items-center justify-center rounded-xl bg-success/10 text-success hover:bg-success hover:text-white transition-all shadow-sm"
+              >
                 <i className="fas fa-undo-alt"></i>
               </button>
-              <button title="Download" className="p-3 w-11 h-11 flex items-center justify-center rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all shadow-sm">
+              <button
+                title="Download"
+                onClick={() => handleDownload(backup.id)}
+                className="p-3 w-11 h-11 flex items-center justify-center rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all shadow-sm"
+              >
                 <i className="fas fa-download"></i>
               </button>
-              <button title="Delete" className="p-3 w-11 h-11 flex items-center justify-center rounded-xl bg-red-alert/10 text-red-alert hover:bg-red-alert hover:text-white transition-all shadow-sm">
+              <button
+                title="Delete"
+                onClick={() => handleDelete(backup.id)}
+                className="p-3 w-11 h-11 flex items-center justify-center rounded-xl bg-red-alert/10 text-red-alert hover:bg-red-alert hover:text-white transition-all shadow-sm"
+              >
                 <i className="fas fa-trash-alt"></i>
               </button>
             </div>

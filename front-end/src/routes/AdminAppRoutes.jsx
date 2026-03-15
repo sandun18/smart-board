@@ -10,6 +10,7 @@ import AdminReports from "../pages/admin/AdminReports";
 import AdminSettings from "../pages/admin/AdminSettings";
 import AdminThirdParty from "../pages/admin/AdminThirdParty";
 import AdminAnalytics from "../pages/admin/AdminAnalytics";
+import AdminProfile from "../pages/admin/AdminProfile";
 
 const AdminAppRoutes = () => {
   return (
@@ -25,6 +26,7 @@ const AdminAppRoutes = () => {
           <Route path="reports" element={<AdminReports />} />
           <Route path="settings" element={<AdminSettings />} />
           <Route path="thirdparty" element={<AdminThirdParty />} />
+                  <Route path="profile" element={<AdminProfile />} />
         </Route>
       </Route>
 

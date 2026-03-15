@@ -22,6 +22,12 @@ public class ThirdPartyAd extends BaseEntity {
 
     private String companyName;
 
+    private String description;
+
+    private String email;
+
+    private String phone;
+
     @Column(nullable = false)
     private String redirectUrl;
 
@@ -33,6 +39,9 @@ public class ThirdPartyAd extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AdStatus status = AdStatus.PENDING;
+
+    @Column(nullable = true)
+    private Boolean isPublic = false;
 
     /**
      * planName and planPrice store the snapshot of the pricing plan 

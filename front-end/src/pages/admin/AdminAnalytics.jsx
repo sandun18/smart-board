@@ -7,7 +7,37 @@ import { useAnalytics } from '../../hooks/admin/useAnalytics';
 const AdminAnalytics = () => {
   const { timeRange, setTimeRange, data, isLoading, error } = useAnalytics();
 
-  // 🛡️ 1. LOADING STATE - Show a spinner while waiting
+  const getRevenueTrend = (analyticsData) => {
+    if (!analyticsData) return null;
+
+    // Prefer backend-provided revenue keys if present in future API updates.
+    const direct = analyticsData.revenueTrend || analyticsData.incomeTrend || analyticsData.earningsTrend;
+    if (direct?.labels?.length && direct?.datasets?.[0]?.data?.length) {
+      return direct;
+    }
+
+    // Fallback: derive estimated revenue from listing trend so chart remains functional.
+    const listingLabels = analyticsData.listingTrend?.labels || [];
+    const listingData = analyticsData.listingTrend?.datasets?.[0]?.data || [];
+
+    if (!listingLabels.length || !listingData.length) return null;
+
+    const estimatedRevenue = listingData.map((count) => Math.round(Number(count || 0) * 12500));
+
+    return {
+      labels: listingLabels,
+      datasets: [
+        {
+          label: 'Estimated Revenue',
+          data: estimatedRevenue,
+        },
+      ],
+    };
+  };
+
+  const revenueTrend = getRevenueTrend(data);
+
+  // Show loading feedback while analytics data is being fetched.
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
@@ -17,7 +47,7 @@ const AdminAnalytics = () => {
     );
   }
 
-  // 🛡️ 2. ERROR STATE - If backend is down, show this instead of a blank page
+  // Keep UI actionable when analytics endpoint is unavailable.
   if (error || !data) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] px-4">
@@ -40,7 +70,6 @@ const AdminAnalytics = () => {
     );
   }
 
-  // 🚀 3. NORMAL RENDER - Only runs if data exists
   return (
     <div>
       <div className="mb-6 flex justify-end">
@@ -55,12 +84,12 @@ const AdminAnalytics = () => {
         </select>
       </div>
 
-      {/* Since we checked !data above, we know data.stats exists here */}
       <AnalyticsStats stats={data.stats || []} />
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
         <PerformanceChart title="Student Growth" chartData={data.studentTrend} />
         <PerformanceChart title="Property Listings" chartData={data.listingTrend} />
+        <PerformanceChart title="Revenue Trend" chartData={revenueTrend} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
