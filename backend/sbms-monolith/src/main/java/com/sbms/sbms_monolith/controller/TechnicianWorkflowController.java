@@ -7,6 +7,7 @@ import com.sbms.sbms_monolith.dto.technician.TechnicianReviewDTO;
 import com.sbms.sbms_monolith.model.Maintenance;
 import com.sbms.sbms_monolith.model.User;
 import com.sbms.sbms_monolith.model.enums.MaintenanceIssueType;
+import com.sbms.sbms_monolith.model.enums.UserRole;
 import com.sbms.sbms_monolith.repository.UserRepository;
 import com.sbms.sbms_monolith.service.TechnicianWorkflowService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,6 +100,25 @@ public class TechnicianWorkflowController {
         User tech = userRepository.findByEmail(auth.getName()).orElseThrow();
 
         return workflowService.getReviewsForTechnician(tech);
+    }
+
+    // Public endpoint to view any technician's reviews
+    @GetMapping("/{technicianId}/reviews")
+    public List<TechnicianReviewDTO> getTechnicianReviewsPublic(
+            @PathVariable Long technicianId
+    ) {
+        User technician = userRepository.findById(technicianId)
+                .orElseThrow(() -> new RuntimeException("Technician not found"));
+
+        // Verify user is actually a technician
+        if (technician.getRole() == null ||
+                (!technician.getRole().equals(UserRole.TECHNICIAN) &&
+                        !technician.getRole().toString().equals("TECH"))) {
+            throw new RuntimeException("User is not a technician");
+        }
+
+        // Reuse existing service method
+        return workflowService.getReviewsForTechnician(technician);
     }
 
     // DYNAMIC ROUTES (Lower Priority)

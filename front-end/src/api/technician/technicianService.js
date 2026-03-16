@@ -13,9 +13,24 @@ export const getTechnicianJobs = async () => {
 };
 
 // 3. NEW: Get Reviews
-export const getTechnicianReviews = async () => {
-  const response = await api.get("/technician-workflow/reviews");
-  return response.data;
+export const getTechnicianReviews = async (technicianId = null) => {
+  try {
+    // If no ID = get authenticated user's reviews
+    // If ID provided = get public reviews for that technician
+    const endpoint = technicianId 
+      ? `/technician-workflow/${technicianId}/reviews`
+      : "/technician-workflow/reviews";
+    
+    const response = await api.get(endpoint);
+    return response.data || [];
+  } catch (error) {
+    console.error("Error fetching reviews:", {
+      status: error.response?.status,
+      message: error.response?.data,
+      technicianId,
+    });
+    return []; // Return empty array instead of throwing
+  }
 };
 
 // 4. Accept or Reject Job

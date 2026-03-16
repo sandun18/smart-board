@@ -134,13 +134,13 @@ const TechnicianManagementPage = () => {
   };
 
   const handleTechnicianProfileClick = (techId) => {
-      if (techId) {
-        // Assuming your route is /profile/view/:id based on previous conversations
-        navigate(`/profile/view/${techId}`);
-      } else {
-        toast.error("Technician profile ID not found");
-      }
-    };
+    if (techId) {
+      // Assuming your route is /profile/view/:id based on previous conversations
+      navigate(`/profile/view/${techId}`);
+    } else {
+      toast.error("Technician profile ID not found");
+    }
+  };
 
   const handleReport = async () => {
     // 1. Check for missing IDs
@@ -154,8 +154,6 @@ const TechnicianManagementPage = () => {
       //
       return toast.error("Session error: Sender ID not found.");
     }
-
-    
 
     try {
       const payload = {
@@ -235,7 +233,7 @@ const TechnicianManagementPage = () => {
               <h2 className="flex items-center gap-2 mb-4 text-xl font-bold">
                 <FaTools className="text-primary" /> Available Experts
               </h2>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {/* <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {technicians.map((tech) => (
                   <div
                     key={tech.id}
@@ -269,6 +267,73 @@ const TechnicianManagementPage = () => {
                         Assign Job
                       </button>
                     </div>
+                  </div>
+                ))}
+              </div> */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {technicians.map((tech) => (
+                  <div
+                    key={tech.id}
+                    className="p-4 transition-all bg-white border rounded-xl hover:border-primary"
+                  >
+                    {/* Profile Section */}
+                    <div
+                      className="flex items-center gap-3 cursor-pointer group"
+                      onClick={() => handleTechnicianProfileClick(tech.id)}
+                    >
+                      {/* ✅ Better Image Handling */}
+                      <div className="w-12 h-12 overflow-hidden transition-all bg-gray-200 rounded-full group-hover:ring-2 group-hover:ring-primary shrink-0">
+                        <img
+                          src={
+                            tech.profileImageUrl &&
+                            tech.profileImageUrl.startsWith("http")
+                              ? tech.profileImageUrl
+                              : `https://ui-avatars.com/api/?name=${encodeURIComponent(tech.fullName)}&background=random`
+                          }
+                          alt={tech.fullName}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tech.fullName)}&background=0D8ABC&color=fff`;
+                          }}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold transition-colors group-hover:text-primary truncate">
+                          {tech.fullName}
+                        </h4>
+                        <p className="text-xs text-gray-500">
+                          {tech.city || "Area Not Specified"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* ✅ NEW: Rating & Price Row */}
+                    <div className="flex items-center justify-between pt-4 border-t mt-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-gray-600">
+                          Rating:
+                        </span>
+                        <span className="flex items-center gap-1 text-yellow-400">
+                          <FaStar size={12} />
+                          <span className="text-sm font-bold">
+                            {tech.averageRating > 0
+                              ? tech.averageRating.toFixed(1)
+                              : "NEW"}
+                          </span>
+                        </span>
+                      </div>
+                      <span className="text-sm font-bold text-primary">
+                        LKR {tech.basePrice?.toLocaleString() || "0"}
+                      </span>
+                    </div>
+
+                    {/* Assign Button */}
+                    <button
+                      onClick={() => handleAssign(tech.id)}
+                      className="w-full mt-4 px-4 py-2 text-sm font-bold text-white rounded-lg bg-slate-900 hover:bg-slate-800 transition-colors"
+                    >
+                      Assign Job
+                    </button>
                   </div>
                 ))}
               </div>
