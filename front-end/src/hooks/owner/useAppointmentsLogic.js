@@ -32,6 +32,7 @@ const useAppointmentsLogic = () => {
       const mappedData = data.map((dto) => ({
         id: dto.id,
         student: dto.studentName,
+        studentId: dto.studentId,
         boardingName: dto.boardingTitle,
         boardingAddress: dto.boardingAddress,
         numberOfStudents: dto.numberOfStudents,

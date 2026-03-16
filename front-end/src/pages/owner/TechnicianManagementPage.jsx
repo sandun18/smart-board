@@ -26,8 +26,7 @@ const TechnicianManagementPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { currentOwner } = useOwnerAuth(); 
-
+  const { currentOwner } = useOwnerAuth();
 
   const [request, setRequest] = useState(null);
   const [technicians, setTechnicians] = useState([]);
@@ -61,7 +60,7 @@ const TechnicianManagementPage = () => {
 
       setRequest({
         ...currentReq,
-        technicianId: techId
+        technicianId: techId,
       });
 
       // 2. Map Title to Backend Enum Skill for search
@@ -70,13 +69,33 @@ const TechnicianManagementPage = () => {
         let mappedSkill = "OTHER";
 
         // Simple keyword mapping logic
-        if (title.includes("PLUMB") || title.includes("TAP") || title.includes("LEAK") || title.includes("WATER")) {
+        if (
+          title.includes("PLUMB") ||
+          title.includes("TAP") ||
+          title.includes("LEAK") ||
+          title.includes("WATER")
+        ) {
           mappedSkill = "PLUMBING";
-        } else if (title.includes("ELECT") || title.includes("LIGHT") || title.includes("POWER") || title.includes("WIRE")) {
+        } else if (
+          title.includes("ELECT") ||
+          title.includes("LIGHT") ||
+          title.includes("POWER") ||
+          title.includes("WIRE")
+        ) {
           mappedSkill = "ELECTRICAL";
-        } else if (title.includes("FURNIT") || title.includes("BED") || title.includes("CHAIR") || title.includes("TABLE")) {
+        } else if (
+          title.includes("FURNIT") ||
+          title.includes("BED") ||
+          title.includes("CHAIR") ||
+          title.includes("TABLE")
+        ) {
           mappedSkill = "FURNITURE";
-        } else if (title.includes("APPLIANCE") || title.includes("FRIDGE") || title.includes("AC") || title.includes("FAN")) {
+        } else if (
+          title.includes("APPLIANCE") ||
+          title.includes("FRIDGE") ||
+          title.includes("AC") ||
+          title.includes("FAN")
+        ) {
           mappedSkill = "APPLIANCE";
         } else if (title.includes("CLEANING") || title.includes("WASH")) {
           mappedSkill = "CLEANING";
@@ -114,35 +133,50 @@ const TechnicianManagementPage = () => {
     }
   };
 
-  const handleReport = async () => {
-  // 1. Check for missing IDs
-  if (!request?.technicianId) { //
-    return toast.error("Cannot report: Technician ID is missing from this record.");
-  }
-  if (!currentOwner?.id) { //
-    return toast.error("Session error: Sender ID not found.");
-  }
-
-  try {
-    const payload = {
-      title: `Technician Issue: ${request.technicianName}`,
-      description: reportData.description,
-      reportType: reportData.reportType,
-      severity: reportData.severity || "MEDIUM",
-      boardingName: request.boardingTitle || request.boardingName,
-      ownerId: currentOwner.id, //
-      studentId: request.technicianId, //
-      incidentDate: new Date().toISOString().split("T")[0],
-      allowContact: true,
+  const handleTechnicianProfileClick = (techId) => {
+      if (techId) {
+        // Assuming your route is /profile/view/:id based on previous conversations
+        navigate(`/profile/view/${techId}`);
+      } else {
+        toast.error("Technician profile ID not found");
+      }
     };
 
-    await createReport(payload, []); //
-    toast.success("Report submitted!");
-    setShowReportModal(false);
-  } catch (err) {
-    toast.error("Submission failed. Ensure you have permission to report.");
-  }
-};
+  const handleReport = async () => {
+    // 1. Check for missing IDs
+    if (!request?.technicianId) {
+      //
+      return toast.error(
+        "Cannot report: Technician ID is missing from this record.",
+      );
+    }
+    if (!currentOwner?.id) {
+      //
+      return toast.error("Session error: Sender ID not found.");
+    }
+
+    
+
+    try {
+      const payload = {
+        title: `Technician Issue: ${request.technicianName}`,
+        description: reportData.description,
+        reportType: reportData.reportType,
+        severity: reportData.severity || "MEDIUM",
+        boardingName: request.boardingTitle || request.boardingName,
+        ownerId: currentOwner.id, //
+        studentId: request.technicianId, //
+        incidentDate: new Date().toISOString().split("T")[0],
+        allowContact: true,
+      };
+
+      await createReport(payload, []); //
+      toast.success("Report submitted!");
+      setShowReportModal(false);
+    } catch (err) {
+      toast.error("Submission failed. Ensure you have permission to report.");
+    }
+  };
 
   if (loading)
     return <div className="p-10 text-center">Loading Technician Portal...</div>;
@@ -207,22 +241,22 @@ const TechnicianManagementPage = () => {
                     key={tech.id}
                     className="p-4 transition-all bg-white border rounded-xl hover:border-primary"
                   >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 overflow-hidden bg-gray-200 rounded-full">
-                          <img
-                            src={`https://ui-avatars.com/api/?name=${tech.fullName}`}
-                            alt=""
-                          />
-                        </div>
-                        <div>
-                          <h4 className="font-bold">{tech.fullName}</h4>
-                          <p className="text-xs text-gray-500">{tech.city}</p>
-                        </div>
+                    <div
+                      className="flex items-center gap-3 cursor-pointer group"
+                      onClick={() => handleTechnicianProfileClick(tech.id)}
+                    >
+                      <div className="w-12 h-12 overflow-hidden transition-all bg-gray-200 rounded-full group-hover:ring-2 group-hover:ring-primary">
+                        <img
+                          src={`https://ui-avatars.com/api/?name=${tech.fullName}`}
+                          alt={tech.fullName}
+                        />
                       </div>
-                      <span className="flex items-center gap-1 font-bold text-yellow-500">
-                        <FaStar /> {tech.averageRating || "New"}
-                      </span>
+                      <div>
+                        <h4 className="font-bold transition-colors group-hover:text-primary">
+                          {tech.fullName}
+                        </h4>
+                        <p className="text-xs text-gray-500">{tech.city}</p>
+                      </div>
                     </div>
                     <div className="flex items-center justify-between pt-4 border-t">
                       <span className="font-bold text-primary">
