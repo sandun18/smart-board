@@ -28,10 +28,16 @@ import OwnerPaymentSuccess from "../pages/owner/payments/pay/success/OwnerPaymen
 import ChatList from "../pages/chat/ChatList";
 import ChatRoom from "../pages/chat/ChatRoom";
 import TechnicianManagementPage from "../pages/owner/TechnicianManagementPage.jsx";
+import OwnerLoginPage from "../pages/owner/auth/OwnerLoginPage.jsx";
+import OwnerSignupPage from "../pages/owner/auth/OwnerSignupPage.jsx";
 
 const OwnerAppRoutes = () => {
   return (
     <Routes>
+
+      {/* ==================== OWNER AUTH ==================== */}
+      <Route path="login" element={<OwnerLoginPage />} />
+      <Route path="signup" element={<OwnerSignupPage />} />
 
       {/* ==================== PROTECTED OWNER ROUTES ==================== */}
       <Route element={<OwnerProtectedRoute />}>
@@ -54,6 +60,7 @@ const OwnerAppRoutes = () => {
 
           {/* ==================== UTILITIES ==================== */}
           <Route path="utility" element={<UtilityPage />} />
+          <Route path="utilities" element={<UtilityPage />} />
           <Route path="utility/details" element={<UtilityDetails />} />
           <Route path="utility/add" element={<AddUtility />} />
           <Route
@@ -109,7 +116,7 @@ const OwnerAppRoutes = () => {
       </Route>
 
       {/* ==================== FALLBACK ==================== */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to="/owner/login" replace />} />
 
     </Routes>
   );

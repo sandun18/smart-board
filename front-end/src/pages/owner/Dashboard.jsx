@@ -1,4 +1,3 @@
-import React from "react";
 import { useDashboardLogic } from "../../hooks/owner/useDashboardLogic";
 
 // Components
@@ -15,19 +14,6 @@ import RevenueChart from "../../components/Owner/dashboard/RevenueChart";
 export default function Dashboard() {
   const { loading, stats, chartData, transactions, appointments, user } =
     useDashboardLogic();
-
-  useEffect(() => {
-    const loadSubscription = async () => {
-      try {
-        const data = await getMySubscription();
-        setSubscriptionInfo(data || null);
-      } catch (_error) {
-        setSubscriptionInfo(null);
-      }
-    };
-
-    loadSubscription();
-  }, []);
 
   return (
     <div className="min-h-screen pb-12 bg-light/30">
@@ -108,22 +94,22 @@ export default function Dashboard() {
               </h3>
               <div className="grid grid-cols-2 gap-3">
                 <DashButton
-                  to="/ownerLayout/utility"
+                  to="/owner/utility"
                   icon="fas fa-bolt"
                   label="Utility"
                 />
                 <DashButton
-                  to="/ownerLayout/myAds"
+                  to="/owner/myAds"
                   icon="fas fa-eye"
                   label="View Ads"
                 />
                 <DashButton
-                  to="/ownerLayout/payment"
+                  to="/owner/payment"
                   icon="fas fa-credit-card"
                   label="Payments"
                 />
                 <DashButton
-                  to="/ownerLayout/profile"
+                  to="/owner/profile"
                   icon="fas fa-cog"
                   label="Settings"
                 />
