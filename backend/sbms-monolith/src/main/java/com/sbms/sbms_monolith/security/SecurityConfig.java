@@ -174,17 +174,44 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+    
+    
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+	
+	    CorsConfiguration config = new CorsConfiguration();
+	
+	    // Allow frontend domains
+	    config.setAllowedOriginPatterns(List.of(
+	            "https://smartboard.thareesha.software",
+	            "http://localhost:5173"
+	    ));
+	
+	    // Allow HTTP methods
+	    config.setAllowedMethods(List.of(
+	            "GET",
+	            "POST",
+	            "PUT",
+	            "DELETE",
+	            "PATCH",
+	            "OPTIONS"
+	    ));
+	
+	    // Allow all headers
+	    config.setAllowedHeaders(List.of("*"));
+	
+	    // Allow credentials (JWT cookies / auth headers)
+	    config.setAllowCredentials(true);
+	
+	    // Cache preflight response (performance)
+	    config.setMaxAge(3600L);
+	
+	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+	    source.registerCorsConfiguration("/**", config);
+	
+	    return source;
+	}
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
+	
 }
