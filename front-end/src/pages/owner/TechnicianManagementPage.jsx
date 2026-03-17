@@ -3,19 +3,20 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaTools,
-  FaUserShield,
   FaStar,
-  FaMapMarkerAlt,
   FaChevronLeft,
   FaExclamationTriangle,
   FaCheckCircle,
   FaClock,
+  FaMapMarkerAlt,
+  FaDoorOpen,
+  FaExclamationCircle,
+  FaClipboardList,
 } from "react-icons/fa";
 import {
   getOwnerMaintenanceRequests,
   searchTechnicians,
   assignTechnician,
-  reviewTechnician,
   createReport,
 } from "../../api/owner/service";
 import toast from "react-hot-toast";
@@ -25,7 +26,6 @@ import { useOwnerAuth } from "../../context/owner/OwnerAuthContext";
 const TechnicianManagementPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const { currentOwner } = useOwnerAuth();
 
   const [request, setRequest] = useState(null);
@@ -37,9 +37,36 @@ const TechnicianManagementPage = () => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [reportData, setReportData] = useState({
-    reportType: "TECHNICIAN_NO_SHOW", // Default value
+    reportType: "TECHNICIAN_NO_SHOW",
     description: "",
+    severity: "MEDIUM",
   });
+
+  // --- Framer Motion Variants ---
+  const pageVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.4, staggerChildren: 0.1 },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: { opacity: 1, y: 0 },
+    hover: { y: -4, shadow: "0px 10px 20px rgba(0,0,0,0.08)" },
+  };
+
+  const modalVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: { type: "spring", stiffness: 300, damping: 25 },
+    },
+    exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
+  };
 
   useEffect(() => {
     fetchInitialData();
@@ -56,53 +83,40 @@ const TechnicianManagementPage = () => {
         return navigate("/owner/maintenance");
       }
 
-      // 1. Get correct Tech ID (Already fixed)
       const techId = currentReq.technicianId || currentReq.technician?.id;
+      setRequest({ ...currentReq, technicianId: techId });
 
-      setRequest({
-        ...currentReq,
-        technicianId: techId,
-      });
-
-      // 2. Map Title to Backend Enum Skill for search
       if (currentReq.status?.toLowerCase() === "pending") {
         const title = (currentReq.title || "").toUpperCase();
         let mappedSkill = "OTHER";
 
-        // Simple keyword mapping logic
         if (
           title.includes("PLUMB") ||
           title.includes("TAP") ||
-          title.includes("LEAK") ||
-          title.includes("WATER")
-        ) {
+          title.includes("LEAK")
+        )
           mappedSkill = "PLUMBING";
-        } else if (
+        else if (
           title.includes("ELECT") ||
           title.includes("LIGHT") ||
-          title.includes("POWER") ||
           title.includes("WIRE")
-        ) {
+        )
           mappedSkill = "ELECTRICAL";
-        } else if (
+        else if (
           title.includes("FURNIT") ||
           title.includes("BED") ||
-          title.includes("CHAIR") ||
           title.includes("TABLE")
-        ) {
+        )
           mappedSkill = "FURNITURE";
-        } else if (
+        else if (
           title.includes("APPLIANCE") ||
-          title.includes("FRIDGE") ||
           title.includes("AC") ||
-          title.includes("FAN")
-        ) {
+          title.includes("FRIDGE")
+        )
           mappedSkill = "APPLIANCE";
-        } else if (title.includes("CLEANING") || title.includes("WASH")) {
+        else if (title.includes("CLEANING") || title.includes("WASH"))
           mappedSkill = "CLEANING";
-        }
 
-        // Trigger search with the Mapped Enum
         handleSearch(mappedSkill);
       }
     } catch (err) {
@@ -127,8 +141,8 @@ const TechnicianManagementPage = () => {
   const handleAssign = async (techId) => {
     try {
       await assignTechnician(id, techId);
-      toast.success("Technician assigned!");
-      fetchInitialData(); // Refresh to show tracking view
+      toast.success("Technician assigned successfully!");
+      fetchInitialData();
     } catch (err) {
       toast.error("Assignment failed");
     }
@@ -136,104 +150,144 @@ const TechnicianManagementPage = () => {
 
   const handlePayment = () => {
     const toastId = toast.loading("Processing payment...");
-
-    // Simulate network delay
     setTimeout(() => {
       toast.success("Payment Successful!", { id: toastId });
       setShowPaymentModal(false);
-      // Optionally refresh data if the status should change to 'paid'
+      setShowReviewModal(true);
       fetchInitialData();
     }, 2000);
   };
 
   const handleTechnicianProfileClick = (techId) => {
-    if (techId) {
-      // Assuming your route is /profile/view/:id based on previous conversations
-      navigate(`/profile/view/${techId}`);
-    } else {
-      toast.error("Technician profile ID not found");
-    }
+    if (techId) navigate(`/profile/view/${techId}`);
+    else toast.error("Technician profile ID not found");
   };
 
   const handleReport = async () => {
-    // 1. Check for missing IDs
-    if (!request?.technicianId) {
-      //
-      return toast.error(
-        "Cannot report: Technician ID is missing from this record.",
-      );
-    }
-    if (!currentOwner?.id) {
-      //
+    if (!request?.technicianId)
+      return toast.error("Cannot report: Technician ID is missing.");
+    if (!currentOwner?.id)
       return toast.error("Session error: Sender ID not found.");
-    }
 
     try {
       const payload = {
         title: `Technician Issue: ${request.technicianName}`,
         description: reportData.description,
         reportType: reportData.reportType,
-        severity: reportData.severity || "MEDIUM",
+        severity: reportData.severity,
         boardingName: request.boardingTitle || request.boardingName,
-        ownerId: currentOwner.id, //
-        studentId: request.technicianId, //
+        ownerId: currentOwner.id,
+        studentId: request.technicianId,
         incidentDate: new Date().toISOString().split("T")[0],
         allowContact: true,
       };
 
-      await createReport(payload, []); //
-      toast.success("Report submitted!");
+      await createReport(payload, []);
+      toast.success("Report submitted successfully!");
       setShowReportModal(false);
     } catch (err) {
-      toast.error("Submission failed. Ensure you have permission to report.");
+      toast.error("Submission failed. Ensure you have permission.");
     }
   };
 
-  if (loading)
-    return <div className="p-10 text-center">Loading Technician Portal...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50">
+        <div className="w-12 h-12 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
+        <p className="mt-4 font-medium text-slate-500 animate-pulse">
+          Loading Workspace...
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen p-6 bg-gray-50">
+    <motion.div
+      className="min-h-screen p-6 "
+      initial="hidden"
+      animate="visible"
+      variants={pageVariants}
+    >
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 bg-white rounded-full shadow-sm"
+          className="p-3 transition-colors bg-white border border-slate-200 rounded-xl hover:bg-slate-100 text-slate-600"
         >
-          <FaChevronLeft />
+          <FaChevronLeft size={14} />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">
+          <h1 className="text-2xl font-black text-slate-800">
             Manage Professional
           </h1>
-          <p className="text-gray-500">
-            Incident #{id} - {request.title}
+          <p className="flex items-center gap-2 mt-1 text-sm text-slate-500">
+            <FaClipboardList className="text-slate-400" />
+            Incident #{id} <span className="text-slate-300">•</span>{" "}
+            {request.title}
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Left: Incident Summary */}
-        <div className="space-y-6 lg:col-span-1">
-          <div className="p-6 bg-white border border-gray-100 shadow-sm rounded-2xl">
-            <h3 className="mb-4 font-bold text-gray-700">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 lg:items-start">
+        {/* Left: Sticky Incident Summary */}
+        <div className="space-y-6 lg:col-span-1 lg:sticky lg:top-6">
+          <div className="p-6 bg-white border shadow-sm border-slate-100 rounded-2xl">
+            <h3 className="mb-5 text-lg font-bold text-slate-800">
               Maintenance Details
             </h3>
-            <div className="space-y-3 text-sm">
-              <p>
-                <span className="text-gray-400">Location:</span>{" "}
-                {request.boardingTitle}
-              </p>
-              <p>
-                <span className="text-gray-400">Room:</span>{" "}
-                {request.roomNumber}
-              </p>
-              <p>
-                <span className="text-gray-400">Urgency:</span>{" "}
-                {request.maintenanceUrgency}
-              </p>
-              <div className="p-3 italic text-blue-700 rounded-lg bg-blue-50">
-                "{request.description}"
+
+            <div className="space-y-4 text-sm">
+              <div className="flex items-start gap-3">
+                <div className="p-2 mt-1 text-blue-600 rounded-lg bg-blue-50 shrink-0">
+                  <FaMapMarkerAlt />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold tracking-wider uppercase text-slate-400">
+                    Location
+                  </p>
+                  <p className="font-medium text-slate-700">
+                    {request.boardingTitle || "N/A"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="p-2 mt-1 text-purple-600 rounded-lg bg-purple-50 shrink-0">
+                  <FaDoorOpen />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold tracking-wider uppercase text-slate-400">
+                    Room
+                  </p>
+                  <p className="font-medium text-slate-700">
+                    {request.roomNumber || "N/A"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div
+                  className={`p-2 mt-1 rounded-lg shrink-0 ${request.maintenanceUrgency?.toLowerCase() === "high" ? "bg-red-50 text-red-600" : "bg-orange-50 text-orange-600"}`}
+                >
+                  <FaExclamationCircle />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold tracking-wider uppercase text-slate-400">
+                    Urgency
+                  </p>
+                  <p className="font-medium capitalize text-slate-700">
+                    {request.maintenanceUrgency || "Normal"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-4 mt-4 border-t border-slate-100">
+                <p className="mb-2 text-xs font-semibold tracking-wider uppercase text-slate-400">
+                  Description
+                </p>
+                <div className="p-4 leading-relaxed border text-slate-700 rounded-xl bg-slate-50 border-slate-100">
+                  "{request.description}"
+                </div>
               </div>
             </div>
           </div>
@@ -241,313 +295,366 @@ const TechnicianManagementPage = () => {
 
         {/* Right: Dynamic Workflow (Search or Track) */}
         <div className="lg:col-span-2">
-          {request.status?.toLowerCase() === "pending" ? (
-            <section>
-              <h2 className="flex items-center gap-2 mb-4 text-xl font-bold">
-                <FaTools className="text-primary" /> Available Experts
-              </h2>
-              {/* <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {technicians.map((tech) => (
-                  <div
-                    key={tech.id}
-                    className="p-4 transition-all bg-white border rounded-xl hover:border-primary"
-                  >
-                    <div
-                      className="flex items-center gap-3 cursor-pointer group"
-                      onClick={() => handleTechnicianProfileClick(tech.id)}
-                    >
-                      <div className="w-12 h-12 overflow-hidden transition-all bg-gray-200 rounded-full group-hover:ring-2 group-hover:ring-primary">
-                        <img
-                          src={`https://ui-avatars.com/api/?name=${tech.fullName}`}
-                          alt={tech.fullName}
-                        />
-                      </div>
-                      <div>
-                        <h4 className="font-bold transition-colors group-hover:text-primary">
-                          {tech.fullName}
-                        </h4>
-                        <p className="text-xs text-gray-500">{tech.city}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between pt-4 border-t">
-                      <span className="font-bold text-primary">
-                        LKR {tech.basePrice}
-                      </span>
-                      <button
-                        onClick={() => handleAssign(tech.id)}
-                        className="px-4 py-2 text-sm font-bold text-white rounded-lg bg-slate-900"
+          <AnimatePresence mode="wait">
+            {request.status?.toLowerCase() === "pending" ? (
+              <motion.section
+                key="pending"
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                variants={pageVariants}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="flex items-center gap-2 text-xl font-bold text-slate-800">
+                    <FaTools className="text-blue-600" /> Available Experts
+                  </h2>
+                  <span className="px-3 py-1 text-sm font-medium rounded-full text-slate-500 bg-slate-200">
+                    {technicians.length} Found
+                  </span>
+                </div>
+
+                {searchLoading ? (
+                  <div className="p-8 text-center bg-white border shadow-sm border-slate-100 rounded-2xl animate-pulse">
+                    Loading specialists...
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    {technicians.map((tech) => (
+                      <motion.div
+                        variants={cardVariants}
+                        whileHover="hover"
+                        key={tech.id}
+                        className="p-5 transition-colors bg-white border shadow-sm border-slate-100 rounded-2xl hover:border-blue-200"
                       >
-                        Assign Job
+                        {/* Profile Section */}
+                        <div
+                          className="flex items-center gap-4 cursor-pointer group"
+                          onClick={() => handleTechnicianProfileClick(tech.id)}
+                        >
+                          <div className="overflow-hidden transition-all border-2 border-transparent rounded-full w-14 h-14 bg-slate-100 group-hover:border-blue-500 shrink-0">
+                            <img
+                              src={
+                                tech.profileImageUrl &&
+                                tech.profileImageUrl.startsWith("http")
+                                  ? tech.profileImageUrl
+                                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(tech.fullName)}&background=f1f5f9&color=334155`
+                              }
+                              alt={tech.fullName}
+                              className="object-cover w-full h-full"
+                              onError={(e) => {
+                                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tech.fullName)}&background=0D8ABC&color=fff`;
+                              }}
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-bold truncate transition-colors text-slate-800 group-hover:text-blue-600">
+                              {tech.fullName}
+                            </h4>
+                            <p className="text-sm text-slate-500 flex items-center gap-1 mt-0.5">
+                              <FaMapMarkerAlt size={10} />{" "}
+                              {tech.city || "Area Not Specified"}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Rating & Price */}
+                        <div className="flex items-center justify-between pt-4 mt-5 border-t border-slate-100">
+                          <div className="flex items-center gap-2">
+                            <span className="flex items-center gap-1 px-2 py-1 text-sm font-bold text-yellow-700 rounded-lg bg-yellow-50">
+                              <FaStar className="text-yellow-500" size={12} />
+                              {tech.averageRating > 0
+                                ? tech.averageRating.toFixed(1)
+                                : "NEW"}
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs font-semibold text-slate-400">
+                              Base Price
+                            </p>
+                            <span className="text-lg font-black text-blue-600">
+                              LKR {tech.basePrice?.toLocaleString() || "0"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Assign Button */}
+                        <button
+                          onClick={() => handleAssign(tech.id)}
+                          className="w-full py-3 mt-5 text-sm font-bold text-white transition-all rounded-xl bg-slate-800 hover:bg-blue-600 hover:shadow-md active:scale-[0.98]"
+                        >
+                          Assign Job
+                        </button>
+                      </motion.div>
+                    ))}
+                    {technicians.length === 0 && (
+                      <div className="p-8 text-center border-2 border-dashed col-span-full text-slate-500 border-slate-200 rounded-2xl">
+                        No technicians found for this category in your area.
+                      </div>
+                    )}
+                  </div>
+                )}
+              </motion.section>
+            ) : (
+              <motion.section
+                key="assigned"
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                variants={pageVariants}
+              >
+                <div className="overflow-hidden bg-white border shadow-sm border-slate-100 rounded-3xl">
+                  {/* Status Banner */}
+                  <div className="p-8 text-center border-b bg-gradient-to-b from-slate-50 to-white border-slate-100">
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", delay: 0.2 }}
+                      className="inline-flex p-5 mb-5 text-green-600 rounded-full bg-green-100/50 ring-8 ring-green-50"
+                    >
+                      <FaCheckCircle size={36} />
+                    </motion.div>
+                    <h2 className="text-2xl font-black text-slate-800">
+                      Job Assigned to{" "}
+                      <span className="text-blue-600">
+                        {request.technicianName}
+                      </span>
+                    </h2>
+                    <div className="inline-flex items-center gap-2 px-4 py-2 mt-4 text-sm font-bold tracking-wider uppercase rounded-full bg-slate-100 text-slate-600">
+                      Status:{" "}
+                      <span className="text-slate-800">
+                        {request.status.replace("_", " ")}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Action Dashboard */}
+                  <div className="p-8">
+                    <p className="mb-8 text-center text-slate-500">
+                      Manage your interaction, process payments, or report
+                      issues below.
+                    </p>
+
+                    <div className="flex flex-col justify-center gap-4 sm:flex-row">
+                      {/* Dynamic Payment/Review Workflow */}
+                      {request.status?.toLowerCase() === "paid" ? (
+                        <button
+                          disabled
+                          className="flex items-center justify-center w-full gap-2 px-8 py-4 font-bold text-white bg-green-500 cursor-default rounded-xl sm:w-auto"
+                        >
+                          <FaCheckCircle /> Payment Completed
+                        </button>
+                      ) : request.status?.toLowerCase() === "work_done" ? (
+                        <button
+                          onClick={() => setShowPaymentModal(true)}
+                          className="flex items-center justify-center gap-2 px-8 py-4 font-bold text-white transition-all bg-blue-600 shadow-lg shadow-blue-600/20 rounded-xl hover:bg-blue-700 hover:-translate-y-0.5 active:translate-y-0 w-full sm:w-auto"
+                        >
+                          <FaClock /> Proceed to Payment
+                        </button>
+                      ) : null}
+
+                      {/* Report Button */}
+                      <button
+                        onClick={() => setShowReportModal(true)}
+                        className="flex items-center justify-center w-full gap-2 px-8 py-4 font-bold text-red-600 transition-colors bg-white border-2 border-red-100 rounded-xl hover:bg-red-50 hover:border-red-200 sm:w-auto"
+                      >
+                        <FaExclamationTriangle /> Report Issue
                       </button>
                     </div>
                   </div>
-                ))}
-              </div> */}
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {technicians.map((tech) => (
-                  <div
-                    key={tech.id}
-                    className="p-4 transition-all bg-white border rounded-xl hover:border-primary"
-                  >
-                    {/* Profile Section */}
-                    <div
-                      className="flex items-center gap-3 cursor-pointer group"
-                      onClick={() => handleTechnicianProfileClick(tech.id)}
-                    >
-                      {/* ✅ Better Image Handling */}
-                      <div className="w-12 h-12 overflow-hidden transition-all bg-gray-200 rounded-full group-hover:ring-2 group-hover:ring-primary shrink-0">
-                        <img
-                          src={
-                            tech.profileImageUrl &&
-                            tech.profileImageUrl.startsWith("http")
-                              ? tech.profileImageUrl
-                              : `https://ui-avatars.com/api/?name=${encodeURIComponent(tech.fullName)}&background=random`
-                          }
-                          alt={tech.fullName}
-                          className="object-cover w-full h-full"
-                          onError={(e) => {
-                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tech.fullName)}&background=0D8ABC&color=fff`;
-                          }}
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-bold truncate transition-colors group-hover:text-primary">
-                          {tech.fullName}
-                        </h4>
-                        <p className="text-xs text-gray-500">
-                          {tech.city || "Area Not Specified"}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* ✅ NEW: Rating & Price Row */}
-                    <div className="flex items-center justify-between pt-4 mt-4 border-t">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-gray-600">
-                          Rating:
-                        </span>
-                        <span className="flex items-center gap-1 text-yellow-400">
-                          <FaStar size={12} />
-                          <span className="text-sm font-bold">
-                            {tech.averageRating > 0
-                              ? tech.averageRating.toFixed(1)
-                              : "NEW"}
-                          </span>
-                        </span>
-                      </div>
-                      <span className="text-sm font-bold text-primary">
-                        LKR {tech.basePrice?.toLocaleString() || "0"}
-                      </span>
-                    </div>
-
-                    {/* Assign Button */}
-                    <button
-                      onClick={() => handleAssign(tech.id)}
-                      className="w-full px-4 py-2 mt-4 text-sm font-bold text-white transition-colors rounded-lg bg-slate-900 hover:bg-slate-800"
-                    >
-                      Assign Job
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </section>
-          ) : (
-            <div className="p-8 text-center bg-white border border-gray-100 shadow-sm rounded-2xl">
-              <div className="inline-flex p-4 mb-4 text-green-600 rounded-full bg-green-50">
-                <FaCheckCircle size={32} />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-800">
-                Job Assigned to {request.technicianName}
-              </h2>
-              <p className="mb-6 text-gray-500">
-                Current Status:{" "}
-                <span className="font-black uppercase">{request.status}</span>
-              </p>
-
-              <div className="flex flex-wrap justify-center gap-4 mt-6">
-                {/* ✅ The Report button is now accessible even after work is done */}
-                <button
-                  onClick={() => setShowReportModal(true)}
-                  className="flex items-center gap-2 px-6 py-3 font-bold text-red-600 border border-red-200 rounded-xl hover:bg-red-50"
-                >
-                  <FaExclamationTriangle /> Report Professional
-                </button>
-
-                {/* ✅ Payment & Review Section */}
-                {["work_done"].includes(request.status?.toLowerCase()) && (
-                  <button
-                    onClick={() => setShowPaymentModal(true)}
-                    className="flex items-center gap-2 px-6 py-3 font-bold text-white bg-green-600 rounded-xl hover:bg-green-700"
-                  >
-                    <FaCheckCircle /> Pay Professional
-                  </button>
-                )}
-
-                {["work_done", "paid"].includes(
-                  request.status?.toLowerCase(),
-                ) && (
-                  <button
-                    onClick={() => setShowReviewModal(true)}
-                    className="px-6 py-3 font-bold text-white bg-orange-500 rounded-xl hover:bg-orange-600"
-                  >
-                    Submit Review & Finalize
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
+                </div>
+              </motion.section>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
-      {/* Report Modal */}
-      {showReportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md p-6 bg-white shadow-xl rounded-2xl">
-            <h3 className="mb-4 text-xl font-bold text-gray-800">
-              Report Professional
-            </h3>
+      {/* --- MODALS --- */}
+      <AnimatePresence>
+        {/* Report Modal */}
+        {showReportModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
+          >
+            <motion.div
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="w-full max-w-md p-6 bg-white shadow-2xl rounded-3xl"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 text-red-600 bg-red-100 rounded-xl">
+                  <FaExclamationTriangle size={20} />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800">
+                  Report Professional
+                </h3>
+              </div>
 
-            {/* --- REPORT TYPE SELECT --- */}
-            <div className="mb-4">
-              <label className="block mb-2 text-sm font-bold text-gray-700">
-                Issue Category
-              </label>
-              <select
-                className="w-full p-3 text-sm border outline-none rounded-xl focus:ring-2 focus:ring-red-500/20"
-                value={reportData.reportType}
-                onChange={(e) =>
-                  setReportData({ ...reportData, reportType: e.target.value })
-                }
-              >
-                <option value="TECHNICIAN_NO_SHOW">Technician No Show</option>
-                <option value="POOR_WORK_QUALITY">Poor Work Quality</option>
-              </select>
-            </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block mb-1.5 text-sm font-bold text-slate-700">
+                    Issue Category
+                  </label>
+                  <select
+                    className="w-full p-3.5 text-sm bg-slate-50 border border-slate-200 outline-none rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
+                    value={reportData.reportType}
+                    onChange={(e) =>
+                      setReportData({
+                        ...reportData,
+                        reportType: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="TECHNICIAN_NO_SHOW">
+                      Technician No Show
+                    </option>
+                    <option value="POOR_WORK_QUALITY">Poor Work Quality</option>
+                    <option value="UNPROFESSIONAL_BEHAVIOR">
+                      Unprofessional Behavior
+                    </option>
+                  </select>
+                </div>
 
-            {/* --- SEVERITY SELECT --- */}
-            <div className="mb-4">
-              <label className="block mb-2 text-sm font-bold text-gray-700">
-                Severity Level
-              </label>
-              <select
-                className="w-full p-3 text-sm border outline-none rounded-xl focus:ring-2 focus:ring-red-500/20"
-                value={reportData.severity || "MEDIUM"}
-                onChange={(e) =>
-                  setReportData({ ...reportData, severity: e.target.value })
-                }
-              >
-                <option value="LOW">Low - Minor Issue</option>
-                <option value="MEDIUM">Medium - Significant Delay/Issue</option>
-                <option value="HIGH">High - Critical Failure/Safety</option>
-              </select>
-            </div>
+                <div>
+                  <label className="block mb-1.5 text-sm font-bold text-slate-700">
+                    Severity Level
+                  </label>
+                  <select
+                    className="w-full p-3.5 text-sm bg-slate-50 border border-slate-200 outline-none rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
+                    value={reportData.severity}
+                    onChange={(e) =>
+                      setReportData({ ...reportData, severity: e.target.value })
+                    }
+                  >
+                    <option value="LOW">Low - Minor Issue</option>
+                    <option value="MEDIUM">
+                      Medium - Significant Delay/Issue
+                    </option>
+                    <option value="HIGH">High - Critical Failure/Safety</option>
+                  </select>
+                </div>
 
-            {/* --- DESCRIPTION --- */}
-            <div className="mb-4">
-              <label className="block mb-2 text-sm font-bold text-gray-700">
-                Details
-              </label>
-              <textarea
-                className="w-full p-3 text-sm border outline-none rounded-xl focus:ring-2 focus:ring-red-500/20"
-                rows="4"
-                placeholder="Describe exactly what happened..."
-                value={reportData.description}
-                onChange={(e) =>
-                  setReportData({ ...reportData, description: e.target.value })
-                }
-              />
-            </div>
+                <div>
+                  <label className="block mb-1.5 text-sm font-bold text-slate-700">
+                    Details
+                  </label>
+                  <textarea
+                    className="w-full p-3.5 text-sm bg-slate-50 border border-slate-200 outline-none rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all resize-none"
+                    rows="4"
+                    placeholder="Describe exactly what happened..."
+                    value={reportData.description}
+                    onChange={(e) =>
+                      setReportData({
+                        ...reportData,
+                        description: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
 
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowReportModal(false)}
-                className="flex-1 py-2 font-semibold text-gray-500 rounded-lg hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleReport}
-                className="flex-1 py-2 font-bold text-white transition-colors bg-red-600 rounded-lg hover:bg-red-700"
-              >
-                Submit Report
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              <div className="flex gap-3 mt-8">
+                <button
+                  onClick={() => setShowReportModal(false)}
+                  className="flex-1 py-3.5 font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleReport}
+                  className="flex-1 py-3.5 font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 shadow-lg shadow-red-600/20 transition-all"
+                >
+                  Submit Report
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Payment Modal */}
+        {showPaymentModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
+          >
+            <motion.div
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="w-full max-w-sm p-8 bg-white shadow-2xl rounded-3xl"
+            >
+              <div className="mb-6 text-center">
+                <div className="inline-flex p-4 mb-4 text-blue-600 rounded-full bg-blue-50 ring-4 ring-blue-50/50">
+                  <FaTools size={28} />
+                </div>
+                <h3 className="text-2xl font-black text-slate-800">Checkout</h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Service by {request.technicianName}
+                </p>
+              </div>
+
+              <div className="p-5 mb-8 space-y-4 border border-slate-100 bg-slate-50 rounded-2xl">
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium text-slate-500">
+                    Service Fee
+                  </span>
+                  <span className="font-mono font-bold text-slate-800">
+                    LKR {request.technicianFee?.toLocaleString() || "0.00"}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium text-slate-500">
+                    Platform Charge
+                  </span>
+                  <span className="font-mono font-bold text-slate-800">
+                    LKR 100.00
+                  </span>
+                </div>
+                <div className="flex items-center justify-between pt-4 border-t border-dashed border-slate-200">
+                  <span className="font-bold text-slate-800">Total</span>
+                  <span className="font-mono text-xl font-black text-blue-600">
+                    LKR {((request.technicianFee || 0) + 100).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  onClick={handlePayment}
+                  className="w-full py-4 font-bold text-white transition-all shadow-lg bg-slate-800 rounded-xl hover:bg-blue-600 hover:shadow-blue-600/20 active:scale-[0.98]"
+                >
+                  Confirm & Pay
+                </button>
+                <button
+                  onClick={() => setShowPaymentModal(false)}
+                  className="w-full py-3 text-sm font-bold text-slate-400 hover:text-slate-600"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {showReviewModal && (
         <ReviewTechnicianModal
           request={request}
           onClose={() => setShowReviewModal(false)}
           onSuccess={() => {
-            fetchInitialData(); // Refresh the page to show "Completed" status
+            fetchInitialData();
             setShowReviewModal(false);
           }}
         />
       )}
-
-      {/* Dummy Payment Modal */}
-      {showPaymentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="w-full max-w-md p-6 bg-white shadow-xl rounded-2xl"
-          >
-            <div className="mb-6 text-center">
-              <div className="inline-flex p-3 mb-4 text-green-600 rounded-full bg-green-50">
-                <FaTools size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-800">Final Payment</h3>
-              <p className="text-sm text-gray-500">
-                Service provided by {request.technicianName}
-              </p>
-            </div>
-
-            <div className="p-4 mb-6 space-y-3 bg-gray-50 rounded-xl">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Service Base Price</span>
-                <span className="font-mono font-bold text-gray-800">
-                  LKR {request.basePrice?.toLocaleString() || "0"}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Service Charge (Fixed)</span>
-                <span className="font-mono font-bold text-gray-800">
-                  LKR 500
-                </span>
-              </div>
-              <div className="flex justify-between pt-3 border-t border-gray-200">
-                <span className="font-bold text-gray-800">Total Amount</span>
-                <span className="font-mono text-lg font-black text-primary">
-                  LKR {((request.basePrice || 0) + 500).toLocaleString()}
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <button
-                onClick={handlePayment}
-                className="w-full py-4 font-bold text-white transition-all shadow-lg bg-slate-900 rounded-xl hover:bg-black active:scale-95"
-              >
-                Confirm & Pay Now
-              </button>
-              <button
-                onClick={() => setShowPaymentModal(false)}
-                className="w-full py-2 text-sm font-semibold text-gray-400 hover:text-gray-600"
-              >
-                Cancel
-              </button>
-            </div>
-
-            <p className="text-[10px] text-center text-gray-400 mt-4 uppercase tracking-widest font-bold">
-              Secure Encryption Enabled
-            </p>
-          </motion.div>
-        </div>
-      )}
-    </div>
+    </motion.div>
   );
 };
 
