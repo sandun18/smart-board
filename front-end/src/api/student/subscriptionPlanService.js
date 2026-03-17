@@ -1,16 +1,16 @@
-import api from "../api";
+// Student subscription purchasing is currently disabled.
+// This module intentionally exposes no-op helpers to avoid
+// breaking existing imports while keeping the flow read-only.
 
-export const createSubscriptionBuyIntent = async (planId) => {
-  const response = await api.post(`/student/subscription-plans/${planId}/buy-intent`);
-  return response.data;
+export const createSubscriptionBuyIntent = async () => {
+  throw new Error("Student subscription purchase is currently disabled.");
 };
 
-export const buySubscriptionPlan = async (planId) => {
-  const response = await api.post(`/student/subscription-plans/${planId}/buy`);
-  return response.data;
+export const buySubscriptionPlan = async () => {
+  throw new Error("Student subscription purchase is currently disabled.");
 };
 
 export const getCurrentSubscriptionPlan = async () => {
-  const response = await api.get("/student/subscription-plans/current");
-  return response.data;
+  // Student subscriptions are not tracked; always return null.
+  return null;
 };

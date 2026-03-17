@@ -3,10 +3,6 @@ import { FaCheck, FaStar, FaRocket, FaCrown } from "react-icons/fa";
 import toast from "react-hot-toast";
 import StudentLayout from "../../components/student/common/StudentLayout";
 import { getActivePlans } from "../../api/common/subscriptionPlanService";
-import {
-  createSubscriptionBuyIntent,
-  getCurrentSubscriptionPlan,
-} from "../../api/student/subscriptionPlanService";
 import { useAuth } from "../../context/student/StudentAuthContext";
 import { useNavigate } from "react-router-dom";
 import { getApiErrorMessage } from "../../utils/apiError";
@@ -101,14 +97,8 @@ export default function StudentSubscriptionPlansPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [plansData, currentPlanData] = await Promise.all([
-          getActivePlans(),
-          getCurrentSubscriptionPlan(),
-        ]);
+        const plansData = await getActivePlans();
         setPlans(plansData || []);
-        if (currentPlanData?.id) {
-          setCurrentPlanId(Number(currentPlanData.id));
-        }
       } catch (err) {
         console.error("Failed to load subscription data:", err);
         toast.error(getApiErrorMessage(err, "Failed to load subscription plans."));
@@ -119,25 +109,16 @@ export default function StudentSubscriptionPlansPage() {
     loadData();
   }, []);
 
-  const handleBuyPlan = async (plan) => {
-    try {
-      setBuyingPlanId(plan.id);
-      const intent = await createSubscriptionBuyIntent(plan.id);
-      navigate(
-        `/student/payments/pay/select-method/${intent.id}?flow=subscription&planId=${plan.id}`
-      );
-    } catch (err) {
-      console.error("Failed to buy plan:", err);
-      toast.error(getApiErrorMessage(err, "Failed to start subscription payment."));
-    } finally {
-      setBuyingPlanId(null);
-    }
+  const handleBuyPlan = () => {
+    toast.error(
+      "Student subscriptions are currently managed by boarding owners. Please contact your boarding owner for subscription details."
+    );
   };
 
   return (
     <StudentLayout
       title="Subscription Plans"
-      subtitle="View available boarding subscription plans."
+      subtitle="View available boarding subscription plans. Subscriptions are currently managed by boarding owners."
     >
       <section className="px-4 max-w-7xl mx-auto pb-12">
         {loading ? (

@@ -68,9 +68,12 @@ public class OwnerSubscriptionService {
         boolean hasActive = ownerSubscriptionRepository.existsByOwnerIdAndStatusAndEndDateAfter(
                 owner.getId(), OwnerSubscriptionStatus.ACTIVE, LocalDateTime.now());
         if (hasActive) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Owner already has an active subscription");
+            OwnerSubscription current = getCurrentActiveSubscriptionEntity(owner.getId());
+            String message = "You already have an active subscription.";
+            if (current != null && current.getEndDate() != null) {
+                message += " You can change plans after your current plan expires on " + current.getEndDate() + ".";
+            }
+            throw new ResponseStatusException(HttpStatus.CONFLICT, message);
         }
 
         OwnerSubscription saved = createActiveSubscription(owner, plan);
@@ -128,7 +131,12 @@ public class OwnerSubscriptionService {
         boolean hasActive = ownerSubscriptionRepository.existsByOwnerIdAndStatusAndEndDateAfter(
             owner.getId(), OwnerSubscriptionStatus.ACTIVE, LocalDateTime.now());
         if (hasActive) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Owner already has an active subscription");
+            OwnerSubscription current = getCurrentActiveSubscriptionEntity(owner.getId());
+            String message = "You already have an active subscription.";
+            if (current != null && current.getEndDate() != null) {
+                message += " You can change plans after your current plan expires on " + current.getEndDate() + ".";
+            }
+            throw new ResponseStatusException(HttpStatus.CONFLICT, message);
         }
 
         int durationDays = extractDurationDays(plan.getDuration());
@@ -229,7 +237,12 @@ public class OwnerSubscriptionService {
         boolean hasActive = ownerSubscriptionRepository.existsByOwnerIdAndStatusAndEndDateAfter(
             owner.getId(), OwnerSubscriptionStatus.ACTIVE, LocalDateTime.now());
         if (hasActive) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Owner already has an active subscription");
+            OwnerSubscription current = getCurrentActiveSubscriptionEntity(owner.getId());
+            String message = "You already have an active subscription.";
+            if (current != null && current.getEndDate() != null) {
+                message += " You can change plans after your current plan expires on " + current.getEndDate() + ".";
+            }
+            throw new ResponseStatusException(HttpStatus.CONFLICT, message);
         }
 
         createActiveSubscription(owner, plan);
