@@ -62,7 +62,8 @@ const AdminLayout = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-background-light font-sans text-text-dark">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-background-light">
+      {/* Persistent Sidebar */}
       <Sidebar 
         onNavigate={handleNavigate} 
         activePage={activePage} 
@@ -71,7 +72,8 @@ const AdminLayout = () => {
         badgeCounts={badgeCounts}
       />
       
-      <main className="w-full p-3 pb-28 lg:p-10 lg:ml-80 lg:pb-10 pt-4 transform scale-[0.98] lg:scale-100 origin-top transition-transform duration-300">
+      {/* Main Content Area */}
+      <main className="flex-grow p-4 md:p-6 lg:p-8 pt-4 pb-24 lg:pb-8 md:pb-28">
         <Header 
           title={`Welcome back, ${currentUser?.fullName || 'Admin'}!`}
           subtitle="Manage your platform efficiently"
@@ -84,21 +86,20 @@ const AdminLayout = () => {
         </div>
       </main>
 
-      <nav className="lg:hidden fixed bottom-5 left-4 right-4 bg-primary text-white h-16 rounded-[22px] shadow-2xl flex items-center justify-around px-2 z-50 border border-white/10 backdrop-blur-md bg-opacity-95 overflow-x-auto">
+      {/* Mobile Nav - Keeping your logic but updating colors to match student style */}
+      <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-primary text-white shadow-lg flex items-center justify-around px-2 z-50 h-16 border-t border-white/10">
         {navItems.map((item) => (
           <button
             key={item.id}
             onClick={() => handleNavigate(item.id)}
-            className={`flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all duration-300 flex-shrink-0 ${
+            className={`flex flex-col items-center justify-center p-2 min-w-[65px] transition-all duration-300 rounded-lg ${
               activePage === item.id 
-                ? 'bg-white/20 text-white scale-110 shadow-inner' 
-                : 'text-white/50 hover:text-white/80'
+                ? 'bg-card-bg text-primary shadow-lg scale-105' 
+                : 'text-white/90'
             }`}
           >
             <i className={`fas ${item.icon} text-lg`}></i>
-            <span className="text-[9px] mt-1 font-bold uppercase tracking-tighter hidden">
-              {item.label === 'Dashboard' ? 'Home' : item.label.slice(0, 3)}
-            </span>
+            <span className="text-[10px] font-medium mt-0.5">{item.label.split(' ')[0]}</span>
           </button>
         ))}
       </nav>
