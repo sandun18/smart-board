@@ -35,6 +35,7 @@ const TechnicianManagementPage = () => {
 
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [reportData, setReportData] = useState({
     reportType: "TECHNICIAN_NO_SHOW", // Default value
     description: "",
@@ -131,6 +132,18 @@ const TechnicianManagementPage = () => {
     } catch (err) {
       toast.error("Assignment failed");
     }
+  };
+
+  const handlePayment = () => {
+    const toastId = toast.loading("Processing payment...");
+
+    // Simulate network delay
+    setTimeout(() => {
+      toast.success("Payment Successful!", { id: toastId });
+      setShowPaymentModal(false);
+      // Optionally refresh data if the status should change to 'paid'
+      fetchInitialData();
+    }, 2000);
   };
 
   const handleTechnicianProfileClick = (techId) => {
@@ -291,14 +304,14 @@ const TechnicianManagementPage = () => {
                               : `https://ui-avatars.com/api/?name=${encodeURIComponent(tech.fullName)}&background=random`
                           }
                           alt={tech.fullName}
-                          className="w-full h-full object-cover"
+                          className="object-cover w-full h-full"
                           onError={(e) => {
                             e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tech.fullName)}&background=0D8ABC&color=fff`;
                           }}
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-bold transition-colors group-hover:text-primary truncate">
+                        <h4 className="font-bold truncate transition-colors group-hover:text-primary">
                           {tech.fullName}
                         </h4>
                         <p className="text-xs text-gray-500">
@@ -308,7 +321,7 @@ const TechnicianManagementPage = () => {
                     </div>
 
                     {/* ✅ NEW: Rating & Price Row */}
-                    <div className="flex items-center justify-between pt-4 border-t mt-4">
+                    <div className="flex items-center justify-between pt-4 mt-4 border-t">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-gray-600">
                           Rating:
@@ -330,7 +343,7 @@ const TechnicianManagementPage = () => {
                     {/* Assign Button */}
                     <button
                       onClick={() => handleAssign(tech.id)}
-                      className="w-full mt-4 px-4 py-2 text-sm font-bold text-white rounded-lg bg-slate-900 hover:bg-slate-800 transition-colors"
+                      className="w-full px-4 py-2 mt-4 text-sm font-bold text-white transition-colors rounded-lg bg-slate-900 hover:bg-slate-800"
                     >
                       Assign Job
                     </button>
@@ -360,7 +373,16 @@ const TechnicianManagementPage = () => {
                   <FaExclamationTriangle /> Report Professional
                 </button>
 
-                {/* ✅ Add the Review button here so you can trigger the review modal on this page */}
+                {/* ✅ Payment & Review Section */}
+                {["work_done"].includes(request.status?.toLowerCase()) && (
+                  <button
+                    onClick={() => setShowPaymentModal(true)}
+                    className="flex items-center gap-2 px-6 py-3 font-bold text-white bg-green-600 rounded-xl hover:bg-green-700"
+                  >
+                    <FaCheckCircle /> Pay Professional
+                  </button>
+                )}
+
                 {["work_done", "paid"].includes(
                   request.status?.toLowerCase(),
                 ) && (
@@ -463,6 +485,67 @@ const TechnicianManagementPage = () => {
             setShowReviewModal(false);
           }}
         />
+      )}
+
+      {/* Dummy Payment Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="w-full max-w-md p-6 bg-white shadow-xl rounded-2xl"
+          >
+            <div className="mb-6 text-center">
+              <div className="inline-flex p-3 mb-4 text-green-600 rounded-full bg-green-50">
+                <FaTools size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800">Final Payment</h3>
+              <p className="text-sm text-gray-500">
+                Service provided by {request.technicianName}
+              </p>
+            </div>
+
+            <div className="p-4 mb-6 space-y-3 bg-gray-50 rounded-xl">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Service Base Price</span>
+                <span className="font-mono font-bold text-gray-800">
+                  LKR {request.basePrice?.toLocaleString() || "0"}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Service Charge (Fixed)</span>
+                <span className="font-mono font-bold text-gray-800">
+                  LKR 500
+                </span>
+              </div>
+              <div className="flex justify-between pt-3 border-t border-gray-200">
+                <span className="font-bold text-gray-800">Total Amount</span>
+                <span className="font-mono text-lg font-black text-primary">
+                  LKR {((request.basePrice || 0) + 500).toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                onClick={handlePayment}
+                className="w-full py-4 font-bold text-white transition-all shadow-lg bg-slate-900 rounded-xl hover:bg-black active:scale-95"
+              >
+                Confirm & Pay Now
+              </button>
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="w-full py-2 text-sm font-semibold text-gray-400 hover:text-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+
+            <p className="text-[10px] text-center text-gray-400 mt-4 uppercase tracking-widest font-bold">
+              Secure Encryption Enabled
+            </p>
+          </motion.div>
+        </div>
       )}
     </div>
   );
