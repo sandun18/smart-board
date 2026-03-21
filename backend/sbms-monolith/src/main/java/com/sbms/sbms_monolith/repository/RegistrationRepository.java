@@ -39,4 +39,8 @@ public interface RegistrationRepository extends JpaRepository<Registration, Long
     boolean existsActiveRegistration(@Param("studentId") Long studentId, @Param("boardingId") Long boardingId);
 
     boolean existsByStudentIdAndBoardingIdAndStatus(Long studentId, Long boardingId, RegistrationStatus status);
+
+    long deleteByStudent_Id(Long studentId);
+
+    long deleteByBoarding_IdIn(List<Long> boardingIds);
 }

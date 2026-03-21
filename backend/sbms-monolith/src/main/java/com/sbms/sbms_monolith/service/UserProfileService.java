@@ -25,6 +25,7 @@ public class UserProfileService {
     private final UserRepository userRepo;
     private final ReportRepository reportRepo;
     private final BoardingRepository boardingRepo;
+    private final TechnicianWorkflowService technicianWorkflowService;
 
     public UserProfileViewDTO getPublicProfile(Long userId) {
 
@@ -32,12 +33,19 @@ public class UserProfileService {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 2. Fetch History
+        // 2. If technician, refresh their stats before building DTO
+        if (user.getRole() == UserRole.TECHNICIAN) {
+            technicianWorkflowService.updateTechnicianStats(user);
+            // Re-fetch after update so DTO gets fresh values
+            user = userRepo.findById(userId).orElseThrow();
+        }
+
+        // 3. Fetch History
         List<Report> reports = reportRepo.findByReportedUser_Id(userId);
         List<ReportResponseDTO> reportDTO = reports.stream()
                 .map(ReportMapper::toDTO).toList();
 
-        // 3. Fetch Boardings (if Owner)
+        // 4. Fetch Boardings (if Owner)
         List<BoardingSummaryDTO> listingDTOs = new ArrayList<>();
         if (user.getRole() == UserRole.OWNER) {
             List<Boarding> boardings = boardingRepo.findByOwner_Id(userId);
@@ -46,10 +54,10 @@ public class UserProfileService {
                     .toList();
         }
 
-        // 4. Build Profile DTO
+        // 5. Build Profile DTO
         UserProfileViewDTO dto = UserProfileMapper.toProfileDTO(user, listingDTOs);
 
-        // 5. Attach History & Status
+        // 6. Attach History & Status
         dto.setIncidentHistory(reportDTO);
         dto.setTotalReportsAgainst(reportDTO.size());
 

@@ -30,7 +30,8 @@ export const StudentAuthProvider = ({ children }) => {
           }
         } catch (e) {
           console.error("Failed to parse user data", e);
-          localStorage.clear();
+          localStorage.removeItem("user_data");
+          setIsAuthenticated(false);
         }
       }
       setIsLoading(false);
@@ -141,11 +142,13 @@ export const StudentAuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.clear();
+    localStorage.removeItem("token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user_data");
     setCurrentUser(null);
     setIsAuthenticated(false);
-    window.location.href = "/login";
-  };
+    window.location.href = "/login"; 
+};
 
   // --- 3. PROFILE UPDATE ACTIONS (Connects Sidebar/Header/Profile) ---
 
@@ -170,39 +173,40 @@ export const StudentAuthProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       console.error("Profile Update Failed:", error);
-      return { success: false, message: "Failed to update profile." };
+      return { success: false, message: error.message || "Failed to update profile." };
     }
   };
 
   // Update Avatar
   const updateAvatar = async (fileOrUrl) => {
     try {
-      let newAvatarUrl;
+      if (!currentUser?.id) return { success: false };
+
+      let responseUser;
 
       // Check if it's a file (for upload) or a string (gallery selection)
-      if (typeof fileOrUrl === "object") {
+      if (typeof fileOrUrl === "object" && fileOrUrl instanceof File) {
         // It's a File object, upload to backend
-        const response = await StudentService.updateAvatar(
+        responseUser = await StudentService.uploadAvatar(
           currentUser.id,
           fileOrUrl,
         );
-        newAvatarUrl = response.avatarUrl; // Assuming backend returns { avatarUrl: "..." }
       } else {
-        // It's a string from the gallery, just update profile directly
-        newAvatarUrl = fileOrUrl;
-        // Optional: Call updateProfile here to save the gallery URL choice to backend
-        await updateProfile({ ...currentUser, avatar: newAvatarUrl });
+        // It's a string from the gallery, update profile directly
+        responseUser = await StudentService.updateProfile(currentUser.id, {
+          profileImageUrl: fileOrUrl,
+        });
       }
 
-      // Update State
-      const newUserState = { ...currentUser, avatar: newAvatarUrl };
-      localStorage.setItem("user_data", JSON.stringify(newUserState));
-      setCurrentUser(newUserState);
+      // Merge response with current state
+      const newUser = { ...currentUser, ...responseUser };
+      localStorage.setItem("user_data", JSON.stringify(newUser));
+      setCurrentUser(newUser);
 
       return { success: true };
     } catch (error) {
       console.error("Avatar Update Failed", error);
-      return { success: false };
+      return { success: false, message: error.message };
     }
   };
 

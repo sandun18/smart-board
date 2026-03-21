@@ -61,7 +61,7 @@ const ReportTypesGrid = ({ onSelectType }) => {
           transition={{ delay: index * 0.1 }}
           whileHover={{ y: -5, borderColor: "var(--accent)" }}
           onClick={() => onSelectType(reportType.type, reportType.title)}
-          className="bg-card-bg p-8 rounded-large shadow-custom text-center cursor-pointer transition-all duration-300 border-2 border-transparent hover:shadow-xl h-full flex flex-col items-center group"
+          className="flex flex-col items-center h-full p-8 text-center transition-all duration-300 border-2 border-transparent cursor-pointer bg-card-bg rounded-large shadow-custom hover:shadow-xl group"
         >
           <motion.div
             whileHover={{
@@ -69,14 +69,14 @@ const ReportTypesGrid = ({ onSelectType }) => {
               backgroundColor: "var(--accent)",
               color: "white",
             }}
-            className="w-20 h-20 bg-background-light rounded-full flex items-center justify-center mx-auto mb-4 text-3xl text-accent transition-all duration-300"
+            className="flex items-center justify-center w-20 h-20 mx-auto mb-4 text-3xl transition-all duration-300 rounded-full bg-background-light text-accent"
           >
             <reportType.icon />
           </motion.div>
-          <h3 className="text-xl font-bold text-text-dark mb-2">
+          <h3 className="mb-2 text-xl font-bold text-text-dark">
             {reportType.title}
           </h3>
-          <p className="text-text-muted text-sm leading-relaxed">
+          <p className="text-sm leading-relaxed text-text-muted">
             {reportType.description}
           </p>
         </motion.div>

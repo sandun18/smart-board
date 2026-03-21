@@ -21,4 +21,6 @@ public class CreatePaymentIntentDTO {
     private Long monthlyBillId;
 
     private String description; // "January Rent", "Key Money", etc.
+
+    private Long maintenanceRequestId;
 }

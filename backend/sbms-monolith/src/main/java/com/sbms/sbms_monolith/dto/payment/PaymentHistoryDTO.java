@@ -31,5 +31,4 @@ public class PaymentHistoryDTO {
     private BigDecimal gatewayFee;
     private BigDecimal netAmount;
 
-
 }

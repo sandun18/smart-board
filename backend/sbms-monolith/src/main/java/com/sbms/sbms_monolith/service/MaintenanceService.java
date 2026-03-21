@@ -124,9 +124,12 @@ public class MaintenanceService {
         }
     }
 
-    maintenanceRepo.save(m);
-    
-    // Ensure your MaintenanceMapper also maps m.getUpdatedAt() -> dto.getUpdatedAt()
-    return MaintenanceMapper.toDTO(m);
-}
+        maintenanceRepo.save(m);
+        return MaintenanceMapper.toDTO(m);
+    }
+
+    public Maintenance getMaintenanceById(Long id) {
+        return maintenanceRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Maintenance Request not found with id: " + id));
+    }
 }

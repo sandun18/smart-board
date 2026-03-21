@@ -32,6 +32,10 @@ public class BoardingCreateDTO {
     private List<String> imageUrls;
 
     private List<String> amenities;
+    
+    private Double  distance_to_uni ;
+    
+    private Integer size;
 
     private Map<String, Double> nearbyPlaces;
 }

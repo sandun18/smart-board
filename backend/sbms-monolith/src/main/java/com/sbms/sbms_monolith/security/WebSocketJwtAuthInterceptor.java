@@ -101,15 +101,14 @@ public class WebSocketJwtAuthInterceptor implements ChannelInterceptor {
                 rawAuth = accessor.getFirstNativeHeader("authorization");
             }
 
-            // ❌ Reject silently (SockJS-safe)
             if (rawAuth == null || !rawAuth.startsWith("Bearer ")) {
-                return null;
+                throw new MessageDeliveryException("Missing or invalid Authorization header");
             }
 
             String token = rawAuth.substring(7).trim();
 
             if (!jwtService.isTokenValid(token)) {
-                return null;
+                throw new MessageDeliveryException("Invalid JWT token");
             }
 
             String username = jwtService.extractUsername(token);

@@ -16,7 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+
+import java.math.BigDecimal;
+import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,6 +41,9 @@ public class UserService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private S3Service s3Service;
+
     // ---------------------------------------------------------
     // BASIC USER OPERATIONS
     // ---------------------------------------------------------
@@ -49,6 +56,15 @@ public class UserService {
 
         User user = UserMapper.toEntity(dto);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        if (dto.getRole() == UserRole.TECHNICIAN) {
+            user.setCity(dto.getCity());
+            user.setProvince(dto.getProvince());
+            user.setBasePrice(dto.getBasePrice());
+            user.setSkills(dto.getSkills());
+            user.setTechnicianAverageRating(BigDecimal.valueOf(0.0));
+            user.setTechnicianTotalJobs(0);
+        }
 
         User saved = userRepository.save(user);
         return UserMapper.toUserResponse(saved);
@@ -85,16 +101,81 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setFullName(dto.getFullName());
-        user.setPhone(dto.getPhone());
-        user.setAddress(dto.getAddress());
-        user.setGender(dto.getGender());
-        user.setStudentUniversity(dto.getStudentUniversity());
-        user.setAccNo(dto.getAccNo());
-        user.setNicNumber(dto.getNicNumber());
+        if (dto.getFullName() != null) {
+            user.setFullName(dto.getFullName());
+        }
+        if (dto.getPhone() != null) {
+            user.setPhone(dto.getPhone());
+        }
+        if (dto.getAddress() != null) {
+            user.setAddress(dto.getAddress());
+        }
+        if (dto.getGender() != null) {
+            user.setGender(dto.getGender());
+        }
+        if (dto.getStudentUniversity() != null) {
+            user.setStudentUniversity(dto.getStudentUniversity());
+        }
+        if (dto.getAccNo() != null) {
+            user.setAccNo(dto.getAccNo());
+        }
+        if (dto.getNicNumber() != null) {
+            user.setNicNumber(dto.getNicNumber());
+        }
 
-        if(dto.getProfileImageUrl() != null) {
+        if (dto.getDob() != null) {
+            user.setDob(dto.getDob());
+        }
+        if (dto.getEmergencyContact() != null) {
+            user.setEmergencyContact(dto.getEmergencyContact());
+        }
+        if (dto.getStudentIdNumber() != null) {
+            user.setStudentIdNumber(dto.getStudentIdNumber());
+        }
+
+        if (dto.getProfileImageUrl() != null && !dto.getProfileImageUrl().isEmpty()) {
             user.setProfileImageUrl(dto.getProfileImageUrl());
+        }
+
+        if (dto.getProfileImageBase64() != null && !dto.getProfileImageBase64().isEmpty()) {
+            try {
+                String base64String = dto.getProfileImageBase64();
+                String contentType = "image/jpeg";
+
+                // 1. Clean Data
+                if (base64String.contains("data:image/png;")) contentType = "image/png";
+
+                if (base64String.contains(",")) {
+                    base64String = base64String.split(",")[1];
+                }
+
+                // 2. Decode
+                byte[] imageBytes = Base64.getDecoder().decode(base64String);
+
+                // 3. Generate S3 Key
+                String extension = contentType.equals("image/png") ? ".png" : ".jpg";
+                String s3Key = "profiles/" + UUID.randomUUID().toString() + "_upload" + extension;
+
+                // 4. Upload to Cloud (AWS)
+                System.out.println("LOG: Uploading to S3...");
+                String s3Url = s3Service.uploadBytes(imageBytes, s3Key, contentType);
+                System.out.println("LOG: Upload Success: " + s3Url);
+
+                // 5. Save Cloud URL to Database
+                user.setProfileImageUrl(s3Url);
+
+            } catch (Exception e) {
+                System.err.println("S3 Upload Error: " + e.getMessage());
+                e.printStackTrace();
+                throw new RuntimeException("Failed to upload profile image");
+            }
+        }
+
+        if (user.getRole() == UserRole.TECHNICIAN) {
+            if (dto.getCity() != null) user.setCity(dto.getCity());
+            if (dto.getProvince() != null) user.setProvince(dto.getProvince());
+            if (dto.getBasePrice() != null) user.setBasePrice(dto.getBasePrice());
+            if (dto.getSkills() != null) user.setSkills(dto.getSkills());
         }
 
         User saved = userRepository.save(user);
@@ -131,6 +212,10 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    public boolean hasAdmins() {
+        return userRepository.countByRole(UserRole.ADMIN) > 0;
+    }
+
     // ---------------------------------------------------------
     // REGISTRATION WITH OTP
     // ---------------------------------------------------------
@@ -154,6 +239,13 @@ public class UserService {
         pending.setAccNo(dto.getAccNo());
         pending.setStudentUniversity(dto.getStudentUniversity());
         pending.setRole(dto.getRole());
+
+        if (dto.getRole() == UserRole.TECHNICIAN) {
+            pending.setCity(dto.getCity());
+            pending.setProvince(dto.getProvince());
+            pending.setBasePrice(dto.getBasePrice());
+            pending.setSkills(dto.getSkills());
+        }
 
         pendingRepo.save(pending);
 
@@ -190,7 +282,19 @@ public class UserService {
         user.setAccNo(p.getAccNo());
         user.setStudentUniversity(p.getStudentUniversity());
         user.setRole(p.getRole());
-        user.setVerifiedOwner(p.getRole() == UserRole.OWNER);
+        // Admins and Owners are verified by default, Students need verification later
+        user.setVerifiedOwner(p.getRole() == UserRole.OWNER || p.getRole() == UserRole.ADMIN);
+
+        if (p.getRole() == UserRole.TECHNICIAN) {
+            user.setCity(p.getCity());
+            user.setProvince(p.getProvince());
+            user.setBasePrice(p.getBasePrice());
+            user.setSkills(p.getSkills());
+
+            // Initialize Stats
+            user.setTechnicianAverageRating(BigDecimal.valueOf(0.0));
+            user.setTechnicianTotalJobs(0);
+        }
 
         User saved = userRepository.save(user);
         pendingRepo.delete(p);
@@ -232,27 +336,5 @@ public class UserService {
         userRepository.save(user);
 
         return "Password reset successful";
-    }
-
-    // ---------------------------------------------------------
-    // CHANGE PASSWORD (LOGGED IN)
-    // ---------------------------------------------------------
-
-    public String changePassword(String email, String currentPassword, String newPassword) {
-        
-        // 1. Fetch User
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // 2. Check if current password matches DB password
-        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
-            throw new RuntimeException("Invalid current password");
-        }
-
-        // 3. Encode and Set New Password
-        user.setPassword(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
-
-        return "Password changed successfully";
     }
 }

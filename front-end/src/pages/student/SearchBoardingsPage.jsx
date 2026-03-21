@@ -183,7 +183,7 @@ const SearchBoardingsPage = () => {
               Load More Results
             </motion.button>
             <p className="text-text-muted text-sm mt-4">
-              Showing {filteredBoardings.length} of 87 boardings
+              Showing {filteredBoardings.length} 
             </p>
           </motion.div>
         )}

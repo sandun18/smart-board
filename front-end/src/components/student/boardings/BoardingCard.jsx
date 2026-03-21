@@ -7,6 +7,7 @@ import {
   FaTools, FaEnvelope, FaFileContract, FaStar,
   FaSpinner
 } from 'react-icons/fa';
+import EmergencyButton from "../../emergency/EmergencyButton";
 
 const BoardingCard = ({
   boarding,
@@ -118,6 +119,7 @@ const BoardingCard = ({
 
           {/* Stats */}
           <div className="flex gap-8 border-t border-gray-100 pt-4">
+            <EmergencyButton boardingId={boarding.id} />
             <div className="text-center">
               <div className="text-2xl font-bold text-accent flex items-center gap-1">
                 {boarding.rating || 0} <FaStar className="text-yellow-500 text-lg" />

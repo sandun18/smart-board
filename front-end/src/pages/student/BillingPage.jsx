@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import StudentLayout from '../../components/student/common/StudentLayout';
 import api from '../../api/api';
 import Notification from '../../components/student/maintenance/Notification';
+import { useNavigate } from 'react-router-dom';
 
 const BillingPage = () => {
+  const navigate = useNavigate();
   const [bills, setBills] = useState([]);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -56,8 +58,7 @@ const BillingPage = () => {
         description: `Monthly Bill - ${bill.month}`,
       });
 
-      window.location.href =
-        `/student/payments/pay/select-method/${res.data.id}?boardingId=${bill.boardingId}`;
+      navigate(`/student/payments/pay/select-method/${res.data.id}?boardingId=${bill.boardingId}`);
 
     } catch (err) {
       console.error(err);

@@ -1,16 +1,15 @@
 package com.sbms.sbms_monolith.model;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
 import com.sbms.sbms_monolith.model.enums.ManualApprovalStatus;
 import com.sbms.sbms_monolith.model.enums.PaymentIntentStatus;
 import com.sbms.sbms_monolith.model.enums.PaymentMethod;
 import com.sbms.sbms_monolith.model.enums.PaymentType;
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "payment_intents")
@@ -55,18 +54,19 @@ public class PaymentIntent {
     @Column(nullable = false, unique = true)
     private String referenceId;
 
-    @Column(nullable=true ,   name = "monthly_bill_id")
+    @Column(nullable=true, name = "monthly_bill_id")
     private Long monthlyBillId;
 
+    //  Link to Maintenance Job
+    @Column(nullable = true, name = "maintenance_request_id")
+    private Long maintenanceRequestId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     private PaymentMethod method;
 
-    
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
 }
-

@@ -20,6 +20,9 @@ import ReportsPage from "../pages/owner/ReportsPage";
 import ReportStudentPage from "../pages/owner/AddReportPage";
 import SubscriptionPlanPage from "../pages/owner/SubscriptionPlanPage";
 import PaymentPage from "../pages/owner/PaymentPage";
+import ChatList from "../pages/chat/ChatList";
+import ChatRoom from "../pages/chat/ChatRoom";
+import TechnicianManagementPage from "../pages/owner/TechnicianManagementPage.jsx";
 
 const OwnerAppRoutes = () => {
   return (
@@ -31,6 +34,9 @@ const OwnerAppRoutes = () => {
 
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
+
+          <Route path="chats" element={<ChatList />} />
+          <Route path="chat/:roomId" element={<ChatRoom />} />
 
           <Route path="myAds" element={<MyAdsPage />} />
           <Route path="myAds/createAd" element={<CreateAdPage />} />
@@ -51,6 +57,7 @@ const OwnerAppRoutes = () => {
 
           {/* ==================== OTHER ==================== */}
           <Route path="maintenance" element={<MaintenancePage />} />
+          <Route path="maintenance/:id/assign" element={<TechnicianManagementPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="payment" element={<PaymentPage />} />
 

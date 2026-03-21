@@ -4,9 +4,11 @@ import com.sbms.sbms_monolith.dto.boarding.BoardingSummaryDTO;
 import com.sbms.sbms_monolith.dto.user.UserProfileViewDTO;
 import com.sbms.sbms_monolith.model.Boarding;
 import com.sbms.sbms_monolith.model.User;
+import com.sbms.sbms_monolith.model.enums.UserRole;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class UserProfileMapper {
 
@@ -40,6 +42,19 @@ public class UserProfileMapper {
         dto.setAddress(user.getAddress());
         dto.setVerifiedOwner(user.isVerifiedOwner());
         dto.setBusinessName(user.getFullName());
+
+        // Technician Specific
+        if (user.getRole() == UserRole.TECHNICIAN) {
+            if (user.getSkills() != null) {
+                dto.setSkills(
+                        user.getSkills().stream()
+                                .map(skill -> skill.name().replace("_", " "))
+                                .collect(Collectors.toList())
+                );
+            }
+            dto.setAverageRating(user.getTechnicianAverageRating());
+            dto.setTotalJobsCompleted(user.getTechnicianTotalJobs());
+        }
 
         // Set Listings
         dto.setActiveListings(listings);

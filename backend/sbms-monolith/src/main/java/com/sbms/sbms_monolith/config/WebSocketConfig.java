@@ -112,10 +112,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry
-            .addEndpoint("/ws")
+            .addEndpoint("/backend-ws")
             .setAllowedOriginPatterns("*")
             .withSockJS()
-            .setSessionCookieNeeded(false); // REQUIRED FOR EXPO
+            ;
     }
 
     @Override
@@ -129,6 +129,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(jwtAuthInterceptor);
     }
+    
+    
+    
+    
+    
+    
+    
 }
 
 

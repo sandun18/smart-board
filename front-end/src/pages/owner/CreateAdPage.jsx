@@ -11,7 +11,7 @@ import {
 } from "../../components/Owner/ads/CreateAdSubComponents";
 
 // Backend Enum Options
-const BOARDING_TYPES = ["ANNEX", "ROOM", "HOUSE"]; 
+const BOARDING_TYPES = ["ANEX", "ROOM", "HOUSE"]; 
 const GENDER_TYPES = ["MALE", "FEMALE", "MIXED"]; 
 
 const availableAmenities = [
@@ -53,11 +53,14 @@ const CreateAdPage = () => {
     description: "",
     amenities: [],
     genderType: "MIXED",
-    boardingType: "ROOM",
+    boardingType: "",
     availableSlots: 1,
     maxOccupants: 1,
     latitude: 6.9271, 
-    longitude: 79.8612
+    longitude: 79.8612,
+
+    distance_to_uni: "",
+    size: ""
   });
 
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -101,7 +104,7 @@ const CreateAdPage = () => {
   };
 
   return (
-    <div className="space-y-8 pb-12 bg-light min-h-screen">
+    <div className="min-h-screen pb-12 space-y-8 bg-light">
       <HeaderBar
         title="Create New Boarding Ad"
         subtitle="Fill in the details below to create your ad."
@@ -117,19 +120,19 @@ const CreateAdPage = () => {
         initial="hidden"
         animate="visible"
         onSubmit={handleSubmit} 
-        className="space-y-8 px-4 max-w-6xl mx-auto"
+        className="max-w-6xl px-4 mx-auto space-y-8"
       >
         
         {/* Section 1: Details (Animated) */}
         <motion.section 
           variants={itemVariants} 
-          className="bg-card-bg p-8 rounded-report shadow-custom border border-light"
+          className="p-8 border bg-card-bg rounded-report shadow-custom border-light"
         >
-          <h2 className="text-xl font-black mb-6 pb-3 border-b border-light text-primary uppercase tracking-tight">
+          <h2 className="pb-3 mb-6 text-xl font-black tracking-tight uppercase border-b border-light text-primary">
             Boarding Details
           </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
             <FormGroup
               label="Ad Title"
               name="title"
@@ -161,28 +164,28 @@ const CreateAdPage = () => {
             
             {/* Dropdowns */}
             <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold uppercase text-muted tracking-wider">
+                <label className="text-xs font-bold tracking-wider uppercase text-muted">
                     Gender Preference
                 </label>
                 <select 
                     name="genderType" 
                     value={formData.genderType} 
                     onChange={handleChange}
-                    className="p-3 border border-light rounded-xl bg-white/50 focus:border-accent font-medium text-text"
+                    className="p-3 font-medium border border-light rounded-xl bg-white/50 focus:border-accent text-text"
                 >
                     {GENDER_TYPES.map(g => <option key={g} value={g}>{g}</option>)}
                 </select>
             </div>
 
             <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold uppercase text-muted tracking-wider">
+                <label className="text-xs font-bold tracking-wider uppercase text-muted">
                     Boarding Type
                 </label>
                 <select 
                     name="boardingType" 
                     value={formData.boardingType} 
                     onChange={handleChange}
-                    className="p-3 border border-light rounded-xl bg-white/50 focus:border-accent font-medium text-text"
+                    className="p-3 font-medium border border-light rounded-xl bg-white/50 focus:border-accent text-text"
                 >
                     {BOARDING_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
@@ -202,6 +205,24 @@ const CreateAdPage = () => {
               value={formData.maxOccupants}
               onChange={handleChange}
             />
+
+            <FormGroup
+              label="Distance to University (KM)"
+              name="distance_to_uni"
+              type="number"
+              value={formData.distance_to_uni}
+              onChange={handleChange}
+            />
+
+            <FormGroup
+              label="Room Size (sqft)"
+              name="size"
+              type="number"
+              value={formData.size}
+              onChange={handleChange}
+            />
+
+
           </div>
           
           <div className="mt-8">
@@ -214,7 +235,7 @@ const CreateAdPage = () => {
               value={formData.description}
               onChange={handleChange}
               placeholder="Describe the atmosphere, rules, and nearby landmarks..."
-              className="w-full p-4 border border-light rounded-xl focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 bg-white/50 transition-all text-text font-medium"
+              className="w-full p-4 font-medium transition-all border border-light rounded-xl focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 bg-white/50 text-text"
               required
             />
           </div>
@@ -223,9 +244,9 @@ const CreateAdPage = () => {
         {/* ✅ Section 2: MAP LOCATION */}
         <motion.section 
           variants={itemVariants} 
-          className="bg-card-bg p-8 rounded-report shadow-custom border border-light"
+          className="p-8 border bg-card-bg rounded-report shadow-custom border-light"
         >
-          <h2 className="text-xl font-black mb-6 pb-3 border-b border-light text-primary uppercase tracking-tight">
+          <h2 className="pb-3 mb-6 text-xl font-black tracking-tight uppercase border-b border-light text-primary">
              Boarding Location
           </h2>
           <LocationPicker 
@@ -236,15 +257,15 @@ const CreateAdPage = () => {
         </motion.section>
 
         {/* Section 3: Amenities & Media (Animated) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           <motion.section 
             variants={itemVariants}
-            className="bg-card-bg p-8 rounded-report shadow-custom border border-light"
+            className="p-8 border bg-card-bg rounded-report shadow-custom border-light"
           >
-            <h2 className="text-xl font-black mb-6 pb-3 border-b border-light text-primary uppercase tracking-tight">
+            <h2 className="pb-3 mb-6 text-xl font-black tracking-tight uppercase border-b border-light text-primary">
               Features & Amenities
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {availableAmenities.map((item) => (
                 <AmenityCheckbox
                   key={item.label}
@@ -258,9 +279,9 @@ const CreateAdPage = () => {
 
           <motion.section 
             variants={itemVariants}
-            className="bg-card-bg p-8 rounded-report shadow-custom border border-light"
+            className="p-8 border bg-card-bg rounded-report shadow-custom border-light"
           >
-            <h2 className="text-xl font-black mb-6 pb-3 border-b border-light text-primary uppercase tracking-tight">
+            <h2 className="pb-3 mb-6 text-xl font-black tracking-tight uppercase border-b border-light text-primary">
               Media Gallery
             </h2>
             <PhotoUploader

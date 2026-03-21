@@ -12,4 +12,8 @@ public class OwnerEarningTransactionDTO {
     private BigDecimal amount;
     private String type; // CREDIT / DEBIT
     private LocalDateTime date;
+
+    private String tenantName;
+    private String propertyTitle;
+    private String status;
 }

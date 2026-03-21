@@ -8,10 +8,13 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import com.sbms.sbms_monolith.dto.dashboard.ChartDataDTO;
 import com.sbms.sbms_monolith.model.OwnerWalletTransaction;
 
 public interface OwnerWalletTransactionRepository
         extends JpaRepository<OwnerWalletTransaction, Long> {
+
+	long deleteByOwnerId(Long ownerId);
 	
 	 List<OwnerWalletTransaction> findTop10ByOwnerIdOrderByCreatedAtDesc(Long ownerId);
 
@@ -31,4 +34,17 @@ public interface OwnerWalletTransactionRepository
 	          AND t.createdAt >= :startDate
 	    """)
 	    BigDecimal earningsSince(Long ownerId, LocalDateTime startDate);
+
+	    @Query("""
+	        SELECT new com.sbms.sbms_monolith.dto.dashboard.ChartDataDTO(
+	            FUNCTION('DATE_FORMAT', t.createdAt, '%Y-%m'),
+	            COALESCE(SUM(t.amount), 0)
+	        )
+	        FROM OwnerWalletTransaction t
+	        WHERE t.ownerId = :ownerId
+	          AND t.type = 'CREDIT'
+	        GROUP BY FUNCTION('DATE_FORMAT', t.createdAt, '%Y-%m')
+	        ORDER BY FUNCTION('DATE_FORMAT', t.createdAt, '%Y-%m')
+	    """)
+	    List<ChartDataDTO> getMonthlyEarnings(Long ownerId);
 }

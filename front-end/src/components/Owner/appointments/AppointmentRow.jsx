@@ -9,6 +9,7 @@ const AppointmentRow = ({
   onAction,
   formatDate,
   formatTime,
+  onProfileClick
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   
@@ -33,22 +34,25 @@ const AppointmentRow = ({
         initial={{ opacity: 0, y: 2 }}
         animate={{ opacity: 1, y: 10 }}
         transition={{ duration: 0.3 }}
-        className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 p-5 md:p-6 rounded-report shadow-custom bg-card-bg border border-light transition-shadow duration-300 hover:shadow-md relative overflow-hidden"
+        className="relative flex flex-col gap-4 p-5 overflow-hidden transition-shadow duration-300 border md:flex-row md:items-center md:gap-6 md:p-6 rounded-report shadow-custom bg-card-bg border-light hover:shadow-md"
       >
         {/* 1. Student & Property Details */}
         <div className="flex flex-col flex-1 gap-1">
-          <div className="flex justify-between items-start md:block">
+          <div className="flex items-start justify-between md:block">
             
-            {/* ✅ NEW: Avatar Layout */}
-            <div className="flex items-center gap-3">
+            {/* ✅ UPDATED: Added click handler and cursor styling */}
+            <div 
+              className="flex items-center gap-3 cursor-pointer group" 
+              onClick={() => onProfileClick(appointment.studentId)}
+            >
               {/* Avatar Circle */}
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/80 text-white flex items-center justify-center font-black text-xs shadow-sm border-2 border-white ring-1 ring-light shrink-0">
+              <div className="flex items-center justify-center w-10 h-10 text-xs font-black text-white transition-transform border-2 border-white rounded-full shadow-sm bg-gradient-to-br from-primary to-primary/80 ring-1 ring-light shrink-0 group-hover:scale-110">
                 {getInitials(appointment.student)}
               </div>
               
               {/* Name & Status */}
               <div>
-                <h4 className="font-black text-base md:text-lg text-text tracking-tight uppercase leading-none">
+                <h4 className="text-base font-black leading-none tracking-tight uppercase transition-colors md:text-lg text-text group-hover:text-primary">
                   {appointment.student}
                 </h4>
                 {/* Mobile Status Badge */}
@@ -57,7 +61,6 @@ const AppointmentRow = ({
                 </span>
               </div>
             </div>
-
           </div>
           
           {/* Boarding Name (pushed slightly to align with text) */}
@@ -83,7 +86,7 @@ const AppointmentRow = ({
             <div className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.15em] text-muted mb-0.5 md:mb-1">
               Visit Date
             </div>
-            <div className="text-sm md:text-base font-black text-primary leading-none">
+            <div className="text-sm font-black leading-none md:text-base text-primary">
               {formatDate(appointment.date)}
             </div>
             <div className="text-[10px] md:text-xs font-bold text-muted mt-0.5">
@@ -93,8 +96,8 @@ const AppointmentRow = ({
         </div>
 
         {/* 3. Actions */}
-        <div className="flex items-center justify-between md:justify-end gap-3 md:gap-4 mt-2 md:mt-0">
-          <div className="flex gap-2 w-full md:w-auto">
+        <div className="flex items-center justify-between gap-3 mt-2 md:justify-end md:gap-4 md:mt-0">
+          <div className="flex w-full gap-2 md:w-auto">
             
             {/* Detail Button */}
             <motion.button

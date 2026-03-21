@@ -13,6 +13,8 @@ public class UserResponseDTO {
     @Schema(example = "12")
     private Long id;
 
+    private java.time.LocalDateTime createdAt;
+
     @Schema(example = "Kamal Perera")
     private String fullName;
 
@@ -59,10 +61,23 @@ public class UserResponseDTO {
 
     // -------- STUDENT ONLY --------
 
+    private String dob;
+    private String emergencyContact;
+    private String studentIdNumber;
+
     @Schema(
         description = "Student university name",
         example = "University of Moratuwa"
     )
     private String studentUniversity;
+
+
+    // -------- TECHNICIAN ONLY --------
+
+    @Schema(description = "Average rating from 0.0 to 5.0", example = "4.8")
+    private Double technicianAverageRating;
+
+    @Schema(description = "Total number of completed jobs", example = "15")
+    private Integer technicianTotalJobs;
 }
 
