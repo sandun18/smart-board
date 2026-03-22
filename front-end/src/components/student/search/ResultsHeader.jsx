@@ -19,8 +19,8 @@ const ResultsHeader = ({
         <div>
           <h2 className="text-primary text-2xl font-bold mb-1">Search Results</h2>
           <p className="text-text-muted">
-            <span className="text-accent font-bold">{resultsCount}</span> boardings found near{' '}
-            <strong>University of Ruhuna</strong>
+            <span className="text-accent font-bold">{resultsCount}</span> boardings found 
+            {/* <strong>University of Ruhuna</strong> */}
           </p>
         </div>
 
