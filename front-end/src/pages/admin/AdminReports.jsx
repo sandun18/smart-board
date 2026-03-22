@@ -15,6 +15,12 @@ const AdminReports = () => {
     setCurrentTab, 
     category, 
     setCategory,
+    totalItems,
+    totalPages,
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
     selectedReport, 
     setSelectedReport, 
     toast, 
@@ -77,6 +83,48 @@ const AdminReports = () => {
           </div>
         )}
       </div>
+
+      {!loading && totalItems > 0 && (
+        <div className="mt-4 bg-white rounded-[18px] px-4 py-3 shadow-sm border border-gray-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm text-text-muted font-medium">
+            Showing {(currentPage - 1) * pageSize + 1}
+            {' '}-{' '}
+            {Math.min(currentPage * pageSize, totalItems)} of {totalItems} reports
+          </div>
+
+          <div className="flex items-center gap-3">
+            <select
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              className="px-3 py-2 bg-gray-50 rounded-lg text-sm outline-none"
+              aria-label="Reports per page"
+            >
+              <option value={5}>5 / page</option>
+              <option value={10}>10 / page</option>
+              <option value={20}>20 / page</option>
+              <option value={50}>50 / page</option>
+            </select>
+
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage <= 1}
+              className="px-3 py-2 rounded-lg border border-gray-200 text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Prev
+            </button>
+            <span className="text-sm font-bold text-[#332720] min-w-[90px] text-center">
+              Page {currentPage} / {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage >= totalPages}
+              className="px-3 py-2 rounded-lg border border-gray-200 text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 4. Modals */}
       {selectedReport && (
