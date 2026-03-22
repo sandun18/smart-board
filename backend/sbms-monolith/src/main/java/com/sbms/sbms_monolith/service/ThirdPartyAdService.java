@@ -13,6 +13,7 @@ public interface ThirdPartyAdService {
     AdResponseDTO createActiveAd(AdCreateDTO dto);
     AdResponseDTO submitAd(AdCreateDTO dto);
     AdResponseDTO toggleAdStatus(Long id);
+    AdResponseDTO replayExpiredAd(Long id);
     AdResponseDTO updateAdDetails(Long id, AdCreateDTO dto);
     void deleteAd(Long id);
 }
