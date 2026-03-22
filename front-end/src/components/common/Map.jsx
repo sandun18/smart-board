@@ -1,7 +1,7 @@
 import React from "react";
 import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 
-const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ||'AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg';
 
 const containerStyle = {
   width: "100%",
