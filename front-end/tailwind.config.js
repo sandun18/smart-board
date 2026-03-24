@@ -50,8 +50,8 @@ export default {
         'primary': '#D84C38',
         'accent': '#FF7A00',
         'secondary-accent': '#FF7A00',
-        'background-light': '#E8DBC7', // Your original --light
-        'light': '#E8DBC7', // Changed from background-light
+          'background-light': '#E4D6C3', // Your original --light
+          'light': '#E4D6C3', // Changed from background-light
         'card-bg': '#FFFFFF',
         'text': '#332720',   // Changed from text-dark
         'muted': '#665345',  // Changed from text-muted

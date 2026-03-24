@@ -19,6 +19,7 @@ import ProfilePage from "../pages/owner/ProfilePage";
 import ReportsPage from "../pages/owner/ReportsPage";
 import ReportStudentPage from "../pages/owner/AddReportPage";
 import SubscriptionPlanPage from "../pages/owner/SubscriptionPlanPage";
+import ViewSubscriptionPlansPage from "../pages/owner/ViewSubscriptionPlansPage";
 import PaymentPage from "../pages/owner/PaymentPage";
 import ChatList from "../pages/chat/ChatList";
 import ChatRoom from "../pages/chat/ChatRoom";
@@ -67,6 +68,11 @@ const OwnerAppRoutes = () => {
           <Route
             path="subscriptions/:adId"
             element={<SubscriptionPlanPage />}
+          />
+
+          <Route
+            path="subscription-plans"
+            element={<ViewSubscriptionPlansPage />}
           />
 
         </Route>
