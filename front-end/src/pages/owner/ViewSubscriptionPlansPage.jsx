@@ -5,10 +5,7 @@ import { getActivePlans } from "../../api/owner/subscriptionPlanService";
 import HeaderBar from "../../components/Owner/common/HeaderBar.jsx";
 import PaymentModal from "../../components/Owner/subscription/PaymentModal.jsx";
 
-import { FaCheck, FaStar, FaRocket, FaCrown } from "react-icons/fa";
-import toast from "react-hot-toast";
-import { getActivePlans } from "../../api/admin/subscriptionPlanService";
-import HeaderBar from "../../components/Owner/common/HeaderBar.jsx";
+import { FaStar, FaRocket, FaCrown } from "react-icons/fa";
 
 // Map plan index to style config for visual variety
 const planStyles = [
@@ -61,24 +58,6 @@ const getDurationLabel = (plan) => {
   return "N/A";
 };
 
-const getDurationDays = (plan) => {
-  if (plan?.durationDays !== undefined && plan?.durationDays !== null) {
-    const parsedDurationDays = Number(plan.durationDays);
-    return Number.isFinite(parsedDurationDays) && parsedDurationDays > 0
-      ? parsedDurationDays
-      : 30;
-  }
-
-  if (typeof plan?.duration === "string" && plan.duration.trim()) {
-    const parsed = parseInt(plan.duration.trim().split(/\s+/)[0], 10);
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : 30;
-  }
-
-  return 30;
-};
-
-const toIsoString = (date) => new Date(date).toISOString();
-
 const PlanCard = ({
   plan,
   styleIndex,
@@ -90,9 +69,6 @@ const PlanCard = ({
   const style = planStyles[styleIndex % planStyles.length];
   const IconComponent = style.icon;
   const features = normalizeFeatures(plan?.features);
-const PlanCard = ({ plan, styleIndex }) => {
-  const style = planStyles[styleIndex % planStyles.length];
-  const IconComponent = style.icon;
 
   return (
     <div
@@ -115,10 +91,6 @@ const PlanCard = ({ plan, styleIndex }) => {
         </span>
       )}
 
-        relative flex flex-col p-8 rounded-large bg-white shadow-custom border-t-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl
-        ${style.borderClass}
-      `}
-    >
       <div className="flex justify-between items-start mb-6">
         <h3 className="text-xl font-black text-text uppercase tracking-tight">
           {plan.name}
