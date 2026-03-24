@@ -242,4 +242,18 @@ public class AppointmentService {
         Appointment saved = appointmentRepository.save(appointment);
         return AppointmentMapper.toDto(saved);
     }
+
+    // ✅ NEW METHOD: Get Recent Appointments for Dashboard
+    public List<AppointmentResponseDTO> getRecentAppointments(Long ownerId) {
+        User owner = userRepository.findById(ownerId)
+                .orElseThrow(() -> new RuntimeException("Owner not found"));
+
+        // Calls the new Top 5 query
+        List<Appointment> list = appointmentRepository.findTop5ByBoarding_OwnerOrderByCreatedAtDesc(owner);
+
+        // Convert to DTOs
+        return list.stream()
+                .map(AppointmentMapper::toDto)
+                .collect(Collectors.toList());
+    }
 }

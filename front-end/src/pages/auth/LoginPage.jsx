@@ -5,6 +5,9 @@ import { motion } from "framer-motion";
 // --- CONTEXT IMPORTS ---
 import { useAuth as useStudentAuth } from "../../context/student/StudentAuthContext";
 import { useOwnerAuth } from "../../context/owner/OwnerAuthContext";
+// Added Admin and Technician contexts (Adjust the import paths if necessary)
+import { useAuth as useAdminAuth } from "../../context/admin/AdminAuthContext"; 
+import { useTechAuth } from "../../context/technician/TechnicianAuthContext";
 
 // --- COMPONENT IMPORTS ---
 import UnifiedLoginForm from "../../components/auth/UnifiedLoginForm";
@@ -21,8 +24,10 @@ const LoginPage = () => {
   // AUTH HOOKS
   const { login: studentLogin } = useStudentAuth();
   const { login: ownerLogin } = useOwnerAuth();
+  const { login: adminLogin } = useAdminAuth();
+  const { login: techLogin } = useTechAuth();
 
-  // HANDLER: The "Try Both" Logic
+  // HANDLER: The "Try All" Logic
   const handleLogin = async (formData) => {
     setIsLoading(true);
     setError("");
@@ -31,22 +36,33 @@ const LoginPage = () => {
     try {
       // 1. ATTEMPT STUDENT LOGIN
       const studentResult = await studentLogin(email, password);
-
       if (studentResult && studentResult.success) {
         navigate("/student", { replace: true });
-        return; // Stop here if successful
+        return; 
       }
 
-      // 2. IF STUDENT FAILS, ATTEMPT OWNER LOGIN
-      // (We assume the first failure might just be "User not found" in student DB)
+      // 2. ATTEMPT OWNER LOGIN
       const ownerResult = await ownerLogin(email, password);
-
       if (ownerResult && ownerResult.success) {
         navigate("/owner/dashboard", { replace: true });
-        return; // Stop here if successful
+        return; 
       }
 
-      // 3. IF BOTH FAIL
+      // 3. ATTEMPT ADMIN LOGIN
+      const adminResult = await adminLogin(email, password);
+      if (adminResult && adminResult.success) {
+        navigate("/admin/dashboard", { replace: true }); // Adjust route if needed
+        return;
+      }
+
+      // 4. ATTEMPT TECHNICIAN LOGIN
+      const techResult = await techLogin(email, password);
+      if (techResult && techResult.success) {
+        navigate("/technician/dashboard", { replace: true }); // Adjust route if needed
+        return;
+      }
+
+      // 5. IF ALL FAIL
       setError("Login failed. Please check your email and password.");
     } catch (err) {
       console.error(err);

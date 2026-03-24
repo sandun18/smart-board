@@ -46,7 +46,9 @@ export const OwnerAuthProvider = ({ children }) => {
         console.error("Auto-login failed:", error);
         // If the refresh token is expired or invalid (401/403), clear storage
         if (error.response?.status === 401 || error.response?.status === 403) {
-          localStorage.clear();
+          console.warn("Session expired for owner context");
+          localStorage.removeItem("refresh_token");
+          localStorage.removeItem("user_data");
         }
       } finally {
         setIsLoading(false);

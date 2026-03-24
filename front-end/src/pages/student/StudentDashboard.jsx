@@ -19,7 +19,7 @@ const StudentDashboard = () => {
   const navigate = useNavigate();
 
   const handlePayNow = () => {
-    window.location.href = "/student/billing";
+    navigate("/student/billing");
   };
 
   const goToChats = () => {
@@ -39,20 +39,22 @@ const StudentDashboard = () => {
           >
             <StatWidget
               icon={<FaCalendarCheck />}
-              title={
-                stats.upcomingVisit?.isPast ? "Last Visit" : "Upcoming Visit"
-              }
+              title="Upcoming Visit"
               mainDetail={
                 stats.upcomingVisit
-                  ? new Date(
-                      stats.upcomingVisit.normalizedDate
-                    ).toLocaleDateString()
-                  : "No visits found"
+                  ? stats.upcomingVisit.normalizedDate.toLocaleDateString(
+                      "en-US",
+                      {
+                        month: "short",
+                        day: "numeric",
+                      },
+                    )
+                  : "No approved visits"
               }
               subDetail={
                 stats.upcomingVisit
-                  ? stats.upcomingVisit.displayName
-                  : "Book your first visit"
+                  ? `${stats.upcomingVisit.normalizedDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} - ${stats.upcomingVisit.widgetDetail}`
+                  : "Check your activity for updates"
               }
             />
           </motion.div>
@@ -67,7 +69,7 @@ const StudentDashboard = () => {
               title="Monthly Rent"
               mainDetail={
                 stats.pendingPayment
-                  ? `LKR ${stats.pendingPayment.amount}`
+                  ? `LKR ${stats.pendingPayment.amount.toLocaleString()}`
                   : "No Active Rent"
               }
               subDetail={
@@ -99,7 +101,7 @@ const StudentDashboard = () => {
               subDetail={
                 stats.currentBoarding
                   ? `Since ${new Date(
-                      stats.currentBoarding.startDate
+                      stats.currentBoarding.startDate,
                     ).toLocaleDateString()}`
                   : "Find a place"
               }
@@ -125,7 +127,6 @@ const StudentDashboard = () => {
         </div>
       </section>
 
-      {/* ✅ CHAT BUTTON SECTION */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}

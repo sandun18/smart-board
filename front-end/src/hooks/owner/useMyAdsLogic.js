@@ -54,7 +54,8 @@ const useMyAdsLogic = () => {
 
   const toggleAdStatus = async (id, currentStatus) => {
     const isCurrentlyActive = currentStatus === "Active";
-    const newStatus = isCurrentlyActive ? "INACTIVE" : "PENDING"; // Active -> Inactive, Inactive -> Pending
+    // If Active (Approved) -> INACTIVE. If Inactive -> PENDING (for review)
+    const newStatus = isCurrentlyActive ? "INACTIVE" : "PENDING";
     
     const confirmMsg = isCurrentlyActive 
       ? "Deactivate this ad? It will move to the Inactive tab." 
@@ -64,16 +65,54 @@ const useMyAdsLogic = () => {
 
     const toastId = toast.loading("Updating status...");
     try {
-      // Assuming you have an API endpoint to patch status, 
-      // OR use updateBoarding with a partial payload if your backend supports it.
-      // For now, let's assume a specific status update call:
-      await updateBoarding(id, { status: newStatus }); 
+      // 1. Fetch current details
+      const currentData = await getBoardingById(id);
 
-      // Refresh UI
-      fetchAds(); 
-      toast.success(`Ad marked as ${newStatus}`, { id: toastId });
+      // 2. Construct Payload manually to ensure "Write DTO" compatibility
+      const payload = {
+        title: currentData.title,
+        description: currentData.description,
+        address: currentData.address,
+        
+        // Ensure numeric types
+        pricePerMonth: Number(currentData.pricePerMonth), 
+        keyMoney: Number(currentData.keyMoney) || 0,
+        
+        genderType: currentData.genderType,
+        boardingType: currentData.boardingType,
+        availableSlots: Number(currentData.availableSlots),
+        maxOccupants: Number(currentData.maxOccupants),
+        amenities: currentData.amenities || [],
+        
+        latitude: Number(currentData.latitude),
+        longitude: Number(currentData.longitude),
+        nearbyPlaces: currentData.nearbyPlaces || {}, 
+        
+        // Ensure images are a list of strings
+        imageUrls: currentData.imageUrls || [],
+        
+        // CRITICAL FIX: Inject Owner ID explicitly
+        // The Public Get endpoint might not return the ID, but the Update endpoint needs it.
+        ownerId: currentOwner?.id, 
+
+        // THE STATUS CHANGE
+        status: newStatus 
+      };
+
+      
+
+      // 3. Send Update
+      await updateBoarding(id, payload); 
+
+      // 4. Force UI Refresh
+      // Using a small timeout ensures the DB transaction clears before we fetch
+      setTimeout(() => {
+        fetchAds();
+        toast.success(isCurrentlyActive ? "Ad deactivated" : "Ad is now Active!", { id: toastId });
+      }, 500);
+
     } catch (err) {
-      console.error(err);
+      console.error("Update failed:", err);
       toast.error("Failed to update status", { id: toastId });
     }
   };
@@ -145,12 +184,16 @@ const useMyAdsLogic = () => {
         pricePerMonth: parseFloat(formData.rent),
         keyMoney: parseFloat(formData.deposit) || 0,
         genderType: formData.genderType || "MIXED",
-        boardingType: formData.boardingType || "ROOM",
+        boardingType: (formData.boardingType || "ROOM").toUpperCase(),
         availableSlots: parseInt(formData.availableSlots || 1),
         maxOccupants: parseInt(formData.maxOccupants || 1),
         amenities: formData.amenities,
         latitude: parseFloat(formData.latitude),
         longitude: parseFloat(formData.longitude),
+
+        distance_to_uni: parseFloat(formData.distance_to_uni) || 0,
+        size: parseInt(formData.size) || 0,
+
         nearbyPlaces: {}, 
         imageUrls: uploadedUrls,
       };
@@ -197,6 +240,8 @@ const useMyAdsLogic = () => {
         longitude: parseFloat(formData.longitude),
         nearbyPlaces: {}, 
         imageUrls: finalImages,
+        distance_to_uni: parseFloat(formData.distance_to_uni) || 0,
+        size: parseInt(formData.size) || 0,
         
         status: currentStatus === "Inactive" ? "INACTIVE" : "PENDING" 
       };

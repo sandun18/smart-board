@@ -25,6 +25,14 @@ public class MaintenanceMapper {
             dto.setStudentName(m.getStudent().getFullName());
         }
 
+        if (m.getAssignedTechnician() != null) {
+            dto.setTechnicianId(m.getAssignedTechnician().getId());
+            dto.setTechnicianName(m.getAssignedTechnician().getFullName());
+        }
+
+        dto.setTechnicianFee(m.getTechnicianFee());
+        dto.setBoardingAddress(m.getBoarding() != null ? m.getBoarding().getAddress() : null);
+
         dto.setTitle(m.getTitle());
         dto.setDescription(m.getDescription());
         dto.setImageUrls(m.getImageUrls());
@@ -35,7 +43,6 @@ public class MaintenanceMapper {
         dto.setMaintenanceUrgency(m.getMaintenanceUrgency());
         dto.setCreatedAt(m.getCreatedAt());
         dto.setUpdatedAt(m.getUpdatedAt());
-
 
         return dto;
     }

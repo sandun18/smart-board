@@ -25,4 +25,9 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
         ORDER BY cr.lastMessageAt DESC NULLS LAST
     """)
     List<ChatRoom> findUserChatRooms(@Param("user") User user);
+
+    @Query("SELECT cr.id FROM ChatRoom cr WHERE cr.student.id = :userId OR cr.owner.id = :userId")
+    List<Long> findRoomIdsByParticipantId(@Param("userId") Long userId);
+
+    long deleteByStudent_IdOrOwner_Id(Long studentId, Long ownerId);
 }

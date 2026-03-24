@@ -9,6 +9,7 @@ import useDecisionModal from "../../hooks/owner/useDecisionModal";
 import useAppointmentsLogic from "../../hooks/owner/useAppointmentsLogic";
 import { Toaster } from "react-hot-toast";
 import { FaSearch, FaSortAmountDown } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const AppointmentsPage = () => {
   const {
@@ -30,6 +31,8 @@ const AppointmentsPage = () => {
     setSortBy,
   } = useAppointmentsLogic();
 
+  const navigate = useNavigate();
+
   const { isOpen, selectedItem, actionType, openModal, closeModal } =
     useDecisionModal();
 
@@ -48,18 +51,26 @@ const AppointmentsPage = () => {
     }
   };
 
+  const handleStudentProfileClick = (studentId) => {
+    if (studentId) {
+      navigate(`/profile/view/${studentId}`);
+    } else {
+      console.error("Student ID is missing");
+    }
+  };
+
   // 4. Error State
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-light">
-        <div className="text-center p-6 bg-white rounded-lg shadow-lg">
-          <h3 className="text-error font-black text-xl mb-2">
+        <div className="p-6 text-center bg-white rounded-lg shadow-lg">
+          <h3 className="mb-2 text-xl font-black text-error">
             Connection Error
           </h3>
-          <p className="text-muted mb-4">{error}</p>
+          <p className="mb-4 text-muted">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-primary text-white rounded font-bold"
+            className="px-4 py-2 font-bold text-white rounded bg-primary"
           >
             Retry
           </button>
@@ -89,7 +100,7 @@ const AppointmentsPage = () => {
       />
 
       {/* Main Content */}
-      <div className="pt-4 space-y-8 min-h-screen bg-light pb-10">
+      <div className="min-h-screen pt-4 pb-10 space-y-8 bg-light">
         <HeaderBar
           title="Appointments"
           subtitle="Manage student visit requests and track arrivals."
@@ -99,8 +110,8 @@ const AppointmentsPage = () => {
         />
 
         {/* Filter Tabs */}
-        <section className="p-2 md:p-6 rounded-report shadow-custom bg-card-bg border border-light mx-2">
-          <div className="grid grid-cols-3 md:grid-cols-5 gap-2 md:gap-4">
+        <section className="p-2 mx-2 border md:p-6 rounded-report shadow-custom bg-card-bg border-light">
+          <div className="grid grid-cols-3 gap-2 md:grid-cols-5 md:gap-4">
             {Object.keys(counts).map((status) => (
               <StatusTab
                 key={status}
@@ -115,20 +126,20 @@ const AppointmentsPage = () => {
         </section>
 
         {/* List Section */}
-        <section className="space-y-4 px-2">
+        <section className="px-2 space-y-4">
           {/* Toolbar */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 ml-2 mr-2">
+          <div className="flex flex-col justify-between gap-4 ml-2 mr-2 md:flex-row md:items-center">
             <motion.h3
               layout
-              className="text-2xl font-black text-primary uppercase tracking-tight"
+              className="text-2xl font-black tracking-tight uppercase text-primary"
             >
               {filter} Requests
             </motion.h3>
 
-            <div className="flex flex-col md:flex-row gap-2 md:gap-4 w-full md:w-auto">
+            <div className="flex flex-col w-full gap-2 md:flex-row md:gap-4 md:w-auto">
               {/* Search */}
               <div className="relative flex-1 md:w-64">
-                <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-muted text-xs" />
+                <FaSearch className="absolute text-xs -translate-y-1/2 left-4 top-1/2 text-muted" />
                 <input
                   type="text"
                   placeholder="Search student or property..."
@@ -140,7 +151,7 @@ const AppointmentsPage = () => {
 
               {/* Sort */}
               <div className="relative md:w-48">
-                <FaSortAmountDown className="absolute left-4 top-1/2 -translate-y-1/2 text-muted text-xs" />
+                <FaSortAmountDown className="absolute text-xs -translate-y-1/2 left-4 top-1/2 text-muted" />
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
@@ -149,7 +160,7 @@ const AppointmentsPage = () => {
                   <option value="nearest">Nearest Date First</option>
                   <option value="furthest">Furthest Date First</option>
                 </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                <div className="absolute -translate-y-1/2 pointer-events-none right-4 top-1/2">
                   <svg
                     className="w-2.5 h-2.5 text-muted"
                     fill="none"
@@ -185,6 +196,7 @@ const AppointmentsPage = () => {
                       appointment={app}
                       config={getStatusStyle(app.status)}
                       onAction={handleModalTrigger} // ✅ Pass the trigger
+                      onProfileClick={handleStudentProfileClick}
                       formatDate={formatDate}
                       formatTime={formatTime}
                     />
@@ -194,7 +206,7 @@ const AppointmentsPage = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="py-12 text-center text-muted font-bold uppercase tracking-widest text-xs"
+                    className="py-12 text-xs font-bold tracking-widest text-center uppercase text-muted"
                   >
                     No appointments found matching your filters.
                   </motion.div>

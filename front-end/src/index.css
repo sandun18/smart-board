@@ -5,11 +5,11 @@
 @tailwind utilities;
 
 body {
-  @apply font-sans bg-light text-text leading-relaxed min-h-screen;
+  @apply min-h-screen font-sans leading-relaxed bg-light text-text;
 }
 
 body {
-  @apply font-sans text-text-dark bg-background-light leading-relaxed min-h-screen;
+  @apply min-h-screen font-sans leading-relaxed text-text-dark bg-background-light;
 }
 
 :root {

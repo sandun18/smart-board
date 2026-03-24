@@ -2,6 +2,7 @@ package com.sbms.sbms_monolith.controller;
 
 import com.sbms.sbms_monolith.dto.report.ReportCreateDTO;
 import com.sbms.sbms_monolith.dto.report.ReportResponseDTO;
+import com.sbms.sbms_monolith.repository.UserRepository;
 import com.sbms.sbms_monolith.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -20,13 +21,18 @@ public class ReportController {
     @Autowired
     private ReportService reportService;
 
+    @Autowired
+    private UserRepository userRepo;
+
     // Create Report
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ReportResponseDTO> create(
-            @ModelAttribute ReportCreateDTO dto,
-            @RequestPart(value = "evidence", required = false) List<MultipartFile> evidence
+            @ModelAttribute ReportCreateDTO dto
+//            @RequestParam(value = "evidence", required = false) MultipartFile evidence
     ) throws IOException {
-        return ResponseEntity.ok(reportService.create(dto, evidence));
+        // If your service needs a list, we wrap the single file here
+//        List<MultipartFile> evidenceList = (evidence != null) ? List.of(evidence) : null;
+        return ResponseEntity.ok(reportService.create(dto, dto.getEvidence()));
     }
 
     // Get My Sent Reports
