@@ -3,7 +3,7 @@ import { GoogleMap, Marker, useJsApiLoader, Autocomplete } from '@react-google-m
 import { FaCrosshairs, FaMapMarkerAlt, FaSearch, FaSpinner } from 'react-icons/fa';
 
 // ✅ Use the existing ENV variable
-const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyBNC44FLqmrSWtJAzBOx6a0KHynO3HuxZ0';
 const libraries = ['places'];
 
 const containerStyle = {

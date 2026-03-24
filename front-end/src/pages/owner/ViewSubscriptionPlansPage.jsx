@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { FaStar, FaRocket, FaCrown } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { getActivePlans } from "../../api/owner/subscriptionPlanService";
 import HeaderBar from "../../components/Owner/common/HeaderBar.jsx";
 import PaymentModal from "../../components/Owner/subscription/PaymentModal.jsx";
 
+import { FaCheck, FaStar, FaRocket, FaCrown } from "react-icons/fa";
+import toast from "react-hot-toast";
+import { getActivePlans } from "../../api/admin/subscriptionPlanService";
+import HeaderBar from "../../components/Owner/common/HeaderBar.jsx";
+
+// Map plan index to style config for visual variety
 const planStyles = [
   {
     colorClass: "text-info",
@@ -85,6 +90,9 @@ const PlanCard = ({
   const style = planStyles[styleIndex % planStyles.length];
   const IconComponent = style.icon;
   const features = normalizeFeatures(plan?.features);
+const PlanCard = ({ plan, styleIndex }) => {
+  const style = planStyles[styleIndex % planStyles.length];
+  const IconComponent = style.icon;
 
   return (
     <div
@@ -107,6 +115,10 @@ const PlanCard = ({
         </span>
       )}
 
+        relative flex flex-col p-8 rounded-large bg-white shadow-custom border-t-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl
+        ${style.borderClass}
+      `}
+    >
       <div className="flex justify-between items-start mb-6">
         <h3 className="text-xl font-black text-text uppercase tracking-tight">
           {plan.name}

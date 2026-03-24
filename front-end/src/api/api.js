@@ -1,13 +1,12 @@
 import axios from "axios";
 
-// 1. Safe Base URL
-const baseURL = import.meta.env.VITE_API_BASE || "http://localhost:8086/api";
+const baseURL = "https://smartboard.thareesha.software/api";
 
 const api = axios.create({
-  baseURL: baseURL,
-  // headers: {
-  //   'Content-Type': 'application/json',
-  // },
+  baseURL: import.meta.env.VITE_API_BASE,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 // 2. Request Interceptor: ALWAYS attach the token if it exists

@@ -240,7 +240,7 @@ const useMyAdsLogic = () => {
         longitude: parseFloat(formData.longitude),
         nearbyPlaces: {}, 
         imageUrls: finalImages,
-        distance_to_uni: parseDouble(formData.distance_to_uni) || 0,
+        distance_to_uni: parseFloat(formData.distance_to_uni) || 0,
         size: parseInt(formData.size) || 0,
         
         status: currentStatus === "Inactive" ? "INACTIVE" : "PENDING" 

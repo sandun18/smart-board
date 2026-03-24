@@ -9,6 +9,7 @@ import com.sbms.sbms_monolith.repository.ThirdPartyAdRepository;
 import com.sbms.sbms_monolith.service.ThirdPartyAdService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,8 +44,8 @@ public class ThirdPartyAdServiceImpl implements ThirdPartyAdService {
 
     @Override
     public List<AdResponseDTO> getActiveCampaigns() {
-        // Return both ACTIVE and PAUSED campaigns so admins can view and reactivate paused ads
-        java.util.List<com.sbms.sbms_monolith.model.enums.AdStatus> statuses = java.util.Arrays.asList(AdStatus.ACTIVE, AdStatus.PAUSED);
+        // Include EXPIRED so admins can replay them from campaign management.
+        java.util.List<com.sbms.sbms_monolith.model.enums.AdStatus> statuses = java.util.Arrays.asList(AdStatus.ACTIVE, AdStatus.PAUSED, AdStatus.EXPIRED);
         return adRepository.findByStatusIn(statuses)
             .stream()
             .map(this::convertToDTO)
@@ -55,8 +56,10 @@ public class ThirdPartyAdServiceImpl implements ThirdPartyAdService {
     public List<AdResponseDTO> getPublicActiveAds() {
         // Return ACTIVE ads that target PUBLIC_DASHBOARD for home page display
         AdStatus active = AdStatus.ACTIVE;
+        LocalDateTime now = LocalDateTime.now();
         return adRepository.findByStatus(active)
                 .stream()
+            .filter(ad -> ad.getExpiryDate() == null || ad.getExpiryDate().isAfter(now))
                 .filter(ad -> ad.getTargetPanels() != null && ad.getTargetPanels().contains(AdPanelType.PUBLIC_DASHBOARD))
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -109,6 +112,19 @@ public class ThirdPartyAdServiceImpl implements ThirdPartyAdService {
         
         AdStatus newStatus = ad.getStatus() == AdStatus.ACTIVE ? AdStatus.PAUSED : AdStatus.ACTIVE;
         ad.setStatus(newStatus);
+        ThirdPartyAd updated = adRepository.save(ad);
+        return convertToDTO(updated);
+    }
+
+    @Override
+    public AdResponseDTO replayExpiredAd(Long id) {
+        ThirdPartyAd ad = adRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ad not found with id: " + id));
+
+        // Replay should make campaign live again with a fresh default period.
+        ad.setStatus(AdStatus.ACTIVE);
+        ad.setExpiryDate(LocalDateTime.now().plusDays(30));
+
         ThirdPartyAd updated = adRepository.save(ad);
         return convertToDTO(updated);
     }

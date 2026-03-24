@@ -10,6 +10,8 @@ export const useUsers = () => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [toast, setToast] = useState(null);
     const [error, setError] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
     const showToast = (message, type = 'success') => {
         setToast({ message, type });
@@ -106,8 +108,33 @@ export const useUsers = () => {
         });
     }, [users, searchTerm, roleFilter, statusFilter]);
 
+    const totalItems = filteredUsers.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, roleFilter, statusFilter, pageSize]);
+
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [currentPage, totalPages]);
+
+    const pagedUsers = useMemo(() => {
+        const start = (currentPage - 1) * pageSize;
+        const end = start + pageSize;
+        return filteredUsers.slice(start, end);
+    }, [filteredUsers, currentPage, pageSize]);
+
     return {
-        users: filteredUsers,
+        users: pagedUsers,
+        totalItems,
+        totalPages,
+        currentPage,
+        setCurrentPage,
+        pageSize,
+        setPageSize,
         loading,
         error,
         stats,
@@ -120,6 +147,7 @@ export const useUsers = () => {
             setSearchTerm(''); 
             setRoleFilter('all');
             setStatusFilter('all');
+            setCurrentPage(1);
         },
         removeUser: (id) => setUsers(prev => prev.filter(u => u.id !== id))
     };

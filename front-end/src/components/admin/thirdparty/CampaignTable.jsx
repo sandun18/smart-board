@@ -1,6 +1,6 @@
 import React from 'react';
 
-const CampaignTable = ({ campaigns, onToggleStatus, onEdit, onDelete }) => {
+const CampaignTable = ({ campaigns, onToggleStatus, onReplay, onEdit, onDelete }) => {
   // Helper function to check if ad is expired
   const isExpired = (expiryDate) => {
     if (!expiryDate) return false;
@@ -31,7 +31,7 @@ const CampaignTable = ({ campaigns, onToggleStatus, onEdit, onDelete }) => {
         </thead>
         <tbody>
           {campaigns.map(c => {
-            const expired = isExpired(c.expiryDate);
+            const expired = c.status === 'EXPIRED' || isExpired(c.expiryDate);
             const daysRemaining = getDaysRemaining(c.expiryDate);
             
             return (
@@ -86,6 +86,17 @@ const CampaignTable = ({ campaigns, onToggleStatus, onEdit, onDelete }) => {
                         title={c.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
                       >
                         <i className={`fas ${c.status === 'ACTIVE' ? 'fa-pause' : 'fa-play'}`}></i>
+                      </button>
+                    )}
+
+                    {/* Replay expired campaigns */}
+                    {expired && onReplay && (
+                      <button
+                        onClick={() => onReplay(c.id)}
+                        className="p-2 rounded-xl text-blue-600 hover:bg-blue-50 transition-colors"
+                        title="Replay Campaign"
+                      >
+                        <i className="fas fa-rotate-right"></i>
                       </button>
                     )}
 

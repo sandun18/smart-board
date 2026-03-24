@@ -16,7 +16,7 @@ const AdminThirdParty = () => {
         submissions, campaigns, plans, activeTab, setActiveTab,
         stats, toast, loading, prefillAdData, isOffline, fetchData,
         handleApprove, handleReject, startPublishWorkflow,
-        createAd, toggleCampaignStatus, updateCampaign, deleteAd,
+        createAd, toggleCampaignStatus, replayCampaign, updateCampaign, deleteAd,
         addPlan, updatePlan, deletePlan
     } = useThirdPartyAds();
 
@@ -104,6 +104,7 @@ const AdminThirdParty = () => {
                         campaigns={campaigns || []} 
                         onEdit={setEditingCampaign}
                         onToggleStatus={toggleCampaignStatus}
+                        onReplay={replayCampaign}
                         onDelete={(id) => setDeleteTargetAd(id)}
                     />
                 )}

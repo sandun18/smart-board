@@ -10,6 +10,8 @@ export const useReports = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [toast, setToast] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const showToast = (message, type = 'info') => {
     setToast({ message, type });
@@ -108,6 +110,25 @@ export const useReports = () => {
     return reports.filter(r => r.reporter.role.toLowerCase() === category.slice(0, -1));
   }, [reports, category]);
 
+  const totalItems = filteredReports.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [currentTab, category, pageSize]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const pagedReports = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+    return filteredReports.slice(start, end);
+  }, [filteredReports, currentPage, pageSize]);
+
   const handleResolve = async (id, solutionData) => {
     try {
       await AdminService.resolveReport(id, solutionData);
@@ -136,7 +157,17 @@ export const useReports = () => {
 
   return {
     stats,
-    filteredReports, currentTab, setCurrentTab, category, setCategory,
+    filteredReports: pagedReports,
+    totalItems,
+    totalPages,
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    currentTab,
+    setCurrentTab,
+    category,
+    setCategory,
     selectedReport, setSelectedReport, toast, loading, error,
     handleDismiss, handleResolve, refresh: fetchReports
   };

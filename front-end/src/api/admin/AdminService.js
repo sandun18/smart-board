@@ -232,6 +232,11 @@ const AdminService = {
     return response.data;
   },
 
+  replayCampaign: async (campaignId) => {
+    const response = await api.patch(`/admin/third-party-ads/${campaignId}/replay`);
+    return response.data;
+  },
+
   /**
    * Update campaign details
    */

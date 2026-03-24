@@ -113,6 +113,16 @@ export const useThirdPartyAds = () => {
         } catch (err) { showToast(err.response?.data?.message || err.message || "Update failed", "error"); }
     };
 
+    const replayCampaign = async (id) => {
+        try {
+            await AdminService.replayCampaign(id);
+            showToast("Campaign replayed for 30 days", 'success');
+            fetchData();
+        } catch (err) {
+            showToast(err.response?.data?.message || err.message || "Replay failed", "error");
+        }
+    };
+
     const updateCampaign = async (id, data) => {
         try {
             await AdminService.updateCampaign(id, data);
@@ -158,7 +168,7 @@ export const useThirdPartyAds = () => {
         submissions, campaigns, plans, activeTab, setActiveTab,
         toast, stats, loading, prefillAdData, isOffline, fetchData,
         handleApprove, handleReject, startPublishWorkflow,
-        createAd, toggleCampaignStatus, updateCampaign, deleteAd,
+        createAd, toggleCampaignStatus, replayCampaign, updateCampaign, deleteAd,
         addPlan, updatePlan, deletePlan
     };
 };

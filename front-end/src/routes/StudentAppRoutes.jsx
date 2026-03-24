@@ -15,6 +15,7 @@ import BillingPage from "../pages/student/BillingPage";
 import MaintenancePage from "../pages/student/MaintenancePage";
 import ReportsPage from "../pages/student/ReportsPage";
 import ProfilePage from "../pages/student/ProfilePage";
+import SubscriptionPlansPage from "../pages/student/SubscriptionPlansPage";
 
 // Payment Pages
 import SelectPaymentMethod from "../pages/student/payments/pay/select-method/SelectPaymentMethod";

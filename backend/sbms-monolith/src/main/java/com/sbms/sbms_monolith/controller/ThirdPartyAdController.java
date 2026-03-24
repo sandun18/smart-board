@@ -66,6 +66,12 @@ public class ThirdPartyAdController {
         return adService.toggleAdStatus(id);
     }
 
+    @PatchMapping("/{id}/replay")
+    @PreAuthorize("hasRole('ADMIN')")
+    public AdResponseDTO replayExpiredCampaign(@PathVariable Long id) {
+        return adService.replayExpiredAd(id);
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public AdResponseDTO updateCampaignDetails(@PathVariable Long id, @RequestBody AdCreateDTO dto) {
