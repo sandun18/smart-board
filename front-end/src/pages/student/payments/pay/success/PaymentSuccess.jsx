@@ -5,6 +5,10 @@ import StudentLayout from "../../../../../components/student/common/StudentLayou
 const PaymentSuccess = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const returnPath =
+    state?.sourceFlow === "subscription"
+      ? "/student/subscription-plans"
+      : "/student/billing";
 
   if (!state) {
     navigate("/student/billing");
@@ -43,12 +47,14 @@ const PaymentSuccess = () => {
         )}
 
         <button
-          onClick={() => navigate("/student/billing")}
+          onClick={() => navigate(returnPath)}
           className="mt-6 w-full bg-accent hover:bg-primary
                      transition-colors text-white font-bold
                      py-3 rounded-large"
         >
-          Back to Billing
+          {state?.sourceFlow === "subscription"
+            ? "Back to Subscription Plans"
+            : "Back to Billing"}
         </button>
       </div>
     </StudentLayout>

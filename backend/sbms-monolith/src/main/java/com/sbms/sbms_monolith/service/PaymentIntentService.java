@@ -39,6 +39,8 @@ public class PaymentIntentService {
      */
     public PaymentIntent create(CreatePaymentIntentDTO dto) {
 
+        validate(dto);
+
         PaymentIntent intent = new PaymentIntent();
 
         intent.setStudentId(dto.getStudentId());
@@ -48,6 +50,7 @@ public class PaymentIntentService {
         intent.setAmount(dto.getAmount());
         intent.setDescription(dto.getDescription());
         intent.setMonthlyBillId(dto.getMonthlyBillId());
+        intent.setSubscriptionPlanId(dto.getSubscriptionPlanId());
         intent.setMaintenanceRequestId(dto.getMaintenanceRequestId());
 
         if (dto.getType() == PaymentType.TECHNICIAN_FEE) {
@@ -103,6 +106,7 @@ public class PaymentIntentService {
         return switch (dto.getType()) {
             case KEY_MONEY, TECHNICIAN_FEE -> LocalDateTime.now().plusHours(24);
             case MONTHLY_RENT, UTILITIES -> LocalDateTime.now().plusDays(14);
+            case SUBSCRIPTION -> LocalDateTime.now().plusHours(2);
         };
     }
 
@@ -110,6 +114,24 @@ public class PaymentIntentService {
 
     private void validate(CreatePaymentIntentDTO dto) {
 
+        if (dto.getType() == PaymentType.SUBSCRIPTION) {
+            if (dto.getStudentId() == null)
+                throw new RuntimeException("Payer ID required");
+
+            if (dto.getAmount() == null || dto.getAmount().signum() <= 0)
+                throw new RuntimeException("Invalid amount");
+
+            if (dto.getSubscriptionPlanId() == null)
+                throw new RuntimeException("Subscription plan ID required");
+
+            if (dto.getMonthlyBillId() != null)
+                throw new RuntimeException("Subscription payment cannot reference monthly bill");
+
+            return;
+        }
+
+        if (dto.getStudentId() == null)
+            throw new RuntimeException("Student ID required");
         if (dto.getOwnerId() == null)
             throw new RuntimeException("Owner ID required");
 
@@ -149,10 +171,13 @@ public class PaymentIntentService {
         if (dto.getAmount() == null || dto.getAmount().signum() <= 0)
             throw new RuntimeException("Invalid amount");
 
-        //  Updated: Allow null monthlyBillId for Technician Fees (already handled above) and Key Money
-        boolean isRecurringBill = dto.getType() == PaymentType.MONTHLY_RENT || dto.getType() == PaymentType.UTILITIES;
+        if (dto.getOwnerId() == null)
+            throw new RuntimeException("Owner ID required");
 
-        if (isRecurringBill && dto.getMonthlyBillId() == null)
+        if (dto.getBoardingId() == null)
+            throw new RuntimeException("Boarding ID required");
+
+        if (dto.getType() != PaymentType.KEY_MONEY && dto.getMonthlyBillId() == null)
             throw new RuntimeException("Monthly bill ID required");
 
         if (dto.getType() == PaymentType.KEY_MONEY && dto.getMonthlyBillId() != null)

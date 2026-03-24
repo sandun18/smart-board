@@ -158,10 +158,8 @@ public class TechnicianWorkflowService {
 
                     if (review.getOwner() != null) {
                         dto.setOwnerName(review.getOwner().getFullName());
-                        dto.setOwnerProfileImageUrl(review.getOwner().getProfileImageUrl());
                     } else {
                         dto.setOwnerName("Unknown Owner");
-                        dto.setOwnerProfileImageUrl(null);
                     }
 
                     dto.setRating(review.getRating());

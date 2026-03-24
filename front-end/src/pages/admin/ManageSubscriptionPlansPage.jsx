@@ -1,3 +1,4 @@
+export { default } from "./AdminSubscriptionPlansPage";
 import React, { useState, useEffect } from "react";
 import { FaPlus, FaEdit, FaTrash, FaTimes, FaCheck, FaBan } from "react-icons/fa";
 import toast from "react-hot-toast";

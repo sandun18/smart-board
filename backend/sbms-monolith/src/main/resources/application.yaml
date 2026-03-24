@@ -1,7 +1,11 @@
 server:
   port: 8086
+  error:
+    include-message: always
 
 spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
   application: 
     name: sbms-backend
   mvc:
@@ -65,7 +69,14 @@ aws:
 
 
 sbms:
+  admin:
+    seed:
+      enabled: true
+    email: admin@smartboard.com
+    password: Admin@123
+    full-name: System Admin
   rabbitmq:
+    enabled: false
     exchange: emergency
 
 #url: jdbc:postgresql://smart-board-db.c7miuo2k4f6h.ap-south-1.rds.amazonaws.com:5432/smart-board

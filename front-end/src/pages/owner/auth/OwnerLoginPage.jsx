@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useOwnerAuth } from "../../../context/owner/OwnerAuthContext.jsx"; // Check path
-import LoginForm from "../../../components/Owner/auth/LoginForm.jsx";
+import { useOwnerAuth } from "../../../context/owner/OwnerAuthContext.jsx";
+import LoginForm from "../../../components/Owner/auth/OwnerLoginForm.jsx";
 import { motion } from "framer-motion";
 import logo from "../../../assets/logo.png";
 import backgroundImage from "../../../assets/s5.jpg";

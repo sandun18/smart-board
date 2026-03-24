@@ -13,19 +13,52 @@ export const StudentAuthProvider = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       const token = localStorage.getItem("token");
+      const refreshToken = localStorage.getItem("refresh_token");
       const savedUser = localStorage.getItem("user_data");
+
+      if (refreshToken) {
+        try {
+          const response = await api.post("/auth/refresh", {
+            refreshToken,
+          });
+
+          if (response.status === 200) {
+            const { token: newToken, refreshToken: newRefreshToken, user } = response.data;
+
+            if (user.role === "STUDENT") {
+              localStorage.setItem("token", newToken);
+              localStorage.setItem("refresh_token", newRefreshToken);
+              localStorage.setItem("user_data", JSON.stringify(user));
+
+              setCurrentUser(user);
+              setIsAuthenticated(true);
+              setIsLoading(false);
+              return;
+            }
+
+            // Valid non-student session should not be treated as student auth.
+            setCurrentUser(null);
+            setIsAuthenticated(false);
+            setIsLoading(false);
+            return;
+          }
+        } catch (error) {
+          console.error("Student auto-login failed:", error);
+          if (error.response?.status === 401 || error.response?.status === 403) {
+            localStorage.clear();
+          }
+        }
+      }
 
       if (token && savedUser) {
         try {
           const user = JSON.parse(savedUser);
 
-          // 🔒 Security Check: Ensure the saved user is a STUDENT
           if (user.role === "STUDENT") {
             setCurrentUser(user);
             setIsAuthenticated(true);
           } else {
-            // Just don't authenticate this context, but DO NOT wipe storage.
-            // It might be an Owner logged in!
+            setCurrentUser(null);
             setIsAuthenticated(false);
           }
         } catch (e) {

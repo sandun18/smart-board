@@ -20,6 +20,9 @@ public class CreatePaymentIntentDTO {
     // Optional (used for rent/utilities)
     private Long monthlyBillId;
 
+    // Optional (used for subscription purchases)
+    private Long subscriptionPlanId;
+
     private String description; // "January Rent", "Key Money", etc.
 
     private Long maintenanceRequestId;

@@ -16,7 +16,6 @@ import {
   getBoardingTenants,
 } from "../../../api/owner/service";
 
-// Severity Config (Same as Student)
 const SEVERITY_LEVELS = [
   {
     value: "LOW",
@@ -47,27 +46,24 @@ const SEVERITY_LEVELS = [
 const ReportForm = ({ reportType, onSubmit, onCancel }) => {
   const { currentOwner } = useOwnerAuth();
 
-  // Data State
   const [properties, setProperties] = useState([]);
   const [students, setStudents] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
 
-  // Form State
   const [formData, setFormData] = useState({
     title: "",
     incidentDate: "",
     description: "",
     severity: "",
-    propertyId: "", // Logic only
-    boardingName: "", // Backend DTO
-    studentId: "", // Backend DTO
+    propertyId: "",
+    boardingName: "",
+    studentId: "",
     allowContact: true,
   });
 
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
 
-  // 1. Fetch Boardings on Mount
   useEffect(() => {
     const loadProperties = async () => {
       if (currentOwner?.id) {
@@ -81,10 +77,10 @@ const ReportForm = ({ reportType, onSubmit, onCancel }) => {
         }
       }
     };
+
     loadProperties();
   }, [currentOwner]);
 
-  // 2. Handle Boarding Selection -> Fetch Tenants
   const handlePropertyChange = async (e) => {
     const newPropertyId = e.target.value;
     const selectedProp = properties.find((p) => p.id == newPropertyId);
@@ -93,7 +89,7 @@ const ReportForm = ({ reportType, onSubmit, onCancel }) => {
       ...prev,
       propertyId: newPropertyId,
       boardingName: selectedProp ? selectedProp.name : "",
-      studentId: "", // Reset student
+      studentId: "",
     }));
 
     if (newPropertyId) {
@@ -112,22 +108,27 @@ const ReportForm = ({ reportType, onSubmit, onCancel }) => {
     }));
   };
 
-  // File Handling (Same as Student UI)
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files).slice(0, 5);
     setFiles(selectedFiles);
+
     const newPreviews = selectedFiles.map((file) => ({
       name: file.name,
       type: file.type,
       url: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
     }));
+
     setPreviews(newPreviews);
   };
 
   const removeFile = (index) => {
     const newFiles = files.filter((_, i) => i !== index);
     const newPreviews = previews.filter((_, i) => i !== index);
-    if (previews[index].url) URL.revokeObjectURL(previews[index].url);
+
+    if (previews[index].url) {
+      URL.revokeObjectURL(previews[index].url);
+    }
+
     setFiles(newFiles);
     setPreviews(newPreviews);
   };
@@ -144,7 +145,7 @@ const ReportForm = ({ reportType, onSubmit, onCancel }) => {
       );
       return;
     }
-    // Inject the reportType from the grid selection
+
     onSubmit({ ...formData, reportType: reportType.type }, files);
   };
 
@@ -152,9 +153,9 @@ const ReportForm = ({ reportType, onSubmit, onCancel }) => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="p-6 border bg-card-bg rounded-large shadow-custom md:p-8 border-light"
+      className="bg-card-bg rounded-large shadow-custom p-6 md:p-8 border border-light"
     >
-      <div className="flex flex-col items-start justify-between gap-4 mb-6 sm:flex-row sm:items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h2 className="text-2xl font-bold text-primary">
           Details for {reportType.typeName}
         </h2>
@@ -162,17 +163,16 @@ const ReportForm = ({ reportType, onSubmit, onCancel }) => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={onCancel}
-          className="flex items-center gap-2 px-3 py-1 text-xs font-semibold transition-all rounded-btn bg-light text-text-dark hover:bg-accent hover:text-white"
+          className="flex items-center gap-2 px-3 py-1 rounded-btn text-xs font-semibold bg-light text-text-dark hover:bg-accent hover:text-white transition-all"
         >
           <FaSync /> Change Type
         </motion.button>
       </div>
 
       <div className="space-y-6">
-        {/* --- OWNER SPECIFIC: Boarding & Student Selectors --- */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block mb-2 font-semibold text-text-dark">
+            <label className="block font-semibold text-text-dark mb-2">
               Select Boarding <span className="text-red-500">*</span>
             </label>
             <select
@@ -180,7 +180,7 @@ const ReportForm = ({ reportType, onSubmit, onCancel }) => {
               value={formData.propertyId}
               onChange={handlePropertyChange}
               disabled={loadingData}
-              className="w-full p-3 bg-white border-2 border-light rounded-btn focus:border-accent focus:outline-none"
+              className="w-full p-3 border-2 border-light rounded-btn focus:border-accent focus:outline-none bg-white"
             >
               <option value="">
                 {loadingData ? "Loading..." : "Select Property"}
@@ -194,7 +194,7 @@ const ReportForm = ({ reportType, onSubmit, onCancel }) => {
           </div>
 
           <div>
-            <label className="block mb-2 font-semibold text-text-dark">
+            <label className="block font-semibold text-text-dark mb-2">
               Select Student <span className="text-red-500">*</span>
             </label>
             <select
@@ -202,17 +202,16 @@ const ReportForm = ({ reportType, onSubmit, onCancel }) => {
               value={formData.studentId}
               onChange={handleChange}
               disabled={!formData.propertyId || students.length === 0}
-              className="w-full p-3 bg-white border-2 border-light rounded-btn focus:border-accent focus:outline-none disabled:bg-gray-100"
+              className="w-full p-3 border-2 border-light rounded-btn focus:border-accent focus:outline-none bg-white disabled:bg-gray-100"
             >
               <option value="">
                 {!formData.propertyId
                   ? "Select property first"
                   : students.length === 0
-                  ? "No students found"
-                  : "Select Student"}
+                    ? "No students found"
+                    : "Select Student"}
               </option>
               {students.map((s) => (
-                // Assuming tenants API returns { id, name } or similar
                 <option key={s.id} value={s.id}>
                   {s.name} (ID: {s.id})
                 </option>
@@ -221,9 +220,8 @@ const ReportForm = ({ reportType, onSubmit, onCancel }) => {
           </div>
         </div>
 
-        {/* --- Standard Fields --- */}
         <div>
-          <label className="block mb-2 font-semibold text-text-dark">
+          <label className="block font-semibold text-text-dark mb-2">
             Report Title <span className="text-red-500">*</span>
           </label>
           <input
@@ -237,7 +235,7 @@ const ReportForm = ({ reportType, onSubmit, onCancel }) => {
         </div>
 
         <div>
-          <label className="block mb-2 font-semibold text-text-dark">
+          <label className="block font-semibold text-text-dark mb-2">
             Date of Incident <span className="text-red-500">*</span>
           </label>
           <input
@@ -245,22 +243,19 @@ const ReportForm = ({ reportType, onSubmit, onCancel }) => {
             name="incidentDate"
             value={formData.incidentDate}
             onChange={handleChange}
-            className="w-full p-3 text-gray-500 border-2 border-light rounded-btn focus:border-accent focus:outline-none"
+            className="w-full p-3 border-2 border-light rounded-btn focus:border-accent focus:outline-none text-gray-500"
           />
         </div>
 
         <div>
-          <label className="block mb-2 font-semibold text-text-dark">
+          <label className="block font-semibold text-text-dark mb-2">
             Severity Level <span className="text-red-500">*</span>
           </label>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {SEVERITY_LEVELS.map((level) => {
               const Icon = level.icon;
               return (
-                <label
-                  key={level.value}
-                  className="relative cursor-pointer group"
-                >
+                <label key={level.value} className="cursor-pointer group relative">
                   <input
                     type="radio"
                     name="severity"
@@ -295,7 +290,7 @@ const ReportForm = ({ reportType, onSubmit, onCancel }) => {
         </div>
 
         <div>
-          <label className="block mb-2 font-semibold text-text-dark">
+          <label className="block font-semibold text-text-dark mb-2">
             Description <span className="text-red-500">*</span>
           </label>
           <textarea
@@ -303,14 +298,13 @@ const ReportForm = ({ reportType, onSubmit, onCancel }) => {
             rows="5"
             value={formData.description}
             onChange={handleChange}
-            className="w-full p-3 border-2 resize-none border-light rounded-btn focus:border-accent focus:outline-none"
+            className="w-full p-3 border-2 border-light rounded-btn focus:border-accent focus:outline-none resize-none"
             placeholder="Provide full details..."
           />
         </div>
 
-        {/* --- Evidence Upload (Visuals Only) --- */}
         <div>
-          <label className="block mb-2 font-semibold text-text-dark">
+          <label className="block font-semibold text-text-dark mb-2">
             Evidence (Optional)
           </label>
           <div className="relative">
@@ -324,26 +318,27 @@ const ReportForm = ({ reportType, onSubmit, onCancel }) => {
             />
             <label
               htmlFor="evidence"
-              className="flex flex-col items-center justify-center p-8 transition-colors border-2 border-dashed cursor-pointer border-light rounded-btn hover:border-accent bg-gray-50"
+              className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-light rounded-btn cursor-pointer hover:border-accent bg-gray-50 transition-colors"
             >
-              <FaCloudUploadAlt className="mb-2 text-4xl text-text-muted" />
-              <span className="font-medium text-text-dark">
+              <FaCloudUploadAlt className="text-4xl text-text-muted mb-2" />
+              <span className="text-text-dark font-medium">
                 Click to upload files
               </span>
             </label>
           </div>
+
           {previews.length > 0 && (
-            <div className="flex flex-wrap gap-3 mt-4">
+            <div className="flex gap-3 flex-wrap mt-4">
               {previews.map((preview, index) => (
                 <div
                   key={index}
-                  className="relative flex items-center justify-center w-20 h-20 overflow-hidden bg-gray-100 border rounded-lg border-light"
+                  className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center border border-light"
                 >
                   {preview.url ? (
                     <img
                       src={preview.url}
                       alt="prev"
-                      className="object-cover w-full h-full"
+                      className="w-full h-full object-cover"
                     />
                   ) : (
                     <FaPaperPlane />
@@ -351,7 +346,7 @@ const ReportForm = ({ reportType, onSubmit, onCancel }) => {
                   <button
                     type="button"
                     onClick={() => removeFile(index)}
-                    className="absolute flex items-center justify-center w-5 h-5 text-xs text-white bg-red-500 rounded-full top-1 right-1"
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
                   >
                     <FaTimes />
                   </button>
@@ -365,7 +360,7 @@ const ReportForm = ({ reportType, onSubmit, onCancel }) => {
           <button
             type="button"
             onClick={onCancel}
-            className="px-6 py-3 font-semibold transition-all border-2 rounded-large border-text-muted text-text-muted hover:bg-text-muted hover:text-white"
+            className="px-6 py-3 rounded-large font-semibold border-2 border-text-muted text-text-muted hover:bg-text-muted hover:text-white transition-all"
           >
             Cancel
           </button>
@@ -374,7 +369,7 @@ const ReportForm = ({ reportType, onSubmit, onCancel }) => {
             onClick={handleSubmit}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-2 px-6 py-3 font-semibold text-white shadow-md rounded-large bg-accent"
+            className="flex items-center gap-2 px-6 py-3 rounded-large font-semibold bg-accent text-white shadow-md"
           >
             <FaPaperPlane /> Submit Report
           </motion.button>

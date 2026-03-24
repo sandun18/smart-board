@@ -66,7 +66,7 @@ export const getOwnerReports = async (ownerId) => {
   }
 };
 
-export const createReport = async (reportData, files) => {
+export const createOwnerReport = async (reportData, files) => {
   try {
     const formData = new FormData();
 
@@ -77,15 +77,17 @@ export const createReport = async (reportData, files) => {
     formData.append("severity", reportData.severity); // e.g., "HIGH", "LOW"
 
     // Backend wants Boarding NAME, not ID
-    formData.append("boarding", reportData.boardingName);
+    if (reportData.boardingName) {
+        formData.append("boarding", reportData.boardingName);
+    }
 
     // ID Mapping
     formData.append("senderId", reportData.ownerId);
     formData.append("reportedUserId", reportData.studentId);
 
     // Date & Boolean
-    formData.append("incidentDate", reportData.incidentDate); // YYYY-MM-DD
-    formData.append("allowContact", reportData.allowContact); // true/false
+    formData.append("incidentDate", reportData.incidentDate || new Date().toISOString().split('T')[0]);
+    formData.append("allowContact", reportData.allowContact || true);
 
     // Files
     if (files && files.length > 0) {
@@ -94,7 +96,9 @@ export const createReport = async (reportData, files) => {
       });
     }
 
-    const response = await api.post("/reports", formData);
+    const response = await api.post("/reports", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return response.data;
   } catch (error) {
     console.error("Error creating report:", error);
@@ -306,7 +310,6 @@ export const reviewTechnician = async (maintenanceId, rating, comment) => {
     });
     return response.data;
 };
-
 
 // =================================================================
 // 📝 REGISTRATION SERVICES

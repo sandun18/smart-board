@@ -18,6 +18,7 @@ const Sidebar = ({ onNavigate, activePage, onLogout, onBrandClick, badgeCounts =
   
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: FaTachometerAlt },
+    { id: 'subscription-plans', label: 'Subscription Plans', icon: 'fa-crown' },
     { id: 'users', label: 'User Management', icon: FaUsers },
     { id: 'ads', label: 'Ad Approvals', icon: FaHome, badge: badgeCounts.ads || 0 },
     { id: 'reports', label: 'Reports', icon: FaFlag, badge: badgeCounts.reports || 0 },

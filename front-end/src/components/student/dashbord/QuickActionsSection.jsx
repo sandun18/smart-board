@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
   FaSearch, FaCalendarAlt, FaCreditCard, 
-  FaTools, FaFlag, FaUserCog 
+  FaTools, FaFlag, FaUserCog
 } from 'react-icons/fa';
 
 const actionButtons = [

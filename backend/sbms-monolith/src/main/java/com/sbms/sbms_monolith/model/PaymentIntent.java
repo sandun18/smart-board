@@ -57,6 +57,9 @@ public class PaymentIntent {
     @Column(nullable=true, name = "monthly_bill_id")
     private Long monthlyBillId;
 
+    @Column(nullable = true, name = "subscription_plan_id")
+    private Long subscriptionPlanId;
+
     //  Link to Maintenance Job
     @Column(nullable = true, name = "maintenance_request_id")
     private Long maintenanceRequestId;

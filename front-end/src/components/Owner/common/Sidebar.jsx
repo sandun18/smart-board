@@ -24,6 +24,12 @@ const navItems = [
   },
   { path: "/owner/myAds", icon: FaBullhorn, label: "My Ads", key: "My Ads" },
   {
+    path: "/owner/subscription-plans",
+    icon: FaCreditCard,
+    label: "Subscription Plans",
+    key: "Subscription Plans",
+  },
+  {
     path: "/owner/appointments",
     icon: FaCalendarAlt,
     label: "Appointments",

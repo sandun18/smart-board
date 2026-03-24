@@ -17,7 +17,7 @@ const HeroAction = () => (
       </div>
 
       <Link
-        to="/ownerLayout/myAds/createAd"
+        to="/owner/myAds/createAd"
         className="px-5 py-2.5 bg-white text-primary rounded-lg font-bold text-sm shadow-md hover:bg-gray-50 active:scale-95 transition-all flex items-center gap-2"
       >
         <span>Create Now</span>

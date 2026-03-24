@@ -2,13 +2,16 @@ package com.sbms.sbms_monolith.service;
 
 import com.sbms.sbms_monolith.dto.boarding.*;
 import com.sbms.sbms_monolith.model.Boarding;
+import com.sbms.sbms_monolith.model.OwnerSubscription;
 import com.sbms.sbms_monolith.model.User;
 import com.sbms.sbms_monolith.model.enums.Status;
 import com.sbms.sbms_monolith.repository.BoardingRepository;
 import com.sbms.sbms_monolith.repository.UserRepository;
 import com.sbms.sbms_monolith.mapper.BoardingMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,10 +26,16 @@ public class OwnerBoardingService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private OwnerSubscriptionService ownerSubscriptionService;
+
     public OwnerBoardingResponseDTO create(Long ownerId, BoardingCreateDTO dto) {
 
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> new RuntimeException("Owner not found"));
+
+        // Hard backend enforcement for subscription and ad limits
+        ownerSubscriptionService.validateOwnerCanCreateAd(ownerId);
 
         Boarding b = BoardingMapper.toEntityFromCreate(dto);
         b.setOwner(owner); // link owner
@@ -105,6 +114,9 @@ public class OwnerBoardingService {
     }
 
     public OwnerBoardingResponseDTO boost(Long ownerId, Long boardingId, int days) {
+
+        // Hard backend enforcement for subscription + plan-level boost permission
+        ownerSubscriptionService.validateOwnerCanBoostAd(ownerId);
 
         Boarding b = boardingRepository.findById(boardingId)
                 .orElseThrow(() -> new RuntimeException("Boarding not found"));

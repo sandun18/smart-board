@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useOwnerAuth } from "../../../context/owner/OwnerAuthContext"; // Verify path
-import SignupForm from "../../../components/Owner/auth/SignupForm"; // Verify path
+import { useOwnerAuth } from "../../../context/owner/OwnerAuthContext";
+import SignupForm from "../../../components/Owner/auth/OwnerSignupForm.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaArrowLeft } from "react-icons/fa";
 import logo from "../../../assets/logo.png";

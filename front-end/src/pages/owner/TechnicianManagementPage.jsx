@@ -17,7 +17,8 @@ import {
   getOwnerMaintenanceRequests,
   searchTechnicians,
   assignTechnician,
-  createReport,
+  reviewTechnician,
+  // createReport,
 } from "../../api/owner/service";
 import toast from "react-hot-toast";
 import ReviewTechnicianModal from "../../components/Owner/Maintenance/ReviewTechnicianModal.jsx";

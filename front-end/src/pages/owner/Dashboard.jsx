@@ -1,4 +1,3 @@
-import React from "react";
 import { useDashboardLogic } from "../../hooks/owner/useDashboardLogic";
 
 // Components
@@ -11,6 +10,7 @@ import AppointmentItem from "../../components/Owner/dashboard/AppointmentItem";
 import DashboardSection from "../../components/Owner/dashboard/DashboardSection";
 import RecentTransactions from "../../components/Owner/dashboard/RecentTransactions";
 import RevenueChart from "../../components/Owner/dashboard/RevenueChart";
+import CurrentPlanCard from "../../components/Owner/dashboard/CurrentPlanCard";
 
 export default function Dashboard() {
   const { loading, stats, chartData, transactions, appointments, user } =
@@ -89,28 +89,30 @@ export default function Dashboard() {
           <div className="space-y-6">
             <HeroAction />
 
+            <CurrentPlanCard />
+
             <div className="p-5 border shadow-sm bg-card-bg rounded-xl border-light">
               <h3 className="mb-4 text-xs font-black tracking-widest uppercase text-muted/50">
                 Management
               </h3>
               <div className="grid grid-cols-2 gap-3">
                 <DashButton
-                  to="/ownerLayout/utility"
+                  to="/owner/utility"
                   icon="fas fa-bolt"
                   label="Utility"
                 />
                 <DashButton
-                  to="/ownerLayout/myAds"
+                  to="/owner/myAds"
                   icon="fas fa-eye"
                   label="View Ads"
                 />
                 <DashButton
-                  to="/ownerLayout/payment"
+                  to="/owner/payment"
                   icon="fas fa-credit-card"
                   label="Payments"
                 />
                 <DashButton
-                  to="/ownerLayout/profile"
+                  to="/owner/profile"
                   icon="fas fa-cog"
                   label="Settings"
                 />
